@@ -13,6 +13,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Monthly budget setup and tracking
 - Savings goal creation and tracking
 - Multi-currency support with real-time exchange rates
+- **Multi-language support** (English, French, Vietnamese)
 - Graphical summary (pie/bar charts, trend analysis)
 - Offline local storage (SQLite/MMKV)
 - Light/bright theme with dark mode toggle
@@ -101,6 +102,10 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - **Goal Types**: Emergency fund, vacation, down payment, etc.
 
 #### Settings & Preferences
+- **Language Settings**:
+  - Language selection (English, French, Vietnamese)
+  - Automatic language detection
+  - RTL support for future languages
 - **Currency Management**:
   - Primary currency selection
   - Multi-currency support
@@ -162,6 +167,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 ### Table (SQLite or SQL-based)
 
 `transactions`:
+**Description**: Stores all financial transactions (income and expenses) with their details including amount, category, date, and notes.
 - `id`: string (UUID)
 - `type`: 'income' | 'expense'
 - `amount`: decimal(10,2)  // Use decimal for precision
@@ -176,6 +182,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Indexes: `date`, `category_id`, `type`, `currency`
 
 `budgets`:
+**Description**: Stores monthly and yearly budget plans for different categories with planned amounts, actual spending, and carryover amounts.
 - `id`: string (UUID)
 - `month`: string (e.g., `2025-07`)
 - `year`: string (e.g., `2025`)
@@ -189,6 +196,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Indexes: (`month`, `category_id`), (`year`, `category_id`), `currency`
 
 `savings_goals`:
+**Description**: Tracks user-defined savings goals with target amounts, current progress, and completion dates.
 - `id`: string (UUID)
 - `name`: string
 - `target_amount`: decimal(10,2)
@@ -201,11 +209,13 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Indexes: `currency`, `created_at`, `is_active`
 
 `settings`:
+**Description**: Stores user preferences and app configuration settings in key-value format.
 - `key`: string (primary key)
 - `value`: string (JSON encoded for complex types)
 - `updated_at`: datetime
 
 `category_groups`:
+**Description**: Groups categories into logical collections (e.g., Housing, Food, Transportation) for better organization.
 - `id`: string (UUID)
 - `name`: string (e.g., `Housing`)
 - `sort_order`: integer
@@ -214,6 +224,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - `created_at`: datetime
 
 `categories`:
+**Description**: Individual expense and income categories that users can assign to transactions.
 - `id`: string (UUID)
 - `name`: string (e.g., "Rent")
 - `group_id`: string (UUID, FK to `category_groups.id`)
@@ -225,6 +236,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Indexes: `group_id`, `type`, `is_default`
 
 `assets`:
+**Description**: Tracks user's assets and liabilities for net worth calculation and financial overview.
 - `id`: string (UUID)
 - `name`: string
 - `value`: decimal(10,2)
@@ -237,6 +249,7 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - Indexes: `type`, `category`, `currency`, `is_active`
 
 `recurring_transactions`:
+**Description**: Stores templates for recurring transactions like monthly bills, subscriptions, and regular income.
 - `id`: string (UUID)
 - `name`: string
 - `amount`: decimal(10,2)
@@ -250,10 +263,127 @@ A cross platform (Android/iOS) money management app built with React Native + Ex
 - `created_at`: datetime
 - Indexes: `category_id`, `type`, `is_active`
 
+`languages`:
+**Description**: Stores supported languages and their metadata for the app's internationalization.
+- `id`: string (UUID)
+- `code`: string (ISO 639-1 language code, e.g., 'en', 'fr', 'vi')
+- `name`: string (Language name in native script)
+- `native_name`: string (Language name in the language itself)
+- `is_rtl`: boolean (Right-to-left text direction)
+- `is_active`: boolean
+- `sort_order`: integer
+- `created_at`: datetime
+- Indexes: `code`, `is_active`
+
+`translations`:
+**Description**: Stores localized text strings for UI elements, categories, and system messages.
+- `id`: string (UUID)
+- `language_code`: string (FK to `languages.code`)
+- `key`: string (Translation key identifier)
+- `value`: string (Localized text)
+- `context`: string (Optional context for disambiguation)
+- `created_at`: datetime
+- `updated_at`: datetime
+- Indexes: (`language_code`, `key`), `context`
+
+`user_preferences`:
+**Description**: Stores user-specific preferences including language, currency, theme, and notification settings.
+- `id`: string (UUID)
+- `language_code`: string (FK to `languages.code`)
+- `primary_currency`: string (3-char ISO code)
+- `theme`: 'light' | 'dark' | 'auto'
+- `notifications_enabled`: boolean
+- `budget_alerts_enabled`: boolean
+- `goal_reminders_enabled`: boolean
+- `bill_reminders_enabled`: boolean
+- `created_at`: datetime
+- `updated_at`: datetime
+- Indexes: `language_code`, `primary_currency`
+
 ### Table Relationships
 - Each `transaction.category_id` references `categories.id`
 - `budget.category_id` references `categories.id`
 - Each `category.group_id` references `category_groups.id`
+- `translation.language_code` references `languages.code`
+- `user_preferences.language_code` references `languages.code`
+
+## 6. Notification System
+
+### Overview
+The notification system provides users with timely alerts about their financial activities, budget status, and important reminders. It supports both local notifications (when app is open) and push notifications (when app is closed).
+
+### Notification Types
+
+#### 1. Budget Alerts
+- **Budget Limit Warning**: When spending approaches 80% of budget
+- **Budget Exceeded**: When spending exceeds budget limit
+- **Budget Reset**: Monthly budget reset reminders
+- **Category Overspending**: Specific category budget alerts
+
+#### 2. Bill & Recurring Transaction Reminders
+- **Upcoming Bills**: Reminders for recurring transactions due soon
+- **Overdue Bills**: Alerts for missed recurring payments
+- **Subscription Renewals**: Reminder for subscription payments
+
+#### 3. Savings Goal Notifications
+- **Goal Milestones**: When reaching 25%, 50%, 75% of savings goal
+- **Goal Deadline**: Reminders as target date approaches
+- **Goal Achieved**: Celebration when goal is completed
+- **Contribution Reminders**: Regular reminders to contribute to goals
+
+#### 4. Financial Insights
+- **Spending Trends**: Weekly/monthly spending summaries
+- **Unusual Spending**: Alerts for spending significantly above average
+- **Savings Opportunities**: Suggestions for saving money
+- **Net Worth Updates**: Monthly net worth summaries
+
+#### 5. System Notifications
+- **App Updates**: New features and improvements
+- **Data Backup**: Reminders to backup data
+- **Currency Updates**: Exchange rate changes
+- **Maintenance**: App maintenance notifications
+
+### Database Schema
+
+The notification system uses two main tables:
+
+#### Notifications Table
+Stores all user notifications with types, messages, scheduling, and read status.
+
+#### Notification Templates Table
+Stores reusable notification templates for different scenarios.
+
+### User Interface
+
+The notification system includes:
+
+#### Notification Center Screen
+- List of all notifications grouped by date
+- Mark as read functionality
+- Clear all notifications option
+- Filter by notification type
+
+#### Notification Settings Screen
+- Enable/disable notifications globally
+- Granular control over notification types
+- Timing preferences for different alerts
+- Quiet hours configuration
+
+### User Experience Flow
+
+1. **First Launch**: User is prompted to enable notifications
+2. **Settings**: User can customize notification preferences
+3. **Real-time**: Notifications appear as events occur
+4. **History**: All notifications are stored and viewable
+5. **Actions**: Users can mark as read, delete, or take action
+
+### Privacy & Performance
+
+- **Local Storage**: All notification data stored locally
+- **No Tracking**: No analytics on notification interactions
+- **Battery Optimization**: Efficient scheduling and batching
+- **User Control**: Complete control over notification preferences
+- **Data Export**: Notifications included in data export
 
 ## 6. Architecture & Implementation Strategy
 
