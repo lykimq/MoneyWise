@@ -1,134 +1,110 @@
 # MoneyWise App
 
-A comprehensive personal finance management app built with React Native and Expo.
+A React Native financial management application with a Rust backend.
 
 ## Features
 
-### 🏠 Home Dashboard
-- Spending overview with total spent, remaining, and savings
-- Quick actions for common tasks
-- Spending by category visualization
-- Recent transactions list
-- Upcoming bills reminders
+- **Budget Management**: Track and manage your monthly budgets
+- **Category-based Spending**: Organize expenses by categories
+- **Real-time Insights**: Get AI-powered budget insights and recommendations
+- **Cross-platform**: Works on both iOS and Android
+- **Modern UI**: Clean and intuitive user interface
 
-### 📊 Budget Management
-- Time period toggles (Monthly, Yearly, Custom)
-- Budget overview with planned, spent, and remaining amounts
-- Category budgets with progress bars
-- Budget insights and recommendations
-
-### 📝 Transactions
-- Searchable and filterable transaction list
-- Add, edit, and delete transactions
-- Transaction categorization
-- Income vs expense tracking
-- Summary with total income, expenses, and net
-
-### 🎯 Savings Goals
-- Goals overview with total, saved, and remaining amounts
-- Active goals with progress tracking
-- Goal insights and recommendations
-- Add new savings goals
-
-### ⚙️ Settings
-- General settings (language, currency, dark mode, notifications)
-- Budget settings (period, rollover, alerts)
-- Data management (backup, restore, export)
-- About & support
-- Danger zone for data clearing
-
-## Tech Stack
-
-- **React Native** - Cross-platform mobile development
-- **Expo** - Development platform and tools
-- **React Navigation** - Navigation between screens
-- **Expo Vector Icons** - Icon library
-- **TypeScript** - Type safety and better development experience
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Expo CLI (`npm install -g @expo/cli`)
+- React Native development environment
+- Expo CLI
+- PostgreSQL (for backend)
 
-### Installation
+## Setup
 
-1. Clone the repository:
+### 1. Install Dependencies
+
 ```bash
-git clone <repository-url>
 cd moneywise-app
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-3. Start the development server:
-```bash
-npm start
-```
+### 2. Backend Setup
 
-4. Run on your preferred platform:
+The app requires the Rust backend to be running. See the [backend README](../moneywise-backend/README.md) for setup instructions.
+
+### 3. Configure API Endpoint
+
+The app is configured to connect to `http://localhost:3000` by default. If your backend is running on a different address, update the `API_BASE_URL` in `src/services/api.ts`.
+
+### 4. Run the App
+
 ```bash
-# iOS Simulator
+# Start the development server
+npm start
+
+# Run on iOS simulator
 npm run ios
 
-# Android Emulator
+# Run on Android emulator
 npm run android
-
-# Web
-npm run web
 ```
 
 ## Project Structure
 
 ```
-moneywise-app/
-├── src/
-│   ├── screens/          # Main screen components
-│   │   ├── HomeScreen.tsx
-│   │   ├── BudgetsScreen.tsx
-│   │   ├── TransactionsScreen.tsx
-│   │   ├── GoalsScreen.tsx
-│   │   └── SettingsScreen.tsx
-│   ├── components/       # Reusable components
-│   ├── types/           # TypeScript type definitions
-│   └── utils/           # Utility functions
-├── assets/              # Images and static assets
-├── App.tsx              # Main app component
-└── package.json         # Dependencies and scripts
+src/
+├── components/          # Reusable UI components
+├── screens/            # Screen components
+│   ├── BudgetsScreen.tsx    # Budget management screen
+│   ├── GoalsScreen.tsx      # Financial goals screen
+│   ├── HomeScreen.tsx       # Dashboard screen
+│   ├── SettingsScreen.tsx   # App settings screen
+│   └── TransactionsScreen.tsx # Transaction history screen
+├── services/           # API and external services
+│   └── api.ts         # Backend API integration
+├── types/             # TypeScript type definitions
+└── utils/             # Utility functions
 ```
 
-## Navigation Structure
+## API Integration
 
-The app uses bottom tab navigation with 5 main screens:
+The app communicates with the Rust backend through the `api.ts` service:
 
-1. **Home** - Dashboard with overview and quick actions
-2. **Budgets** - Budget management and tracking
-3. **Transactions** - Transaction list and management
-4. **Goals** - Savings goals and progress
-5. **Settings** - App configuration and preferences
+- **Budget Data**: Fetches budget overview, categories, and insights
+- **Real-time Updates**: Automatically refreshes data when needed
+- **Error Handling**: Graceful error handling with user-friendly messages
+- **Loading States**: Shows loading indicators during API calls
 
 ## Development
 
 ### Adding New Features
 
-1. Create new screen components in `src/screens/`
-2. Add navigation routes in `App.tsx`
-3. Create reusable components in `src/components/`
+1. Create new components in `src/components/`
+2. Add new screens in `src/screens/`
+3. Update API service in `src/services/api.ts` if needed
 4. Add TypeScript types in `src/types/`
 
-### Styling
+### Code Style
 
-The app uses a consistent design system with:
-- Primary color: `#007AFF` (iOS blue)
-- Background: `#F8F9FA` (light gray)
-- Cards: `#FFFFFF` with shadows
-- Text colors: `#333` (dark), `#666` (medium), `#999` (light)
+- Use TypeScript for type safety
+- Follow React Native best practices
+- Use functional components with hooks
+- Implement proper error handling
+- Add loading states for async operations
 
-### Icons
+## Troubleshooting
 
-The app uses Expo Vector Icons (Ionicons) for consistent iconography across all screens.
+### Common Issues
+
+1. **Backend Connection Failed**
+   - Ensure the Rust backend is running on `http://localhost:3000`
+   - Check if PostgreSQL is running
+   - Verify database migrations have been applied
+
+2. **Build Errors**
+   - Clear Metro cache: `npx react-native start --reset-cache`
+   - Reinstall dependencies: `rm -rf node_modules && npm install`
+
+3. **API Errors**
+   - Check browser console for detailed error messages
+   - Verify API endpoint configuration
+   - Ensure backend is properly configured

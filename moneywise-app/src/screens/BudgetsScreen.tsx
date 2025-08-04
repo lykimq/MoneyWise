@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,13 +6,90 @@ import {
     ScrollView,
     TouchableOpacity,
     SafeAreaView,
+    ActivityIndicator,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import apiService, { BudgetResponse, CategoryBudget, BudgetInsight } from '../services/api';
 
 const BudgetsScreen: React.FC = () => {
     const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
+    const [budgetData, setBudgetData] = useState<BudgetResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const periods = ['Monthly', 'Yearly', 'Custom Range'];
+
+    const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
+        const iconMap: { [key: string]: keyof typeof Ionicons.glyphMap } = {
+            'Rent': 'home-outline',
+            'Mortgage': 'home-outline',
+            'Utilities': 'flash-outline',
+            'Gas': 'car-outline',
+            'Public Transport': 'bus-outline',
+            'Maintenance': 'construct-outline',
+            'Groceries': 'restaurant-outline',
+            'Dining Out': 'restaurant-outline',
+            'Coffee': 'cafe-outline',
+            'Clothing': 'shirt-outline',
+            'Electronics': 'phone-portrait-outline',
+            'Books': 'library-outline',
+            'Emergency Fund': 'wallet-outline',
+            'Retirement': 'wallet-outline',
+            'Vacation Fund': 'airplane-outline',
+        };
+        return iconMap[categoryName] || 'wallet-outline';
+    };
+
+    useEffect(() => {
+        fetchBudgetData();
+    }, [selectedPeriod]);
+
+    const fetchBudgetData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const data = await apiService.getBudgets({
+                period: selectedPeriod.toLowerCase(),
+            });
+
+            setBudgetData(data);
+        } catch (err) {
+            console.error('Failed to fetch budget data:', err);
+            setError('Failed to load budget data. Please try again.');
+            Alert.alert('Error', 'Failed to load budget data. Please check your connection and try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                    <Text style={styles.loadingText}>Loading budget data...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    if (error || !budgetData) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle-outline" size={48} color="#FF6B6B" />
+                    <Text style={styles.errorText}>
+                        {error || 'Failed to load budget data'}
+                    </Text>
+                    <TouchableOpacity style={styles.retryButton} onPress={fetchBudgetData}>
+                        <Text style={styles.retryButtonText}>Retry</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -48,15 +125,24 @@ const BudgetsScreen: React.FC = () => {
                     <View style={styles.overviewContainer}>
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Planned</Text>
-                            <Text style={styles.overviewAmount}>$3,000</Text>
+                            <Text style={styles.overviewAmount}>
+                                ${budgetData.overview.planned.toLocaleString()}
+                            </Text>
                         </View>
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Spent</Text>
-                            <Text style={styles.overviewAmount}>$2,450</Text>
+                            <Text style={styles.overviewAmount}>
+                                ${budgetData.overview.spent.toLocaleString()}
+                            </Text>
                         </View>
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Remaining</Text>
-                            <Text style={styles.overviewAmount}>$550</Text>
+                            <Text style={[
+                                styles.overviewAmount,
+                                { color: budgetData.overview.remaining >= 0 ? '#007AFF' : '#FF6B6B' }
+                            ]}>
+                                ${budgetData.overview.remaining.toLocaleString()}
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -71,95 +157,44 @@ const BudgetsScreen: React.FC = () => {
                     </TouchableOpacity>
 
                     <View style={styles.categoryList}>
-                        {/* Housing */}
-                        <View style={styles.categoryBudget}>
-                            <View style={styles.categoryHeader}>
-                                <Ionicons name="home-outline" size={24} color="#007AFF" />
-                                <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>Housing</Text>
-                                    <Text style={styles.categoryAmount}>$800 / $1,000</Text>
+                        {budgetData.categories.map((category) => (
+                            <View key={category.id} style={styles.categoryBudget}>
+                                <View style={styles.categoryHeader}>
+                                    <Ionicons
+                                        name={getCategoryIcon(category.category_name)}
+                                        size={24}
+                                        color={category.category_color}
+                                    />
+                                    <View style={styles.categoryInfo}>
+                                        <Text style={styles.categoryName}>{category.category_name}</Text>
+                                        <Text style={styles.categoryAmount}>
+                                            ${category.spent.toLocaleString()} / ${category.planned.toLocaleString()}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <View style={[styles.progressFill, { width: '80%' }]} />
+                                <View style={styles.progressContainer}>
+                                    <View style={styles.progressBar}>
+                                        <View style={[
+                                            styles.progressFill,
+                                            {
+                                                width: `${Math.min(category.percentage, 100)}%`,
+                                                backgroundColor: category.percentage > 100 ? '#FF6B6B' : category.category_color
+                                            }
+                                        ]} />
+                                    </View>
+                                    <Text style={styles.progressText}>{Math.round(category.percentage)}%</Text>
                                 </View>
-                                <Text style={styles.progressText}>80%</Text>
+                                <Text style={[
+                                    styles.remainingText,
+                                    { color: category.remaining < 0 ? '#FF6B6B' : '#666' }
+                                ]}>
+                                    {category.remaining >= 0
+                                        ? `-$${category.remaining.toLocaleString()} remaining`
+                                        : `+$${Math.abs(category.remaining).toLocaleString()} over budget`
+                                    }
+                                </Text>
                             </View>
-                            <Text style={styles.remainingText}>-$200 remaining</Text>
-                        </View>
-
-                        {/* Dining */}
-                        <View style={styles.categoryBudget}>
-                            <View style={styles.categoryHeader}>
-                                <Ionicons name="restaurant-outline" size={24} color="#FF6B6B" />
-                                <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>Dining</Text>
-                                    <Text style={styles.categoryAmount}>$450 / $400</Text>
-                                </View>
-                            </View>
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <View style={[styles.progressFill, { width: '112%', backgroundColor: '#FF6B6B' }]} />
-                                </View>
-                                <Text style={styles.progressText}>112%</Text>
-                            </View>
-                            <Text style={[styles.remainingText, { color: '#FF6B6B' }]}>+$50 over budget</Text>
-                        </View>
-
-                        {/* Transport */}
-                        <View style={styles.categoryBudget}>
-                            <View style={styles.categoryHeader}>
-                                <Ionicons name="car-outline" size={24} color="#4ECDC4" />
-                                <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>Transport</Text>
-                                    <Text style={styles.categoryAmount}>$300 / $300</Text>
-                                </View>
-                            </View>
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <View style={[styles.progressFill, { width: '100%' }]} />
-                                </View>
-                                <Text style={styles.progressText}>100%</Text>
-                            </View>
-                            <Text style={styles.remainingText}>$0 remaining</Text>
-                        </View>
-
-                        {/* Shopping */}
-                        <View style={styles.categoryBudget}>
-                            <View style={styles.categoryHeader}>
-                                <Ionicons name="bag-outline" size={24} color="#45B7D1" />
-                                <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>Shopping</Text>
-                                    <Text style={styles.categoryAmount}>$400 / $500</Text>
-                                </View>
-                            </View>
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <View style={[styles.progressFill, { width: '80%' }]} />
-                                </View>
-                                <Text style={styles.progressText}>80%</Text>
-                            </View>
-                            <Text style={styles.remainingText}>-$100 remaining</Text>
-                        </View>
-
-                        {/* Savings */}
-                        <View style={styles.categoryBudget}>
-                            <View style={styles.categoryHeader}>
-                                <Ionicons name="wallet-outline" size={24} color="#96CEB4" />
-                                <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>Savings</Text>
-                                    <Text style={styles.categoryAmount}>$500 / $800</Text>
-                                </View>
-                            </View>
-                            <View style={styles.progressContainer}>
-                                <View style={styles.progressBar}>
-                                    <View style={[styles.progressFill, { width: '62%' }]} />
-                                </View>
-                                <Text style={styles.progressText}>62%</Text>
-                            </View>
-                            <Text style={styles.remainingText}>-$300 remaining</Text>
-                        </View>
+                        ))}
                     </View>
                 </View>
 
@@ -167,18 +202,16 @@ const BudgetsScreen: React.FC = () => {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Budget Insights</Text>
                     <View style={styles.insightsContainer}>
-                        <View style={styles.insightItem}>
-                            <Ionicons name="warning-outline" size={20} color="#FF6B6B" />
-                            <Text style={styles.insightText}>You're 12% over budget on dining</Text>
-                        </View>
-                        <View style={styles.insightItem}>
-                            <Ionicons name="bulb-outline" size={20} color="#007AFF" />
-                            <Text style={styles.insightText}>Consider reducing dining out this month</Text>
-                        </View>
-                        <View style={styles.insightItem}>
-                            <Ionicons name="checkmark-circle-outline" size={20} color="#4ECDC4" />
-                            <Text style={styles.insightText}>You have $550 remaining for other expenses</Text>
-                        </View>
+                        {budgetData.insights.map((insight, index) => (
+                            <View key={index} style={styles.insightItem}>
+                                <Ionicons
+                                    name={insight.icon as keyof typeof Ionicons.glyphMap}
+                                    size={20}
+                                    color={insight.color}
+                                />
+                                <Text style={styles.insightText}>{insight.message}</Text>
+                            </View>
+                        ))}
                     </View>
                 </View>
             </ScrollView>
@@ -193,6 +226,40 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#666',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+    },
+    errorText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 24,
+    },
+    retryButton: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    retryButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
     section: {
         paddingHorizontal: 20,
