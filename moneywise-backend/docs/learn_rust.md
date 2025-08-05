@@ -20,10 +20,10 @@
    - [Invalidation](#invalidation)
    - [Rust Example (moka + Redis)](#rust-example-moka--redis)
 9. [LRU](#lru-least-recently-used)
-  - [How It Works](#how-it-works)
-  - [Why Use LRU?](#why-use-lru)
-  - [Rust crates](#rust-crates)
-  - [Example](#example-using-the-lru-crate)
+   - [How It Works](#how-it-works)
+   - [Why Use LRU?](#why-use-lru)
+   - [Rust crates](#rust-crates)
+   - [Example](#example-using-the-lru-crate)
 ---
 
 ## Setup & Environment
