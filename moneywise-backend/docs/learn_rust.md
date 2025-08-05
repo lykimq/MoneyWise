@@ -179,6 +179,30 @@ Prefer `match` or the `?` operator in production to avoid panics.
 - CDNs for public assets
 - Bloom filters for known-missing keys
 
+#### K/V (Key–Value) Store
+- A Key–Value store is the simplest form of database: you “put” a value under a unique key and later “get” that value by key.
+- Examples:
+  - Memcached – purely in‐memory, very fast, no persistence, used as a cache layer.
+  - Redis – also in‐memory (with optional persistence), richer data types (lists, sets, hashes), used as L2 cache or lightweight datastore.
+- In your stack:
+  - L1 = a local in‐process cache (e.g. Moka for JVM apps) to avoid any network hop.
+  - L2 = Redis (remote) to share cached entries across multiple app instances.
+
+#### CDN (Content Delivery Network)
+- A CDN is a geographically distributed network of proxy servers and their data centers.
+- It caches and serves static (and sometimes dynamic) assets—images, JavaScript/CSS, videos—closer to end users to reduce latency and offload your origin servers.
+- Common CDNs: Cloudflare, Akamai, Fastly, AWS CloudFront.
+
+#### Bloom Filter
+- A Bloom filter is a probabilistic, space-efficient data structure for testing set membership.
+- You can ask “Is key X definitely not present?” or “Might key X be present?”
+  - If it says “no,” you’re 100% certain X isn’t in your set (no false negatives).
+  - If it says “yes,” X is probably in the set, but there’s a tunable chance of a false positive.
+- Use case in caching:
+  - Before hitting Redis (or backing store) for a key, check the Bloom filter.
+  - If the filter says “definitely not,” you skip the cache/database lookup entirely.
+  - If it says “maybe,” you go ahead and query Redis or the DB.
+
 ### Invalidation
 On writes/updates/deletes:
 
