@@ -11,12 +11,14 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 // Import local modules
 mod budget;
+mod cache;
 mod database;
 mod error;
 mod models;
 
 // Import specific functions from local modules
 use budget::budget_routes;
+use cache::{CacheConfig, CacheService};
 use database::create_pool;
 
 /// Main entry point for the MoneyWise backend server
@@ -42,6 +44,12 @@ async fn main() {
     // This establishes a connection pool for efficient database operations
     let pool = create_pool().await.expect("Failed to create database pool");
 
+    // Initialize in-memory cache service
+    // This provides high-performance caching for frequently accessed budget data
+    let cache_config = CacheConfig::default();
+    let cache_service = CacheService::new(cache_config).await
+        .expect("Failed to create cache service");
+
     // Configure CORS (Cross-Origin Resource Sharing) settings
     // This allows the API to be accessed from different origins (domains)
     let cors = CorsLayer::new()
@@ -53,7 +61,7 @@ async fn main() {
     let app = Router::new()
         .nest("/api/budgets", budget_routes())  // Mount budget routes under /api/budgets path
         .layer(cors)                            // Apply CORS middleware
-        .with_state(pool);                      // Inject database pool as application state
+        .with_state((pool, cache_service));     // Inject database pool and cache service as application state
 
     // Configure server host and port from environment variables
     // Default to 127.0.0.1 if HOST is not set

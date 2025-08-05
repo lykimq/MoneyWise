@@ -63,7 +63,7 @@ pub struct BudgetInsight {
 
 // Budget API model for API responses
 // Provide API stability even if database schema changes.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetApi {
     pub id: String,
     pub month: String,
@@ -78,7 +78,7 @@ pub struct BudgetApi {
 }
 
 // Budget overview for API responses
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetOverviewApi {
     pub planned: Decimal,
     pub spent: Decimal,
@@ -87,7 +87,7 @@ pub struct BudgetOverviewApi {
 }
 
 // Category budget details for API responses
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryBudgetApi {
     pub id: String,
     pub category_name: String,

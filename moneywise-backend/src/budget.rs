@@ -22,9 +22,14 @@ use rust_decimal::Decimal;
 use uuid::Uuid;
 
 use crate::{
+    cache::CacheService,
     error::{AppError, Result},
     models::*,
 };
+
+/// Application state containing both database pool and cache service
+/// This allows handlers to access both database and cache operations
+pub type AppState = (PgPool, CacheService);
 
 /// Query parameters for budget filtering
 /// Allows optional month and year filtering with sensible defaults
@@ -42,7 +47,7 @@ pub struct BudgetQuery {
 /// - POST / - Create a new budget
 /// - PUT /:id - Update an existing budget
 /// - GET /:id - Get a specific budget by ID
-pub fn budget_routes() -> Router<PgPool> {
+pub fn budget_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(get_budgets))
         .route("/overview", get(get_budget_overview))
@@ -154,7 +159,6 @@ async fn get_category_budgets(
     let mut category_budgets = Vec::new();
 
     for row in rows {
-        // Calculate derived values using rust_decimal for precision
         let planned = row.planned.clone();
         let spent = row.spent.clone();
         let carryover = row.carryover.unwrap_or_default();
@@ -191,7 +195,7 @@ async fn get_category_budgets(
 /// This endpoint provides a lightweight alternative to the full budget response
 /// Useful for dashboard widgets and quick overview displays
 async fn get_budget_overview(
-    State(pool): State<PgPool>,
+    State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
     let month = query.month.unwrap_or_else(|| {
@@ -201,7 +205,17 @@ async fn get_budget_overview(
         chrono::Utc::now().format("%Y").to_string()
     });
 
+    // Try to get data from cache first
+    if let Some(cached_overview) = cache.get_cached_budget_overview(&month, &year).await? {
+        return Ok(Json(cached_overview));
+    }
+
+    // Cache miss - fetch from database and cache the result
     let overview = get_budget_overview_data(&pool, &month, &year).await?;
+
+    // Cache the result for future requests (don't block on cache write)
+    let _ = cache.cache_budget_overview(&month, &year, &overview).await;
+
     Ok(Json(overview))
 }
 
@@ -213,8 +227,9 @@ async fn get_budget_overview(
 /// - Combines overview, categories, and insights in single response (reduces network calls)
 /// - Performs calculations in database queries (better performance than in-memory)
 /// - Uses proper indexing on month/year columns for fast filtering
+/// - Implements Redis caching for frequently accessed data
 async fn get_budgets(
-    State(pool): State<PgPool>,
+    State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetResponse>> {
     // Default to current month/year if not provided
@@ -226,11 +241,30 @@ async fn get_budgets(
         chrono::Utc::now().format("%Y").to_string()
     });
 
-    // Parallel execution of independent queries for better performance
-    let (overview, categories) = tokio::try_join!(
-        get_budget_overview_data(&pool, &month, &year),
-        get_category_budgets(&pool, &month, &year),
-    )?;
+    // Try to get cached data first
+    let cached_overview = cache.get_cached_budget_overview(&month, &year).await?;
+    let cached_categories = cache.get_cached_category_budgets(&month, &year).await?;
+
+    let (overview, categories) = match (cached_overview, cached_categories) {
+        (Some(overview), Some(categories)) => {
+            // Cache hit for both overview and categories
+            (overview, categories)
+        }
+        _ => {
+            // Cache miss - fetch from database and cache the results
+            let (overview, categories) = tokio::try_join!(
+                get_budget_overview_data(&pool, &month, &year),
+                get_category_budgets(&pool, &month, &year),
+            )?;
+
+            // Cache the results for future requests (don't block on cache writes)
+            let _ = cache.cache_budget_overview(&month, &year, &overview).await;
+            let _ = cache.cache_category_budgets(&month, &year, &categories).await;
+
+            (overview, categories)
+        }
+    };
+
     // Generate insights based on the retrieved data
     // This is done in-memory since it's lightweight and doesn't require DB access
     let insights = generate_budget_insights(&overview, &categories);
@@ -272,8 +306,6 @@ async fn get_budget_overview_data(
     .fetch_one(pool)
     .await?;
 
-    // Use rust_decimal for precise financial calculations
-    // This avoids floating-point precision errors common in financial applications
     let planned = result.planned.unwrap_or_default();
     let spent = result.spent.unwrap_or_default();
     let carryover = result.carryover.unwrap_or_default();
@@ -294,8 +326,9 @@ async fn get_budget_overview_data(
 /// - Validates input through serde deserialization
 /// - Uses parameterized queries to prevent SQL injection
 /// - Returns complete budget object for immediate use
+/// - Invalidates related cache entries to ensure data consistency
 async fn create_budget(
-    State(pool): State<PgPool>,
+    State((pool, cache)): State<AppState>,
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Generate a secure UUID for the budget ID
@@ -321,6 +354,10 @@ async fn create_budget(
     .fetch_one(&pool)
     .await?;
 
+    // Clone month and year for cache invalidation before moving into budget_api
+    let month = budget.month.clone();
+    let year = budget.year.clone();
+
     // Convert database model to API model
     // This separation ensures API stability even if database schema changes
     let budget_api = BudgetApi {
@@ -336,6 +373,10 @@ async fn create_budget(
         updated_at: budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
     };
 
+    // Invalidate cache for this month/year since we added a new budget
+    // This ensures cache consistency when new data is added
+    let _ = cache.invalidate_month_cache(&month, &year).await;
+
     Ok(Json(budget_api))
 }
 
@@ -346,8 +387,9 @@ async fn create_budget(
 /// - Maintains data integrity by fetching current state first
 /// - Updates timestamp automatically
 /// - Returns complete updated object
+/// - Invalidates related cache entries to ensure data consistency
 async fn update_budget(
-    State(pool): State<PgPool>,
+    State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
     Json(payload): Json<UpdateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
@@ -387,6 +429,10 @@ async fn update_budget(
     .fetch_one(&pool)
     .await?;
 
+    // Clone month and year for cache invalidation before moving into budget_api
+    let month = updated_budget.month.clone();
+    let year = updated_budget.year.clone();
+
     // Convert to API model with proper timezone handling
     let budget_api = BudgetApi {
         id: updated_budget.id,
@@ -401,6 +447,11 @@ async fn update_budget(
         updated_at: updated_budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
     };
 
+    // Invalidate cache for this budget and the month/year
+    // This ensures cache consistency when data is updated
+    let _ = cache.invalidate_budget_cache(&id).await;
+    let _ = cache.invalidate_month_cache(&month, &year).await;
+
     Ok(Json(budget_api))
 }
 
@@ -410,10 +461,17 @@ async fn update_budget(
 /// Error handling:
 /// - Returns 404 if budget not found (proper REST semantics)
 /// - Uses proper error mapping for database errors
+/// - Implements caching for frequently accessed individual budgets
 async fn get_budget_by_id(
-    State(pool): State<PgPool>,
+    State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<BudgetApi>> {
+    // Try to get data from cache first
+    if let Some(cached_budget) = cache.get_cached_budget(&id).await? {
+        return Ok(Json(cached_budget));
+    }
+
+    // Cache miss - fetch from database
     let budget = sqlx::query_as!(
         Budget,
         "SELECT * FROM budgets WHERE id = $1",
@@ -436,6 +494,9 @@ async fn get_budget_by_id(
         created_at: budget.created_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
         updated_at: budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
     };
+
+    // Cache the result for future requests (don't block on cache write)
+    let _ = cache.cache_budget(&id, &budget_api).await;
 
     Ok(Json(budget_api))
 }
