@@ -203,6 +203,18 @@ Prefer `match` or the `?` operator in production to avoid panics.
   - If the filter says “definitely not,” you skip the cache/database lookup entirely.
   - If it says “maybe,” you go ahead and query Redis or the DB.
 
+#### JVM (Java Virtual Machine)
+- A process-level runtime that executes Java bytecode (and bytecode from other JVM-compatible languages, e.g. Kotlin, Scala).
+- It provides services like:
+  - Just-In-Time (JIT) compilation of bytecode into native machine code
+  - Automatic memory management (the garbage collector)
+  - A stable, platform-independent execution environment—write your code once, run it anywhere there’s a JVM
+
+#### Network hop
+- Each time a packet travels from one network device (router, switch, gateway) to the next on its way from source to destination, that counts as one “hop.”
+- The more hops in a route, generally the higher the end-to-end latency—and the more potential points of failure or congestion.
+- Tools like traceroute report the sequence of hops (and round-trip time to each) so you can see how your traffic traverses the internet.
+
 ### Invalidation
 On writes/updates/deletes:
 
