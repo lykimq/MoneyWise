@@ -19,11 +19,6 @@
    - [Other Options & Two-Level Cache](#other-options--two-level-cache)
    - [Invalidation](#invalidation)
    - [Rust Example (moka + Redis)](#rust-example-moka--redis)
-9. [LRU](#lru-least-recently-used)
-   - [How It Works](#how-it-works)
-   - [Why Use LRU?](#why-use-lru)
-   - [Rust crates](#rust-crates)
-   - [Example](#example-using-the-lru-crate)
 ---
 
 ## Setup & Environment
@@ -214,13 +209,51 @@ Prefer `match` or the `?` operator in production to avoid panics.
 - Each time a packet travels from one network device (router, switch, gateway) to the next on its way from source to destination, that counts as one “hop.”
 - The more hops in a route, generally the higher the end-to-end latency—and the more potential points of failure or congestion.
 - Tools like traceroute report the sequence of hops (and round-trip time to each) so you can see how your traffic traverses the internet.
-
+`
 ### Invalidation
 On writes/updates/deletes:
 
 - **Evict** cache key
 - **Update** cache with new value
 - Use Redis Pub/Sub for cross-node invalidation if needed
+
+#### Evict cache key
+
+Evicting a cache key simply means removing that key (and its value) from your cache so that subsequent reads will miss and fall back to the “source of truth” (e.g. database or origin service). You can trigger eviction for several reasons:
+
+1. Automatic eviction
+- Capacity-based (LRU, LFU, FIFO, size-bound): when the cache reaches its max size, the policy kicks out “old” entries.
+- Time-based (TTL/expire): entries live only for a configured duration; after that they’re evicted.
+
+##### a. LRU (Least Recently Used)
+
+- Tracks the last‐access time of each entry.
+- When the cache is full, it drops the entry that hasn’t been read or written for the longest time.
+- Good for workloads where “hot” items tend to be reused soon.
+
+##### b. LFU (Least Frequently Used)
+
+- Counts how often each entry is accessed.
+- When capacity is exceeded, it evicts the entry with the lowest usage count.
+- Favours items with consistently high access rates, but may “lock in” stale hot items if you don’t age counts.
+
+##### c. FIFO (First In, First Out)
+
+- Maintains a queue of entries in insertion order.
+- On eviction, it removes the oldest‐inserted entry regardless of access frequency or recency.
+- Very simple, but can evict items that are still “hot.”
+
+##### d. Size‐bound (weight‐based)
+
+- Instead of counting entries, you weight them by size (e.g. in bytes, or custom cost).
+- The cache enforces a maximum total weight; when exceeded, it evicts according to a chosen policy (often LRU by weight).
+- Useful when entries vary greatly in memory footprint.
+
+All of these kick in only when your cache reaches its maximum configured capacity. You choose a policy based on your access patterns and freshness requirements.
+
+2. Manual eviction (explicit invalidation)
+- You know the underlying data has changed (e.g. a user updated their profile), so you invalidate the old cache entry.
+
 
 ### Rust Example (moka + Redis)
 
@@ -282,63 +315,3 @@ async fn main() -> anyhow::Result<()> {
 - Measure hit rates, latencies, memory usage
 - If scaling, add L1 (moka) + L2 (Redis)
 - Tune TTLs & eviction for freshness vs. performance
-
-## LRU (Least Recently Used)
-
-**Definition**
-LRU is a cache eviction policy that discards the **least recently used** items first when the cache reaches capacity.
-
----
-
-### How It Works
-
-1. The cache maintains an ordering of entries by when they were last accessed.
-2. On every **get** or **put**, the accessed entry is moved to the “most recently used” end.
-3. When inserting a new entry and capacity is exceeded, the entry at the “least recently used” end is evicted.
-
----
-
-### Why Use LRU?
-
-- **Temporal Locality**
-  Items accessed recently are likely to be accessed again soon.
-- **Simplicity**
-  Easy to implement and reason about.
-- **Effectiveness**
-  Performs well in many real‐world workloads (e.g., session caches, web browsers).
-
----
-
-### Rust Crates
-
-- **`lru`** (sync)
-  A straightforward in‐memory LRU cache.
-- **`moka`** (async + sync + thread‐safe)
-  Supports LRU + TTL, high performance under concurrency.
-- **`lru_time_cache`** (sync)
-  LRU cache with per‐entry expiration times.
-
----
-
-### Example (using the `lru` crate)
-
-```rust
-use lru::LruCache;
-
-fn main() {
-    // Create an LRU cache with capacity = 2
-    let mut cache = LruCache::new(2);
-
-    cache.put("a", 1);
-    cache.put("b", 2);
-
-    // Access "a" => now "b" is the least recently used
-    assert_eq!(cache.get(&"a"), Some(&1));
-
-    // Insert "c" => evicts "b"
-    cache.put("c", 3);
-    assert!(cache.get(&"b").is_none());
-
-    println!("Cache contains: {:?}", cache);
-}
-```
