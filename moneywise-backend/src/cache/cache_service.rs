@@ -13,7 +13,7 @@ use crate::cache::{
     cache_config::CacheConfig,
     cache_keys::{overview_key, categories_key, budget_key},
     cache_serialization::serialize,
-    cache_operations::{set_with_ttl, get_value, delete_keys, health_check},
+    cache_operations::{set_with_ttl, get_value, delete_keys},
 };
 
 /// Redis-based cache service for managing distributed caching operations
@@ -179,10 +179,5 @@ impl CacheService {
             &self.config,
             &[&key],
         ).await
-    }
-
-    /// Health check for Redis cache service
-    pub async fn health_check(&self) -> Result<bool> {
-        health_check(&self.connection_manager, &self.config).await
     }
 }

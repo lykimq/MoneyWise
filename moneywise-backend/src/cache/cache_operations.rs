@@ -129,36 +129,3 @@ pub async fn delete_keys(
         }
     }
 }
-
-/// Performs a simple health check on Redis connection
-/// Tests basic Redis functionality with a ping-like operation
-pub async fn health_check(
-    conn: &ConnectionManager,
-    config: &CacheConfig,
-) -> Result<bool> {
-    let conn = conn.clone();
-
-    match with_retry(config, || {
-        let mut conn = conn.clone();
-
-        async move {
-            // Simple health check - try to get a non-existent key
-            match conn.get::<_, Option<String>>("health_check").await {
-                Ok(_) => {
-                    info!("Redis cache health check passed");
-                    Ok(true)
-                }
-                Err(e) => {
-                    error!("Redis cache health check failed: {}", e);
-                    Err(AppError::Internal(format!("Redis health check failed: {}", e)))
-                }
-            }
-        }
-    }).await {
-        Ok(_) => Ok(true),
-        Err(_) => {
-            error!("Redis cache health check failed after retries");
-            Ok(false)
-        }
-    }
-}
