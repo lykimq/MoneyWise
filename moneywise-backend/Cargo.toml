@@ -14,6 +14,9 @@ tower-http = { version = "0.4", features = ["cors"] }
 sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "decimal"] }
 postgres = "0.19"
 
+# Redis for caching
+redis = { version = "0.23", features = ["tokio-comp", "connection-manager"] }
+
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
