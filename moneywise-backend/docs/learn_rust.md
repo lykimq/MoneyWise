@@ -145,7 +145,7 @@ Prefer `match` or the `?` operator in production to avoid panics.
 ### Numeric Types & Money
 - `f64`: fast but binary floats → rounding errors → not for money.
 - `rust_decimal::Decimal` or `bigdecimal::BigDecimal`: exact decimal.
-++ `rust_decimal` is Serde-friendly and common in finance.
+  - `rust_decimal` is Serde-friendly and common in finance.
 
 ---
 ## Caching Strategies
