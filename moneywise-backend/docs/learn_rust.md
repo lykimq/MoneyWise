@@ -112,7 +112,7 @@ fn main() {
 
     println!("after:  {}", s);    // prints "after:  Alice!"
 }
-``
+```
 
 ### Field/Method Access (.)
 - `obj.field` – access struct field
