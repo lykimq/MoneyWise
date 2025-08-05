@@ -51,6 +51,8 @@ use crate::{
 
 /// Cache configuration with TTL settings and Redis connection parameters
 /// Different data types have different cache durations based on update frequency
+///
+///
 #[derive(Clone)]
 pub struct CacheConfig {
     /// Redis connection URL (e.g., "redis://localhost:6379")
@@ -88,7 +90,22 @@ impl Default for CacheConfig {
 #[derive(Clone)]
 pub struct CacheService {
     /// Redis connection manager for efficient connection pooling
-    /// Uses connection pooling to avoid creating new connections for each operation
+    ///
+    /// Design Decision: Using ConnectionManager directly instead of Arc<ConnectionManager>
+    ///
+    /// ConnectionManager::clone() is very cheap: it doesn't deep-copy the entire manager or its
+    /// connection pool. Under the hood, ConnectionManager already holds its state in an Arc, so
+    /// cloning it is just an atomic ref-count increment (O(1)), not a full copy of every connection.
+    ///
+    /// This approach provides:
+    /// - Zero locking overhead
+    /// - No hidden "expensive" work
+    /// - The ability to call async Redis commands concurrently on each clone
+    ///
+    /// By contrast, wrapping it ourselves in Arc<ConnectionManager> and then doing Arc::clone(&...)
+    /// is functionally equivalent—also an O(1) ref-count bump—but adds unnecessary ceremony.
+    ///
+    /// Therefore, we use ConnectionManager::clone() directly for simplicity and performance.
     connection_manager: ConnectionManager,
     /// Cache configuration with TTL settings and connection parameters
     config: CacheConfig,
