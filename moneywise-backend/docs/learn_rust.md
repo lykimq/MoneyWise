@@ -94,10 +94,25 @@ fn greet(name: &String) {
 }
 
 let mut s = String::from("Alice");
-greet(&s);              // shared borrow
+greet(&s);              // shared borrow, output: Hello, Alice
+
 let r: &mut String = &mut s;
-r.push_str("!");        // mutable borrow
+r.push_str("!");        // mutable borrow, appends "!" to the String via r
 ```
+
+```rust
+fn main() {
+    let mut s = String::from("Alice");
+    println!("before: {}", s);    // prints "before: Alice"
+
+    {
+        let r: &mut String = &mut s;
+        r.push_str("!");          // appends "!" to the String via r
+    } // r goes out of scope here
+
+    println!("after:  {}", s);    // prints "after:  Alice!"
+}
+``
 
 ### Field/Method Access (.)
 - `obj.field` – access struct field
