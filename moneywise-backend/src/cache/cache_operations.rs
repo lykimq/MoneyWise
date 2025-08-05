@@ -1,0 +1,164 @@
+// Core Redis operations for cache management
+// Provides low-level Redis operations with proper error handling
+
+use redis::{aio::ConnectionManager, AsyncCommands};
+use tracing::{info, warn, error};
+
+use crate::error::{AppError, Result};
+use crate::cache::cache_retry::with_retry;
+use crate::cache::cache_serialization::deserialize;
+use crate::cache::cache_config::CacheConfig;
+
+/// Sets a key-value pair in Redis with TTL
+/// Uses SETEX for atomic TTL setting
+pub async fn set_with_ttl(
+    conn: &ConnectionManager,
+    config: &CacheConfig,
+    key: &str,
+    value: &str,
+    ttl_seconds: usize,
+) -> Result<()> {
+    let conn = conn.clone();
+    let key = key.to_string();
+    let value = value.to_string();
+
+    with_retry(config, || {
+        let key = key.clone();
+        let value = value.clone();
+        let mut conn = conn.clone();
+
+        async move {
+            match conn.set_ex::<_, _, ()>(&key, &value, ttl_seconds).await {
+                Ok(_) => {
+                    info!("Cached data for key {} with TTL {}s", key, ttl_seconds);
+                    Ok(())
+                }
+                Err(e) => {
+                    warn!("Failed to cache data for key {}: {}", key, e);
+                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                }
+            }
+        }
+    }).await
+}
+
+/// Gets a value from Redis by key
+/// Returns deserialized data or None if not found
+pub async fn get_value<T: serde::de::DeserializeOwned>(
+    conn: &ConnectionManager,
+    config: &CacheConfig,
+    key: &str,
+) -> Result<Option<T>> {
+    let conn = conn.clone();
+    let key = key.to_string();
+
+    match with_retry(config, || {
+        let key = key.clone();
+        let mut conn = conn.clone();
+
+        async move {
+            match conn.get::<_, Option<String>>(&key).await {
+                Ok(Some(json)) => {
+                    match deserialize::<T>(json) {
+                        Ok(Some(data)) => {
+                            info!("Cache hit for key {}", key);
+                            Ok(Some(data))
+                        }
+                        Ok(None) => {
+                            warn!("Invalid cached data for key {}", key);
+                            Ok(None)
+                        }
+                        Err(e) => {
+                            error!("Failed to deserialize cached data for key {}: {}", key, e);
+                            Ok(None)
+                        }
+                    }
+                }
+                Ok(None) => {
+                    info!("Cache miss for key {}", key);
+                    Ok(None)
+                }
+                Err(e) => {
+                    warn!("Redis error for key {}: {}", key, e);
+                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                }
+            }
+        }
+    }).await {
+        Ok(result) => Ok(result),
+        Err(_) => {
+            // Graceful degradation - fall back to database on retry failure
+            warn!("Redis retry failed for key {}, falling back to database", key);
+            Ok(None)
+        }
+    }
+}
+
+/// Deletes keys from Redis
+/// Supports single key or multiple keys deletion
+pub async fn delete_keys(
+    conn: &ConnectionManager,
+    config: &CacheConfig,
+    keys: &[&str],
+) -> Result<()> {
+    let conn = conn.clone();
+    let keys: Vec<String> = keys.iter().map(|k| k.to_string()).collect();
+
+    match with_retry(config, || {
+        let keys = keys.clone();
+        let mut conn = conn.clone();
+
+        async move {
+            match conn.del::<_, ()>(&keys).await {
+                Ok(_) => {
+                    info!("Deleted keys: {:?}", keys);
+                    Ok(())
+                }
+                Err(e) => {
+                    warn!("Failed to delete keys {:?}: {}", keys, e);
+                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                }
+            }
+        }
+    }).await {
+        Ok(_) => Ok(()),
+        Err(_) => {
+            // Don't fail the operation if cache deletion fails
+            warn!("Redis retry failed for key deletion {:?}, continuing anyway", keys);
+            Ok(())
+        }
+    }
+}
+
+/// Performs a simple health check on Redis connection
+/// Tests basic Redis functionality with a ping-like operation
+pub async fn health_check(
+    conn: &ConnectionManager,
+    config: &CacheConfig,
+) -> Result<bool> {
+    let conn = conn.clone();
+
+    match with_retry(config, || {
+        let mut conn = conn.clone();
+
+        async move {
+            // Simple health check - try to get a non-existent key
+            match conn.get::<_, Option<String>>("health_check").await {
+                Ok(_) => {
+                    info!("Redis cache health check passed");
+                    Ok(true)
+                }
+                Err(e) => {
+                    error!("Redis cache health check failed: {}", e);
+                    Err(AppError::Internal(format!("Redis health check failed: {}", e)))
+                }
+            }
+        }
+    }).await {
+        Ok(_) => Ok(true),
+        Err(_) => {
+            error!("Redis cache health check failed after retries");
+            Ok(false)
+        }
+    }
+}

@@ -16,6 +16,7 @@ postgres = "0.19"
 
 # Redis for caching
 redis = { version = "0.23", features = ["tokio-comp", "connection-manager"] }
+tokio-retry = "0.3"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
