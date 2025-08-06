@@ -315,3 +315,40 @@ async fn main() -> anyhow::Result<()> {
 - Measure hit rates, latencies, memory usage
 - If scaling, add L1 (moka) + L2 (Redis)
 - Tune TTLs & eviction for freshness vs. performance
+
+## Notes on `async` / `await` in Rust
+
+### What is an async function?
+- Declared with `async fn foo(...) -> T { … }`.
+- When you call `foo()`, it does *not* run immediately. Instead it returns a **Future** that represents the work to be done.
+- Only when you `.await` that Future does Rust start polling it to completion.
+
+### How `await` works
+- Placing `.await` on a Future:
+  1. Registers the current task’s waker so the executor can resume it when ready.
+  2. Polls the Future once.
+  3. If the Future isn’t ready, the task yields control back to the executor.
+  4. When the Future can make progress, the executor wakes the task and polls again.
+- This is **cooperative multitasking**—tasks only yield at `.await` points, never in the middle of your code.
+
+### Synchronous vs. Asynchronous in Rust
+
+| Aspect                | Synchronous                       | Asynchronous                          |
+|-----------------------|-----------------------------------|---------------------------------------|
+| Execution model       | Blocking                           | Non-blocking, cooperative             |
+| Threads               | One OS thread per blocking task   | Many tasks multiplexed on one or few OS threads |
+| Function signature    | `fn do_work() -> T`               | `async fn do_work() -> T` (returns `impl Future<Output=T>`) |
+| Runtime requirement   | None (just standard library)       | Requires an **executor** (e.g. Tokio, async-std) |
+| When code runs        | Immediately when called           | Only when polled by the executor      |
+| Yielding              | Implicit (blocking syscalls)      | Explicit at every `.await`            |
+| Use cases             | CPU-bound work, simple I/O        | High-concurrency I/O tasks, many small jobs |
+
+### Why use `async`?
+- **Scalability**: Handle thousands of I/O tasks (HTTP requests, DB calls, Redis ops) on a handful of threads.
+- **Efficiency**: Tasks only consume CPU when making progress; when waiting, executor can run other tasks.
+- **Composability**: Futures can be chained, combined (`.join!`, `.select!`, streams, etc.) without blocking threads.
+
+### When to stick with sync
+- Simple scripts or CLI tools without heavy I/O concurrency.
+- CPU-bound computations that benefit from thread-pool parallelism.
+- Environments where you cannot pull in an async runtime.
