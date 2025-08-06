@@ -19,6 +19,11 @@
    - [Other Options & Two-Level Cache](#other-options--two-level-cache)
    - [Invalidation](#invalidation)
    - [Rust Example (moka + Redis)](#rust-example-moka--redis)
+9. [Async and await in Rust](#async--await-in-rust)
+   - [How await works](#how-await-works)
+   - [Synchronous vs asynchronous in Rust](#synchronous-vs-asynchronous-in-rust)
+   - [Why use async](#why-use-async)
+   - [When to stick with sync](#when-to-stick-with-sync)
 ---
 
 ## Setup & Environment
@@ -316,7 +321,7 @@ async fn main() -> anyhow::Result<()> {
 - If scaling, add L1 (moka) + L2 (Redis)
 - Tune TTLs & eviction for freshness vs. performance
 
-## Notes on `async` / `await` in Rust
+## `async` / `await` in Rust
 
 ### What is an async function?
 - Declared with `async fn foo(...) -> T { … }`.
