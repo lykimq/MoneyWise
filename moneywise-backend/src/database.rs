@@ -16,10 +16,10 @@ pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     // Get the maximum number of connections from the environment variable
     // Default to 5 if not set
     // Parse the value as a u32 and expect it to be a valid u32
-    let max_connections = std::env::var("MAX_CONNECTIONS")
+    let max_connections = std::env::var("DATABASE_MAX_CONNECTIONS")
         .unwrap_or_else(|_| "5".to_string())
         .parse::<u32>()
-        .expect("MAX_CONNECTIONS must be a valid u32");
+        .expect("DATABASE_MAX_CONNECTIONS must be a valid u32");
 
     // Create a connection pool with the specified settings
     // - `max_connections`: The maximum number of connections in the pool
