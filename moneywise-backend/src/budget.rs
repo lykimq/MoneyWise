@@ -22,14 +22,14 @@ use rust_decimal::Decimal;
 use uuid::Uuid;
 
 use crate::{
-    cache::CacheService,
+    cache::domains::budget::BudgetCache,
     error::{AppError, Result},
     models::*,
 };
 
-/// Application state containing both database pool and cache service
-/// This allows handlers to access both database and cache operations
-pub type AppState = (PgPool, CacheService);
+/// Application state containing both database pool and budget cache service
+/// This allows handlers to access both database and budget-specific cache operations
+pub type AppState = (PgPool, BudgetCache);
 
 /// Query parameters for budget filtering
 /// Allows optional month and year filtering with sensible defaults

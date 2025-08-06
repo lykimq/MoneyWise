@@ -1,23 +1,28 @@
 // Cache management module for MoneyWise backend
-// This module provides Redis-based caching functionality split into logical components:
-// - cache_config.rs: Configuration structures and settings
-// - cache_keys.rs: Cache key generation functions
-// - cache_serialization.rs: JSON serialization/deserialization utilities
-// - cache_retry.rs: Retry logic and error handling
-// - cache_operations.rs: Core Redis operations
-// - cache_service.rs: Main caching service with high-level operations
+// This module provides Redis-based caching functionality with domain-specific organization:
 //
-// The module implements distributed caching for frequently accessed budget data
+// Core Infrastructure:
+// - core/ - Generic caching infrastructure
+//   - config.rs: Configuration structures and settings
+//   - operations.rs: Core Redis operations
+//   - retry.rs: Retry logic and error handling
+//   - serialization.rs: JSON serialization/deserialization utilities
+//   - service.rs: Main caching service with high-level operations
+//
+// Domain-Specific Caches:
+// - domains/ - Domain-specific cache implementations
+//   - budget/ - Budget-related caching
+//   - transactions/ - Transaction-related caching (future)
+//   - goals/ - Goal-related caching (future)
+//   - users/ - User-related caching (future)
+//
+// The module implements distributed caching for frequently accessed data
 // to improve performance, scalability, and reliability in production environments.
 
-// Re-export the main components for easy access
-pub mod cache_config;
-pub mod cache_keys;
-pub mod cache_operations;
-pub mod cache_retry;
-pub mod cache_serialization;
-pub mod cache_service;
+// Core infrastructure
+pub mod connection;
+pub mod core;
+pub mod domains;
 
-// Re-export the main types for convenience
-pub use cache_config::CacheConfig;
-pub use cache_service::CacheService;
+// Re-export the main components for easy access
+pub use core::config::CacheConfig;

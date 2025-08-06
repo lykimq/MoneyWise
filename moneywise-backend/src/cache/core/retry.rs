@@ -9,7 +9,7 @@ use tokio_retry::{
 use tracing::{warn, error};
 
 use crate::error::{AppError, Result};
-use crate::cache::cache_config::CacheConfig;
+use crate::cache::core::config::CacheConfig;
 
 /// Determines if a Redis error is transient and should be retried
 /// Returns true for network-related errors, false for permanent errors

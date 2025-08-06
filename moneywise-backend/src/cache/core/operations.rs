@@ -5,9 +5,9 @@ use redis::{aio::ConnectionManager, AsyncCommands};
 use tracing::{info, warn, error};
 
 use crate::error::{AppError, Result};
-use crate::cache::cache_retry::with_retry;
-use crate::cache::cache_serialization::deserialize;
-use crate::cache::cache_config::CacheConfig;
+use crate::cache::core::retry::with_retry;
+use crate::cache::core::serialization::deserialize;
+use crate::cache::core::config::CacheConfig;
 
 /// Sets a key-value pair in Redis with TTL
 /// Uses SETEX for atomic TTL setting
@@ -28,7 +28,7 @@ pub async fn set_with_ttl(
         let mut conn = conn.clone();
 
         async move {
-            match conn.set_ex::<_, _, ()>(&key, &value, ttl_seconds).await {
+            match conn.set_ex::<_, _, ()>(&key, &value, ttl_seconds as u64).await {
                 Ok(_) => {
                     info!("Cached data for key {} with TTL {}s", key, ttl_seconds);
                     Ok(())
