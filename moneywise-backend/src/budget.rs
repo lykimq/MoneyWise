@@ -331,6 +331,23 @@ async fn create_budget(
     State((pool, cache)): State<AppState>,
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
+    // Validate input data
+    if payload.planned <= Decimal::from(0) {
+        return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
+    }
+
+    if payload.month.is_empty() || payload.year.is_empty() {
+        return Err(AppError::Validation("Month and year are required".to_string()));
+    }
+
+    if payload.category_id.is_empty() {
+        return Err(AppError::Validation("Category ID is required".to_string()));
+    }
+
+    if payload.currency.is_empty() {
+        return Err(AppError::Validation("Currency is required".to_string()));
+    }
+
     // Generate a secure UUID for the budget ID
     // This prevents ID enumeration and provides global uniqueness
     let id = Uuid::new_v4().to_string();
@@ -407,9 +424,15 @@ async fn update_budget(
     // Apply partial updates only for provided fields
     // This allows flexible updates without requiring all fields
     if let Some(planned) = payload.planned {
+        if planned <= Decimal::from(0) {
+            return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
+        }
         budget.planned = planned;
     }
     if let Some(carryover) = payload.carryover {
+        if carryover < Decimal::from(0) {
+            return Err(AppError::Validation("Carryover amount cannot be negative".to_string()));
+        }
         budget.carryover = Some(carryover);
     }
 
