@@ -15,7 +15,7 @@ use axum::{
     routing::{get, post, put},
     Router,
 };
-use chrono::{DateTime};
+use chrono::Datelike;
 use serde::Deserialize;
 use sqlx::PgPool;
 use rust_decimal::Decimal;
@@ -35,8 +35,8 @@ pub type AppState = (PgPool, BudgetCache);
 /// Allows optional month and year filtering with sensible defaults
 #[derive(Debug, Deserialize)]
 pub struct BudgetQuery {
-    pub month: Option<String>,
-    pub year: Option<String>,
+    pub month: Option<u8>,  // u8 is more semantically correct for 1-12
+    pub year: Option<i32>,
 }
 
 /// Creates and configures the budget router with all budget-related endpoints
@@ -129,28 +129,28 @@ fn generate_budget_insights(
 /// - Uses proper indexing on month/year columns
 async fn get_category_budgets(
     pool: &PgPool,
-    month: &str,
-    year: &str,
+    month: u8,
+    year: i32,
 ) -> Result<Vec<CategoryBudgetApi>> {
     let rows = sqlx::query!(
         r#"
         SELECT
             b.id,
             c.name as category_name,
-            cg.name as group_name,
+            cg.name as "group_name?",
             c.color as category_color,
-            cg.color as group_color,
+            cg.color as "group_color?",
             b.planned,
             b.spent,
             b.carryover,
             b.currency
         FROM budgets b
         JOIN categories c ON b.category_id = c.id
-        JOIN category_groups cg ON c.group_id = cg.id
+        LEFT JOIN category_groups cg ON c.group_id = cg.id
         WHERE b.month = $1 AND b.year = $2
-        ORDER BY cg.sort_order, c.name
+        ORDER BY COALESCE(cg.sort_order, 999), c.name
         "#,
-        month,
+        month as i16,
         year
     )
     .fetch_all(pool)
@@ -159,9 +159,9 @@ async fn get_category_budgets(
     let mut category_budgets = Vec::new();
 
     for row in rows {
-        let planned = row.planned.clone();
-        let spent = row.spent.clone();
-        let carryover = row.carryover.unwrap_or_default();
+        let planned = row.planned;
+        let spent = row.spent;
+        let carryover = row.carryover;
         let remaining = &planned - &spent + &carryover;
 
         // Calculate percentage with proper division handling
@@ -172,7 +172,7 @@ async fn get_category_budgets(
         };
 
         category_budgets.push(CategoryBudgetApi {
-            id: row.id,
+            id: row.id.to_string(),
             category_name: row.category_name,
             group_name: row.group_name,
             category_color: row.category_color,
@@ -188,8 +188,6 @@ async fn get_category_budgets(
     Ok(category_budgets)
 }
 
-
-
 /// Retrieves budget overview for a specific month/year
 ///
 /// This endpoint provides a lightweight alternative to the full budget response
@@ -199,26 +197,29 @@ async fn get_budget_overview(
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
     let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().format("%B").to_string()
+        chrono::Utc::now().month() as u8
     });
     let year = query.year.unwrap_or_else(|| {
-        chrono::Utc::now().format("%Y").to_string()
+        chrono::Utc::now().year()
     });
 
+    // Convert to strings for cache keys
+    let month_str = month.to_string();
+    let year_str = year.to_string();
+
     // Try to get data from cache first
-    if let Some(cached_overview) = cache.get_cached_budget_overview(&month, &year).await? {
+    if let Some(cached_overview) = cache.get_cached_budget_overview(&month_str, &year_str).await? {
         return Ok(Json(cached_overview));
     }
 
     // Cache miss - fetch from database and cache the result
-    let overview = get_budget_overview_data(&pool, &month, &year).await?;
+    let overview = get_budget_overview_data(&pool, month, year).await?;
 
     // Cache the result for future requests (don't block on cache write)
-    let _ = cache.cache_budget_overview(&month, &year, &overview).await;
+    let _ = cache.cache_budget_overview(&month_str, &year_str, &overview).await;
 
     Ok(Json(overview))
 }
-
 
 /// Retrieves all budgets for a given month/year with comprehensive data
 ///
@@ -235,15 +236,19 @@ async fn get_budgets(
     // Default to current month/year if not provided
     // This provides a better UX by showing relevant data immediately
     let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().format("%B").to_string()
+        chrono::Utc::now().month() as u8
     });
     let year = query.year.unwrap_or_else(|| {
-        chrono::Utc::now().format("%Y").to_string()
+        chrono::Utc::now().year()
     });
 
+    // Convert to strings for cache keys
+    let month_str = month.to_string();
+    let year_str = year.to_string();
+
     // Try to get cached data first
-    let cached_overview = cache.get_cached_budget_overview(&month, &year).await?;
-    let cached_categories = cache.get_cached_category_budgets(&month, &year).await?;
+    let cached_overview = cache.get_cached_budget_overview(&month_str, &year_str).await?;
+    let cached_categories = cache.get_cached_category_budgets(&month_str, &year_str).await?;
 
     let (overview, categories) = match (cached_overview, cached_categories) {
         (Some(overview), Some(categories)) => {
@@ -253,13 +258,13 @@ async fn get_budgets(
         _ => {
             // Cache miss - fetch from database and cache the results
             let (overview, categories) = tokio::try_join!(
-                get_budget_overview_data(&pool, &month, &year),
-                get_category_budgets(&pool, &month, &year),
+                get_budget_overview_data(&pool, month, year),
+                get_category_budgets(&pool, month, year),
             )?;
 
             // Cache the results for future requests (don't block on cache writes)
-            let _ = cache.cache_budget_overview(&month, &year, &overview).await;
-            let _ = cache.cache_category_budgets(&month, &year, &categories).await;
+            let _ = cache.cache_budget_overview(&month_str, &year_str, &overview).await;
+            let _ = cache.cache_category_budgets(&month_str, &year_str, &categories).await;
 
             (overview, categories)
         }
@@ -285,8 +290,8 @@ async fn get_budgets(
 /// - Uses LIMIT 1 since we expect single currency per query
 async fn get_budget_overview_data(
     pool: &PgPool,
-    month: &str,
-    year: &str,
+    month: u8,
+    year: i32,
 ) -> Result<BudgetOverviewApi> {
     let result = sqlx::query!(
         r#"
@@ -296,11 +301,11 @@ async fn get_budget_overview_data(
             COALESCE(SUM(carryover), 0) as carryover,
             currency
         FROM budgets
-        WHERE month = $1 AND year = $2
+        WHERE month = $1::smallint AND year = $2
         GROUP BY currency
         LIMIT 1
         "#,
-        month,
+        month as i16,
         year
     )
     .fetch_one(pool)
@@ -336,10 +341,6 @@ async fn create_budget(
         return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
     }
 
-    if payload.month.is_empty() || payload.year.is_empty() {
-        return Err(AppError::Validation("Month and year are required".to_string()));
-    }
-
     if payload.category_id.is_empty() {
         return Err(AppError::Validation("Category ID is required".to_string()));
     }
@@ -348,9 +349,21 @@ async fn create_budget(
         return Err(AppError::Validation("Currency is required".to_string()));
     }
 
+    // Parse category_id to UUID
+    let category_id = Uuid::parse_str(&payload.category_id)
+        .map_err(|_| AppError::Validation("Invalid category ID format".to_string()))?;
+
+    // Use current month/year if not provided
+    let month = payload.month.unwrap_or_else(|| {
+        chrono::Utc::now().month() as u8
+    });
+    let year = payload.year.unwrap_or_else(|| {
+        chrono::Utc::now().year()
+    });
+
     // Generate a secure UUID for the budget ID
     // This prevents ID enumeration and provides global uniqueness
-    let id = Uuid::new_v4().to_string();
+    let id = Uuid::new_v4();
 
     // Use parameterized query to prevent SQL injection
     // The query_as! macro provides compile-time SQL validation
@@ -358,41 +371,39 @@ async fn create_budget(
         Budget,
         r#"
         INSERT INTO budgets (id, month, year, category_id, planned, currency)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1::uuid, $2, $3, $4::uuid, $5, $6)
         RETURNING id, month, year, category_id, planned, spent, carryover, currency, created_at, updated_at
         "#,
         id,
-        payload.month,
-        payload.year,
-        payload.category_id,
+        month as i16,
+        year,
+        category_id,
         payload.planned,
         payload.currency
     )
     .fetch_one(&pool)
     .await?;
 
-    // Clone month and year for cache invalidation before moving into budget_api
-    let month = budget.month.clone();
-    let year = budget.year.clone();
-
     // Convert database model to API model
     // This separation ensures API stability even if database schema changes
     let budget_api = BudgetApi {
-        id: budget.id,
-        month: budget.month,
+        id: budget.id.to_string(),
+        month: budget.month as u8,
         year: budget.year,
-        category_id: budget.category_id,
+        category_id: budget.category_id.to_string(),
         planned: budget.planned,
         spent: budget.spent,
-        carryover: budget.carryover.unwrap_or_default(),
+        carryover: budget.carryover,
         currency: budget.currency,
-        created_at: budget.created_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
-        updated_at: budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
+        created_at: budget.created_at,
+        updated_at: budget.updated_at,
     };
 
     // Invalidate cache for this month/year since we added a new budget
     // This ensures cache consistency when new data is added
-    let _ = cache.invalidate_month_cache(&month, &year).await;
+    let month_str = budget.month.to_string();
+    let year_str = budget.year.to_string();
+    let _ = cache.invalidate_month_cache(&month_str, &year_str).await;
 
     Ok(Json(budget_api))
 }
@@ -410,12 +421,16 @@ async fn update_budget(
     Path(id): Path<String>,
     Json(payload): Json<UpdateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
+    // Parse ID to UUID
+    let budget_id = Uuid::parse_str(&id)
+        .map_err(|_| AppError::Validation("Invalid budget ID format".to_string()))?;
+
     // Fetch current budget state to ensure it exists
     // This provides better error messages and maintains data consistency
     let mut budget = sqlx::query_as!(
         Budget,
-        "SELECT * FROM budgets WHERE id = $1",
-        id
+        "SELECT * FROM budgets WHERE id = $1::uuid",
+        budget_id
     )
     .fetch_one(&pool)
     .await
@@ -433,7 +448,7 @@ async fn update_budget(
         if carryover < Decimal::from(0) {
             return Err(AppError::Validation("Carryover amount cannot be negative".to_string()));
         }
-        budget.carryover = Some(carryover);
+        budget.carryover = carryover;
     }
 
     // Update the budget with new values
@@ -442,42 +457,39 @@ async fn update_budget(
         r#"
         UPDATE budgets
         SET planned = $1, carryover = $2, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3
+        WHERE id = $3::uuid
         RETURNING id, month, year, category_id, planned, spent, carryover, currency, created_at, updated_at
         "#,
         budget.planned,
-        budget.carryover.as_ref(),
-        id
+        budget.carryover,
+        budget_id
     )
     .fetch_one(&pool)
     .await?;
 
-    // Clone month and year for cache invalidation before moving into budget_api
-    let month = updated_budget.month.clone();
-    let year = updated_budget.year.clone();
-
     // Convert to API model with proper timezone handling
     let budget_api = BudgetApi {
-        id: updated_budget.id,
-        month: updated_budget.month,
+        id: updated_budget.id.to_string(),
+        month: updated_budget.month as u8,
         year: updated_budget.year,
-        category_id: updated_budget.category_id,
+        category_id: updated_budget.category_id.to_string(),
         planned: updated_budget.planned,
         spent: updated_budget.spent,
-        carryover: updated_budget.carryover.unwrap_or_default(),
+        carryover: updated_budget.carryover,
         currency: updated_budget.currency,
-        created_at: updated_budget.created_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
-        updated_at: updated_budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
+        created_at: updated_budget.created_at,
+        updated_at: updated_budget.updated_at,
     };
 
     // Invalidate cache for this budget and the month/year
     // This ensures cache consistency when data is updated
+    let month_str = updated_budget.month.to_string();
+    let year_str = updated_budget.year.to_string();
     let _ = cache.invalidate_budget_cache(&id).await;
-    let _ = cache.invalidate_month_cache(&month, &year).await;
+    let _ = cache.invalidate_month_cache(&month_str, &year_str).await;
 
     Ok(Json(budget_api))
 }
-
 
 /// Retrieves a specific budget by its ID
 ///
@@ -494,11 +506,15 @@ async fn get_budget_by_id(
         return Ok(Json(cached_budget));
     }
 
+    // Parse ID to UUID
+    let budget_id = Uuid::parse_str(&id)
+        .map_err(|_| AppError::Validation("Invalid budget ID format".to_string()))?;
+
     // Cache miss - fetch from database
     let budget = sqlx::query_as!(
         Budget,
-        "SELECT * FROM budgets WHERE id = $1",
-        id
+        "SELECT * FROM budgets WHERE id = $1::uuid",
+        budget_id
     )
     .fetch_one(&pool)
     .await
@@ -506,16 +522,16 @@ async fn get_budget_by_id(
 
     // Convert to API model with proper timezone handling
     let budget_api = BudgetApi {
-        id: budget.id,
-        month: budget.month,
+        id: budget.id.to_string(),
+        month: budget.month as u8,
         year: budget.year,
-        category_id: budget.category_id,
+        category_id: budget.category_id.to_string(),
         planned: budget.planned,
         spent: budget.spent,
-        carryover: budget.carryover.unwrap_or_default(),
+        carryover: budget.carryover,
         currency: budget.currency,
-        created_at: budget.created_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
-        updated_at: budget.updated_at.map(|dt| DateTime::from_naive_utc_and_offset(dt, chrono::Utc)).unwrap_or_else(|| chrono::Utc::now()),
+        created_at: budget.created_at,
+        updated_at: budget.updated_at,
     };
 
     // Cache the result for future requests (don't block on cache write)
