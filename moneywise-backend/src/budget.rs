@@ -35,7 +35,7 @@ pub type AppState = (PgPool, BudgetCache);
 /// Allows optional month and year filtering with sensible defaults
 #[derive(Debug, Deserialize)]
 pub struct BudgetQuery {
-    pub month: Option<u8>,  // u8 is more semantically correct for 1-12
+    pub month: Option<i16>,  // smallint in PostgreSQL - matches database schema
     pub year: Option<i32>,
 }
 
@@ -129,7 +129,7 @@ fn generate_budget_insights(
 /// - Uses proper indexing on month/year columns
 async fn get_category_budgets(
     pool: &PgPool,
-    month: u8,
+    month: i16,
     year: i32,
 ) -> Result<Vec<CategoryBudgetApi>> {
     let rows = sqlx::query!(
@@ -197,7 +197,7 @@ async fn get_budget_overview(
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
     let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as u8
+        chrono::Utc::now().month() as i16
     });
     let year = query.year.unwrap_or_else(|| {
         chrono::Utc::now().year()
@@ -236,7 +236,7 @@ async fn get_budgets(
     // Default to current month/year if not provided
     // This provides a better UX by showing relevant data immediately
     let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as u8
+        chrono::Utc::now().month() as i16
     });
     let year = query.year.unwrap_or_else(|| {
         chrono::Utc::now().year()
@@ -290,7 +290,7 @@ async fn get_budgets(
 /// - Uses LIMIT 1 since we expect single currency per query
 async fn get_budget_overview_data(
     pool: &PgPool,
-    month: u8,
+    month: i16,
     year: i32,
 ) -> Result<BudgetOverviewApi> {
     let result = sqlx::query!(
@@ -355,7 +355,7 @@ async fn create_budget(
 
     // Use current month/year if not provided
     let month = payload.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as u8
+        chrono::Utc::now().month() as i16
     });
     let year = payload.year.unwrap_or_else(|| {
         chrono::Utc::now().year()
@@ -388,7 +388,7 @@ async fn create_budget(
     // This separation ensures API stability even if database schema changes
     let budget_api = BudgetApi {
         id: budget.id.to_string(),
-        month: budget.month as u8,
+        month: budget.month,
         year: budget.year,
         category_id: budget.category_id.to_string(),
         planned: budget.planned,
@@ -470,7 +470,7 @@ async fn update_budget(
     // Convert to API model with proper timezone handling
     let budget_api = BudgetApi {
         id: updated_budget.id.to_string(),
-        month: updated_budget.month as u8,
+        month: updated_budget.month,
         year: updated_budget.year,
         category_id: updated_budget.category_id.to_string(),
         planned: updated_budget.planned,
@@ -523,7 +523,7 @@ async fn get_budget_by_id(
     // Convert to API model with proper timezone handling
     let budget_api = BudgetApi {
         id: budget.id.to_string(),
-        month: budget.month as u8,
+        month: budget.month,
         year: budget.year,
         category_id: budget.category_id.to_string(),
         planned: budget.planned,

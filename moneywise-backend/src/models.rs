@@ -37,8 +37,8 @@ pub struct CreateBudgetRequest {
     pub category_id: String, // Keep as String for API compatibility
     pub planned: Decimal,
     pub currency: String,
-    pub month: Option<u8>, // Make optional with default - u8 is more semantically correct
-    pub year: Option<i32>, // Make optional with default
+    pub month: Option<i16>, // Make optional with default - matches database schema
+    pub year: Option<i32>,  // Make optional with default
 }
 
 // Update budget request model for API requests
@@ -67,7 +67,7 @@ pub struct BudgetInsight {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetApi {
     pub id: String, // Keep as String for API compatibility
-    pub month: u8,  // u8 is more semantically correct for 1-12
+    pub month: i16, // smallint to match database schema
     pub year: i32,
     pub category_id: String, // Keep as String for API compatibility
     pub planned: Decimal,
