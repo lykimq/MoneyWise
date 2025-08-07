@@ -11,7 +11,9 @@ pub mod models;
 
 // Re-export main types for convenience
 pub use budget::*;
-pub use cache::*;
-pub use database::*;
 pub use error::*;
 pub use models::*;
+
+// Re-export specific items to avoid naming conflicts
+pub use cache::CacheConfig;
+pub use database::create_pool;
