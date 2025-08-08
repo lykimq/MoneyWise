@@ -437,7 +437,7 @@ async fn update_budget(
     // Apply partial updates only for provided fields
     // This allows flexible updates without requiring all fields
     if let Some(planned) = payload.planned {
-        if planned <= Decimal::from(0) {
+        if planned >= Decimal::from(0) {
             return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
         }
         budget.planned = planned;
