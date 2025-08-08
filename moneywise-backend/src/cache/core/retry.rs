@@ -9,21 +9,24 @@ use tokio_retry::{
 use tracing::{warn, error};
 
 use crate::error::{AppError, Result};
+use redis::ErrorKind as RedisErrorKind;
 use crate::cache::core::config::CacheConfig;
 
 /// Determines if a Redis error is transient and should be retried
 /// Returns true for network-related errors, false for permanent errors
 pub fn is_transient_error(error: &AppError) -> bool {
     match error {
-        AppError::Internal(msg) => {
-            // Retry on network-related errors
-            msg.contains("connection") ||
-            msg.contains("timeout") ||
-            msg.contains("network") ||
-            msg.contains("Redis") ||
-            msg.contains("IO error")
-        }
-        _ => false, // Don't retry on other error types
+        // Redis-specific classification using error kinds
+        AppError::Cache(redis_err) => match redis_err.kind() {
+            // Network/cluster issues and redirections: retry
+            RedisErrorKind::IoError | RedisErrorKind::TryAgain | RedisErrorKind::Moved | RedisErrorKind::Ask | RedisErrorKind::ClusterDown => true,
+            // Auth, type, or client-side parse errors are permanent
+            RedisErrorKind::AuthenticationFailed | RedisErrorKind::TypeError | RedisErrorKind::ClientError => false,
+            // Default: be conservative and do not retry
+            _ => false,
+        },
+        // Internal errors not from Redis are not retried
+        _ => false,
     }
 }
 
