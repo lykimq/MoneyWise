@@ -4,6 +4,7 @@
 
 use redis::{Client, aio::ConnectionManager};
 use tracing::{info, error};
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
 use crate::{
     error::{AppError, Result},
@@ -19,8 +20,10 @@ use crate::cache::core::{
 /// This service is domain-agnostic and provides core caching functionality
 #[derive(Clone)]
 pub struct CacheService {
-    /// Redis connection manager for efficient connection pooling
-    connection_manager: ConnectionManager,
+    /// Simple pool of Redis connection managers for concurrency
+    connection_pool: Arc<Vec<ConnectionManager>>,
+    /// Next index for round-robin selection
+    next_index: Arc<AtomicUsize>,
     /// Cache configuration with TTL (time to live) settings and connection parameters
     config: CacheConfig,
 }
@@ -28,28 +31,39 @@ pub struct CacheService {
 impl CacheService {
     /// Creates a new Redis cache service with connection pooling
     pub async fn new(config: CacheConfig) -> Result<Self> {
-        let client = Client::open(config.redis_url.clone())
-            .map_err(|e| {
-                error!("Failed to create Redis client: {}", e);
-                AppError::Internal(format!("Redis connection failed: {}", e))
-            })?;
-
-        // Note: ConnectionManager in Redis crate 0.32 doesn't support custom configuration
-        // The max_connections and connection_timeout from config are used for logging and
-        // potential future configuration when Redis crate supports it
-        let connection_manager = ConnectionManager::new(client)
-            .await
-            .map_err(|e| {
+        // Build a simple pool of ConnectionManager instances to honor max_connections
+        let mut pool = Vec::with_capacity(config.max_connections);
+        for _ in 0..config.max_connections {
+            let client = Client::open(config.redis_url.clone())
+                .map_err(|e| {
+                    error!("Failed to create Redis client: {}", e);
+                    AppError::Cache(e)
+                })?;
+            let manager = ConnectionManager::new(client).await.map_err(|e| {
                 error!("Failed to create Redis connection manager: {}", e);
-                AppError::Internal(format!("Redis connection manager failed: {}", e))
+                AppError::Cache(e)
             })?;
+            pool.push(manager);
+        }
 
-        info!("Redis cache service initialized successfully with {} max connections and {}s timeout",
-              config.max_connections, config.connection_timeout.as_secs());
+        info!(
+            "Redis cache service initialized with a pool of {} connections (timeout {}s)",
+            config.max_connections,
+            config.connection_timeout.as_secs()
+        );
+
         Ok(Self {
-            connection_manager,
+            connection_pool: Arc::new(pool),
+            next_index: Arc::new(AtomicUsize::new(0)),
             config,
         })
+    }
+
+    fn select_connection(&self) -> &ConnectionManager {
+        let idx = self
+            .next_index
+            .fetch_add(1, Ordering::Relaxed) % self.connection_pool.len();
+        &self.connection_pool[idx]
     }
 
     /// Generic method to cache any serializable data with a custom key and TTL
@@ -61,8 +75,9 @@ impl CacheService {
     ) -> Result<()> {
         let value = serialize(data)?;
 
+        let conn = self.select_connection().clone();
         set_with_ttl(
-            &self.connection_manager,
+            &conn,
             &self.config,
             key,
             &value,
@@ -71,12 +86,13 @@ impl CacheService {
     }
 
     /// Generic method to retrieve cached data by key
-    pub async fn get_cached_data<T: serde::de::DeserializeOwned>(
+    pub async fn get_cached_data<T: serde::de::DeserializeOwned + Send + 'static>(
         &self,
         key: &str,
     ) -> Result<Option<T>> {
+        let conn = self.select_connection().clone();
         get_value::<T>(
-            &self.connection_manager,
+            &conn,
             &self.config,
             key,
         ).await
@@ -84,8 +100,9 @@ impl CacheService {
 
     /// Generic method to invalidate cache by key
     pub async fn invalidate_cache(&self, key: &str) -> Result<()> {
+        let conn = self.select_connection().clone();
         delete_keys(
-            &self.connection_manager,
+            &conn,
             &self.config,
             &[key],
         ).await
@@ -93,8 +110,9 @@ impl CacheService {
 
     /// Generic method to invalidate multiple cache keys
     pub async fn invalidate_multiple_keys(&self, keys: &[&str]) -> Result<()> {
+        let conn = self.select_connection().clone();
         delete_keys(
-            &self.connection_manager,
+            &conn,
             &self.config,
             keys,
         ).await
