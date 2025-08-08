@@ -9,7 +9,6 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 // Import local modules
 mod api;
-mod budget;
 mod cache;
 mod connections;
 mod database;

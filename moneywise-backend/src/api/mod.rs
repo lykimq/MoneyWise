@@ -13,7 +13,7 @@ pub mod budget;
 /// This function combines all API routes into a single router
 /// and returns the router with state already configured
 pub fn create_api_router() -> Router<(PgPool, BudgetCache)> {
-    budget::create_budget_routes()
+    budget::budget_routes()
     // Future API routes can be added here by merging routers:
     // .merge(transactions::create_transaction_routes())
     // .merge(goals::create_goal_routes())
