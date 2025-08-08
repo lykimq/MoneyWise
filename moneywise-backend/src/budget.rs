@@ -1,13 +1,23 @@
-// Budget management module for MoneyWise backend
-// This module handles all budget-related operations including CRUD operations,
-// budget overview calculations, and intelligent insights generation.
-//
-// Key Design Decisions:
-// 1. Uses rust_decimal for precise financial calculations (avoids floating-point errors)
-// 2. Implements RESTful API patterns with proper error handling
-// 3. Separates database models from API models for better type safety
-// 4. Uses async/await for non-blocking database operations
-// 5. Implements intelligent budget insights based on spending patterns
+//! Budget management module for MoneyWise backend.
+//!
+//! Responsibilities:
+//! - Exposes HTTP routes for CRUD on budgets and for read-only overviews
+//! - Computes high-level overviews and per-category breakdowns
+//! - Generates human-friendly insights (warnings/suggestions)
+//! - Uses a cache layer to reduce database load on hot paths
+//!
+//! Key design choices and rationale:
+//! - rust_decimal for money: precise decimal arithmetic avoids float rounding issues
+//! - sqlx with macros: compile-time SQL checking improves reliability and safety
+//! - Separation of DB and API models (see `models.rs`): stable public API, flexible schema
+//! - Caching layer: read paths check cache first; writes invalidate relevant keys
+//! - Async handlers: avoid blocking the executor; scale with concurrent requests
+//!
+//! File structure (logical sections):
+//! 1) State/Routes
+//! 2) Public HTTP handlers (GET/POST/PUT)
+//! 3) Internal data-access helpers (queries/aggregation)
+//! 4) Insights generator (pure, in-memory)
 
 use axum::{
     extract::{Path, Query, State},
@@ -26,6 +36,10 @@ use crate::{
     error::{AppError, Result},
     models::*,
 };
+
+// ================================================================
+// 1) State and Routes
+// ================================================================
 
 /// Application state containing both database pool and budget cache service
 /// This allows handlers to access both database and budget-specific cache operations
@@ -57,155 +71,19 @@ pub fn budget_routes() -> Router<AppState> {
         .route("/:id", get(get_budget_by_id))
 }
 
-/// Generates intelligent budget insights based on spending patterns
+// ================================================================
+// 2) Public HTTP handlers
+// ================================================================
+
+/// Retrieves budget overview for a specific month/year.
 ///
-/// Insight types:
-/// - Warning: When spending exceeds budget limits
-/// - Positive: When there's remaining budget
-/// - Suggestion: Proactive recommendations for better budget management
-///
-/// Algorithm choices:
-/// - Uses percentage-based thresholds for consistent insights
-/// - Provides actionable messages with specific amounts
-/// - Uses color coding for visual distinction in UI
-fn generate_budget_insights(
-    overview: &BudgetOverviewApi,
-    categories: &[CategoryBudgetApi],
-) -> Vec<BudgetInsight> {
-    let mut insights = Vec::new();
-
-    // Check for over-budget categories (spending > 100% of planned)
-    // This helps users identify problematic spending areas early
-    for category in categories {
-        if category.percentage > Decimal::from(100) {
-            let over_percentage = category.percentage - Decimal::from(100);
-            insights.push(BudgetInsight {
-                type_: "warning".to_string(),
-                message: format!("You're {}% over budget on {}",
-                    over_percentage.to_string(), category.category_name),
-                icon: "warning-outline".to_string(),
-                color: "#FF6B6B".to_string(),
-            });
-        }
-    }
-
-    // Check overall budget status
-    // Provides high-level financial health indicators
-    if overview.remaining > Decimal::from(0) {
-        insights.push(BudgetInsight {
-            type_: "positive".to_string(),
-            message: format!("You have ${} remaining for other expenses", overview.remaining.to_string()),
-            icon: "checkmark-circle-outline".to_string(),
-            color: "#4ECDC4".to_string(),
-        });
-    } else if overview.remaining < Decimal::from(0) {
-        insights.push(BudgetInsight {
-            type_: "warning".to_string(),
-            message: format!("You're ${} over your total budget", overview.remaining.abs().to_string()),
-            icon: "warning-outline".to_string(),
-            color: "#FF6B6B".to_string(),
-        });
-    }
-
-    // Add proactive suggestions for better budget management
-    // Uses 90% threshold to provide early warnings
-    if categories.iter().any(|c| c.percentage > Decimal::from(90)) {
-        insights.push(BudgetInsight {
-            type_: "suggestion".to_string(),
-            message: "Consider reviewing your spending in categories near budget limits".to_string(),
-            icon: "bulb-outline".to_string(),
-            color: "#007AFF".to_string(),
-        });
-    }
-
-    insights
-}
-
-/// Retrieves category-specific budget data with detailed information
-///
-/// Query optimization:
-/// - Uses JOINs to get category and group information in single query
-/// - Orders by group sort_order and category name for consistent UI
-/// - Calculates percentage and remaining amounts in application layer
-/// - Uses proper indexing on month/year columns
-async fn get_category_budgets(
-    pool: &PgPool,
-    month: i16,
-    year: i32,
-    currency: Option<&str>,
-) -> Result<Vec<CategoryBudgetApi>> {
-    let rows = sqlx::query!(
-        r#"
-        SELECT
-            b.id,
-            c.name as category_name,
-            cg.name as "group_name?",
-            c.color as category_color,
-            cg.color as "group_color?",
-            b.planned,
-            b.spent,
-            b.carryover,
-            TRIM(b.currency) as "currency!"
-        FROM budgets b
-        JOIN categories c ON b.category_id = c.id
-        LEFT JOIN category_groups cg ON c.group_id = cg.id
-        WHERE b.month = $1 AND b.year = $2
-        AND ($3::text IS NULL OR b.currency = $3)
-        ORDER BY COALESCE(cg.sort_order, 999), c.name
-        "#,
-        month as i16,
-        year,
-        currency
-    )
-    .fetch_all(pool)
-    .await?;
-
-    let mut category_budgets = Vec::new();
-
-    for row in rows {
-        let planned = row.planned;
-        let spent = row.spent;
-        let carryover = row.carryover;
-        let remaining = &planned - &spent + &carryover;
-
-        // Calculate percentage with proper division handling
-        let percentage = if &planned > &Decimal::from(0) {
-            (&spent / &planned) * Decimal::from(100)
-        } else {
-            Decimal::from(0)
-        };
-
-        category_budgets.push(CategoryBudgetApi {
-            id: row.id.to_string(),
-            category_name: row.category_name,
-            group_name: row.group_name,
-            category_color: row.category_color,
-            group_color: row.group_color,
-            planned,
-            spent,
-            remaining,
-            percentage,
-            currency: row.currency,
-        });
-    }
-
-    Ok(category_budgets)
-}
-
-/// Retrieves budget overview for a specific month/year
-///
-/// This endpoint provides a lightweight alternative to the full budget response
-/// Useful for dashboard widgets and quick overview displays
+/// Lightweight alternative to the full response; great for dashboards/widgets.
 async fn get_budget_overview(
     State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
-    let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as i16
-    });
-    let year = query.year.unwrap_or_else(|| {
-        chrono::Utc::now().year()
-    });
+    let month = query.month.unwrap_or_else(|| chrono::Utc::now().month() as i16);
+    let year = query.year.unwrap_or_else(|| chrono::Utc::now().year());
 
     // Convert to strings for cache keys
     let month_str = month.to_string();
@@ -214,7 +92,11 @@ async fn get_budget_overview(
     let currency_filter = query.currency.as_deref();
 
     // Try to get data from cache first
-    if let Some(cached_overview) = cache.get_cached_budget_overview(&month_str, &year_str, currency_filter).await? {
+    if let Some(cached_overview) =
+        cache
+            .get_cached_budget_overview(&month_str, &year_str, currency_filter)
+            .await?
+    {
         return Ok(Json(cached_overview));
     }
 
@@ -222,7 +104,9 @@ async fn get_budget_overview(
     let overview = get_budget_overview_data(&pool, month, year, currency_filter).await?;
 
     // Cache the result for future requests (don't block on cache write)
-    let _ = cache.cache_budget_overview(&month_str, &year_str, currency_filter, &overview).await;
+    let _ = cache
+        .cache_budget_overview(&month_str, &year_str, currency_filter, &overview)
+        .await;
 
     Ok(Json(overview))
 }
@@ -288,64 +172,6 @@ async fn get_budgets(
     }))
 }
 
-/// Calculates budget overview data for a given month/year
-///
-/// Performance optimizations:
-/// - Uses COALESCE to handle NULL values efficiently
-/// - Groups by currency to support multi-currency budgets
-/// - Calculates remaining amount in SQL (reduces data transfer)
-/// - Uses LIMIT 1 since we expect single currency per query
-async fn get_budget_overview_data(
-    pool: &PgPool,
-    month: i16,
-    year: i32,
-    currency: Option<&str>,
-) -> Result<BudgetOverviewApi> {
-    let result = sqlx::query!(
-        r#"
-        SELECT
-            COALESCE(SUM(planned), 0) as planned,
-            COALESCE(SUM(spent), 0) as spent,
-            COALESCE(SUM(carryover), 0) as carryover,
-            TRIM(currency) as "currency!"
-        FROM budgets
-        WHERE month = $1::smallint AND year = $2
-        AND ($3::text IS NULL OR currency = $3)
-        GROUP BY currency
-        LIMIT 1
-        "#,
-        month as i16,
-        year,
-        currency
-    )
-    .fetch_optional(pool)
-    .await?;
-
-    if let Some(result) = result {
-        let planned = result.planned.unwrap_or_default();
-        let spent = result.spent.unwrap_or_default();
-        let carryover = result.carryover.unwrap_or_default();
-        let remaining = &planned - &spent + &carryover;
-
-        Ok(BudgetOverviewApi {
-            planned,
-            spent,
-            remaining,
-            currency: result.currency,
-        })
-    } else {
-        // No budgets for this month/year: return zeros and a default currency (EUR) if not provided
-        let currency_fallback = currency.unwrap_or("EUR").to_string();
-
-        Ok(BudgetOverviewApi {
-            planned: Decimal::from(0),
-            spent: Decimal::from(0),
-            remaining: Decimal::from(0),
-            currency: currency_fallback,
-        })
-    }
-}
-
 /// Creates a new budget entry
 ///
 /// Security and validation considerations:
@@ -359,7 +185,7 @@ async fn create_budget(
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Validate input data
-    if payload.planned <= Decimal::from(0) {
+    if payload.planned >= Decimal::from(0) {
         return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
     }
 
@@ -591,4 +417,202 @@ async fn get_budget_by_id(
     let _ = cache.cache_budget(&id, &budget_api).await;
 
     Ok(Json(budget_api))
+}
+
+// ================================================================
+// 3) Internal data-access helpers (queries/aggregation)
+// ================================================================
+
+/// Calculates budget overview data for a given month/year.
+///
+/// Notes:
+/// - SUMs are done in SQL for efficiency and to reduce data transferred
+/// - `COALESCE` ensures NULL-safe totals
+/// - Grouped by currency to support multi-currency budgets; we pick the first (typical single currency per query)
+async fn get_budget_overview_data(
+    pool: &PgPool,
+    month: i16,
+    year: i32,
+    currency: Option<&str>,
+) -> Result<BudgetOverviewApi> {
+    let result = sqlx::query!(
+        r#"
+        SELECT
+            COALESCE(SUM(planned), 0) as planned,
+            COALESCE(SUM(spent), 0) as spent,
+            COALESCE(SUM(carryover), 0) as carryover,
+            TRIM(currency) as "currency!"
+        FROM budgets
+        WHERE month = $1::smallint AND year = $2
+        AND ($3::text IS NULL OR currency = $3)
+        GROUP BY currency
+        LIMIT 1
+        "#,
+        month as i16,
+        year,
+        currency
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    if let Some(result) = result {
+        let planned = result.planned.unwrap_or_default();
+        let spent = result.spent.unwrap_or_default();
+        let carryover = result.carryover.unwrap_or_default();
+        let remaining = &planned - &spent + &carryover;
+
+        Ok(BudgetOverviewApi {
+            planned,
+            spent,
+            remaining,
+            currency: result.currency,
+        })
+    } else {
+        // No data for this month/year: return zeros and default currency (EUR) if not provided
+        let currency_fallback = currency.unwrap_or("EUR").to_string();
+
+        Ok(BudgetOverviewApi {
+            planned: Decimal::from(0),
+            spent: Decimal::from(0),
+            remaining: Decimal::from(0),
+            currency: currency_fallback,
+        })
+    }
+}
+
+/// Retrieves category-specific budget rows and enriches them for API consumption.
+///
+/// Implementation details:
+/// - Single query joins categories and optional groups for efficiency
+/// - Sorting by group sort_order (NULLs last) then category name for stable UI rendering
+/// - Percentage computed in application code to keep SQL simple and precise with decimals
+async fn get_category_budgets(
+    pool: &PgPool,
+    month: i16,
+    year: i32,
+    currency: Option<&str>,
+) -> Result<Vec<CategoryBudgetApi>> {
+    let rows = sqlx::query!(
+        r#"
+        SELECT
+            b.id,
+            c.name as category_name,
+            cg.name as "group_name?",
+            c.color as category_color,
+            cg.color as "group_color?",
+            b.planned,
+            b.spent,
+            b.carryover,
+            TRIM(b.currency) as "currency!"
+        FROM budgets b
+        JOIN categories c ON b.category_id = c.id
+        LEFT JOIN category_groups cg ON c.group_id = cg.id
+        WHERE b.month = $1 AND b.year = $2
+        AND ($3::text IS NULL OR b.currency = $3)
+        ORDER BY COALESCE(cg.sort_order, 999), c.name
+        "#,
+        month as i16,
+        year,
+        currency
+    )
+    .fetch_all(pool)
+    .await?;
+
+    let mut category_budgets = Vec::new();
+
+    for row in rows {
+        let planned = row.planned;
+        let spent = row.spent;
+        let carryover = row.carryover;
+        let remaining = &planned - &spent + &carryover;
+
+        // Percentage of budget used; safe when planned is zero
+        let percentage = if &planned > &Decimal::from(0) {
+            (&spent / &planned) * Decimal::from(100)
+        } else {
+            Decimal::from(0)
+        };
+
+        category_budgets.push(CategoryBudgetApi {
+            id: row.id.to_string(),
+            category_name: row.category_name,
+            group_name: row.group_name,
+            category_color: row.category_color,
+            group_color: row.group_color,
+            planned,
+            spent,
+            remaining,
+            percentage,
+            currency: row.currency,
+        });
+    }
+
+    Ok(category_budgets)
+}
+
+// ================================================================
+// 4) Insights generator (pure, in-memory)
+// ================================================================
+
+/// Generates human-readable insights based on spending progress.
+///
+/// Categories with spending > 100% trigger warnings; nearing 90% triggers suggestions.
+/// The overall remaining amount determines positive or warning messages.
+fn generate_budget_insights(
+    overview: &BudgetOverviewApi,
+    categories: &[CategoryBudgetApi],
+) -> Vec<BudgetInsight> {
+    let mut insights = Vec::new();
+
+    // Identify categories that exceeded their planned budget
+    for category in categories {
+        if category.percentage > Decimal::from(100) {
+            let over_percentage = category.percentage - Decimal::from(100);
+            insights.push(BudgetInsight {
+                type_: "warning".to_string(),
+                message: format!(
+                    "You're {}% over budget on {}",
+                    over_percentage.to_string(),
+                    category.category_name
+                ),
+                icon: "warning-outline".to_string(),
+                color: "#FF6B6B".to_string(),
+            });
+        }
+    }
+
+    // High-level budget health
+    if overview.remaining > Decimal::from(0) {
+        insights.push(BudgetInsight {
+            type_: "positive".to_string(),
+            message: format!(
+                "You have ${} remaining for other expenses",
+                overview.remaining.to_string()
+            ),
+            icon: "checkmark-circle-outline".to_string(),
+            color: "#4ECDC4".to_string(),
+        });
+    } else if overview.remaining < Decimal::from(0) {
+        insights.push(BudgetInsight {
+            type_: "warning".to_string(),
+            message: format!(
+                "You're ${} over your total budget",
+                overview.remaining.abs().to_string()
+            ),
+            icon: "warning-outline".to_string(),
+            color: "#FF6B6B".to_string(),
+        });
+    }
+
+    // Proactive suggestions for categories close to limits
+    if categories.iter().any(|c| c.percentage > Decimal::from(90)) {
+        insights.push(BudgetInsight {
+            type_: "suggestion".to_string(),
+            message: "Consider reviewing your spending in categories near budget limits".to_string(),
+            icon: "bulb-outline".to_string(),
+            color: "#007AFF".to_string(),
+        });
+    }
+
+    insights
 }

@@ -1,3 +1,15 @@
+//! Data models for the MoneyWise backend.
+//!
+//! This module intentionally separates database-facing structs (used by sqlx) from
+//! API-facing structs (DTOs) that are serialized to/from JSON. This gives us:
+//! - Backwards-compatible APIs when the database schema evolves
+//! - The ability to hide internal fields or change types for ergonomics (e.g., `Uuid` → `String`)
+//! - Clear security boundaries between persistence and public contracts
+//!
+//! Design trade-offs:
+//! - Slightly more code due to model duplication
+//! - Lower coupling and better long-term maintainability for real-world apps
+//!
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -8,7 +20,11 @@ use uuid::Uuid;
 // Database models
 //////////////////////////////////////////////////////////////////////
 
-// Budget model for database storage
+/// Database representation of a budget row in table `budgets`.
+///
+/// Notes:
+/// - Types match the PostgreSQL schema (e.g., `i16` for `smallint`)
+/// - Do not expose this type to API consumers directly; prefer `BudgetApi`
 #[derive(Debug, FromRow)]
 pub struct Budget {
     pub id: Uuid,
@@ -23,7 +39,9 @@ pub struct Budget {
     pub updated_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
 }
 
-// Budget response wrapper for API responses
+/// Aggregated response returned by the budget endpoints.
+///
+/// Contains a high-level overview, per-category breakdowns, and generated insights.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BudgetResponse {
     pub overview: BudgetOverviewApi,
@@ -31,7 +49,9 @@ pub struct BudgetResponse {
     pub insights: Vec<BudgetInsight>,
 }
 
-// Create budget request model for API requests
+/// Payload for creating a new budget entry via the HTTP API.
+///
+/// The `month` and `year` are optional; if omitted, the server uses the current month/year.
 #[derive(Debug, Deserialize)]
 pub struct CreateBudgetRequest {
     pub category_id: String, // Keep as String for API compatibility
@@ -41,14 +61,16 @@ pub struct CreateBudgetRequest {
     pub year: Option<i32>,  // Make optional with default
 }
 
-// Update budget request model for API requests
+/// Payload for partially updating an existing budget.
+///
+/// Only provided fields will be updated.
 #[derive(Debug, Deserialize)]
 pub struct UpdateBudgetRequest {
     pub planned: Option<Decimal>,
     pub carryover: Option<Decimal>,
 }
 
-// Budget insight model for API responses
+/// A single insight item that the UI can render to guide users (e.g., warnings or suggestions).
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BudgetInsight {
     pub type_: String, // 'warning', 'suggestion', 'positive'
@@ -62,8 +84,11 @@ pub struct BudgetInsight {
 // Trade-offs: More code but better maintainability and API versioning.
 //////////////////////////////////////////////////////////////////////
 
-// Budget API model for API responses
-// Provide API stability even if database schema changes.
+/// API-facing representation of a budget.
+///
+/// Differences vs. `Budget` (DB):
+/// - `id` and `category_id` are `String` for convenient JSON interop
+/// - This type is safe to expose externally and can remain stable across DB changes
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetApi {
     pub id: String, // Keep as String for API compatibility
@@ -78,7 +103,9 @@ pub struct BudgetApi {
     pub updated_at: DateTime<Utc>,
 }
 
-// Budget overview for API responses
+/// High-level totals for a month/year used by dashboards and summaries.
+///
+/// `remaining` is computed as `planned - spent + carryover`.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetOverviewApi {
     pub planned: Decimal,
@@ -87,7 +114,7 @@ pub struct BudgetOverviewApi {
     pub currency: String,
 }
 
-// Category budget details for API responses
+/// Per-category budget breakdown used by the UI for grouping and progress bars.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryBudgetApi {
     pub id: String,
