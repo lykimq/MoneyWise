@@ -337,7 +337,7 @@ async fn create_budget(
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Validate input data
-    if payload.planned <= Decimal::from(0) {
+    if payload.planned >= Decimal::from(0) {
         return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
     }
 
