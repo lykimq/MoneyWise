@@ -384,7 +384,7 @@ async fn create_budget(
 
     // Use parameterized query to prevent SQL injection
     // The query_as! macro provides compile-time SQL validation
-    let budget = sqlx::query_as!(
+    let budget = match sqlx::query_as!(
         Budget,
         r#"
         INSERT INTO budgets (id, month, year, category_id, planned, currency)
@@ -399,7 +399,20 @@ async fn create_budget(
         payload.currency
     )
     .fetch_one(&pool)
-    .await?;
+    .await {
+        Ok(row) => row,
+        Err(e) => {
+            // Map unique constraint violation (year, month, category_id) to a friendly 400 error
+            if let sqlx::Error::Database(db_err) = &e {
+                if db_err.code().as_deref() == Some("23505") {
+                    return Err(AppError::Validation(
+                        "Budget already exists for this year, month, and category".to_string(),
+                    ));
+                }
+            }
+            return Err(AppError::Database(e));
+        }
+    };
 
     // Convert database model to API model
     // This separation ensures API stability even if database schema changes
