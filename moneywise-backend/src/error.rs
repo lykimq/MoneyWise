@@ -3,6 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use redis::RedisError;
 use serde_json::json;
 use thiserror::Error;
 
@@ -19,6 +20,9 @@ pub enum AppError {
 
     #[error("Internal server error: {0}")]
     Internal(String),
+
+    #[error("Cache error: {0}")]
+    Cache(#[from] RedisError),
 }
 
 impl IntoResponse for AppError {
@@ -39,6 +43,10 @@ impl IntoResponse for AppError {
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Internal server error".to_string(),
                 )
+            }
+            AppError::Cache(e) => {
+                tracing::error!("Cache error: {}", e);
+                (StatusCode::BAD_GATEWAY, "Cache service error".to_string())
             }
         };
 
