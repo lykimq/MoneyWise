@@ -1,5 +1,8 @@
-// Budget domain cache implementation for MoneyWise backend
-// This module provides budget-specific caching functionality
+//! Budget domain cache implementation for MoneyWise backend.
+//!
+//! Provides budget-specific caching functionality on top of the generic
+//! `CacheService`, including key management and TTL selection.
+//!
 
 pub mod keys;
 
@@ -14,7 +17,7 @@ use crate::cache::core::{
 };
 
 /// Budget-specific cache service that wraps the generic cache service
-/// with budget-specific key generation and TTL management
+/// with budget-specific key generation and TTL management.
 #[derive(Clone)]
 pub struct BudgetCache {
     /// Generic cache service for core operations
@@ -22,13 +25,13 @@ pub struct BudgetCache {
 }
 
 impl BudgetCache {
-    /// Creates a new budget cache service
+    /// Create a new budget cache service.
     pub async fn new(config: CacheConfig) -> Result<Self> {
         let cache_service = CacheService::new(config).await?;
         Ok(Self { cache_service })
     }
 
-    /// Caches budget overview data with appropriate TTL
+    /// Cache budget overview data with appropriate TTL.
     pub async fn cache_budget_overview(
         &self,
         month: &str,
@@ -42,7 +45,7 @@ impl BudgetCache {
         self.cache_service.cache_data(&key, overview, ttl_seconds).await
     }
 
-    /// Retrieves cached budget overview data from Redis
+    /// Retrieve cached budget overview data from Redis.
     pub async fn get_cached_budget_overview(
         &self,
         month: &str,
@@ -54,7 +57,7 @@ impl BudgetCache {
         self.cache_service.get_cached_data::<BudgetOverviewApi>(&key).await
     }
 
-    /// Caches category budget data with appropriate TTL
+    /// Cache category budget data with appropriate TTL.
     pub async fn cache_category_budgets(
         &self,
         month: &str,
@@ -68,7 +71,7 @@ impl BudgetCache {
         self.cache_service.cache_data(&key, &categories.to_vec(), ttl_seconds).await
     }
 
-    /// Retrieves cached category budget data from Redis
+    /// Retrieve cached category budget data from Redis.
     pub async fn get_cached_category_budgets(
         &self,
         month: &str,
@@ -80,7 +83,7 @@ impl BudgetCache {
         self.cache_service.get_cached_data::<Vec<CategoryBudgetApi>>(&key).await
     }
 
-    /// Caches individual budget data with TTL
+    /// Cache individual budget data with TTL.
     pub async fn cache_budget(
         &self,
         id: &str,
@@ -92,7 +95,7 @@ impl BudgetCache {
         self.cache_service.cache_data(&key, budget, ttl_seconds).await
     }
 
-    /// Retrieves cached individual budget data from Redis
+    /// Retrieve cached individual budget data from Redis.
     pub async fn get_cached_budget(
         &self,
         id: &str,
@@ -102,7 +105,7 @@ impl BudgetCache {
         self.cache_service.get_cached_data::<BudgetApi>(&key).await
     }
 
-    /// Invalidates cache entries for a specific month/year
+    /// Invalidate cache entries for a specific month/year (overview + categories).
     pub async fn invalidate_month_cache(
         &self,
         month: &str,
@@ -115,7 +118,7 @@ impl BudgetCache {
         self.cache_service.invalidate_multiple_keys(&[&overview_key, &categories_key]).await
     }
 
-    /// Invalidates cache for a specific budget ID
+    /// Invalidate cache for a specific budget ID.
     pub async fn invalidate_budget_cache(
         &self,
         id: &str,

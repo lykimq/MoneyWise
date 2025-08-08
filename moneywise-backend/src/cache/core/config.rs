@@ -1,11 +1,13 @@
-// Cache configuration module for MoneyWise backend
-// This module defines the configuration structure for Redis-based caching
-// with TTL (Time To Live) settings and connection parameters.
+//! Cache configuration for the Redis-based caching layer.
+//!
+//! Provides environment-driven defaults and typed settings for TTLs,
+//! connection sizing, and retry behavior. The defaults are production-friendly
+//! but can be overridden via environment variables.
 
 use std::time::Duration;
 
-/// Cache configuration with TTL settings and Redis connection parameters
-/// Different data types have different cache durations based on update frequency
+/// Cache configuration with TTL settings and Redis connection parameters.
+/// Different data types have different cache durations based on update frequency.
 #[derive(Clone)]
 pub struct CacheConfig {
     /// Redis connection URL (e.g., "redis://localhost:6379")
@@ -25,6 +27,7 @@ pub struct CacheConfig {
 }
 
 impl Default for CacheConfig {
+    /// Build a configuration from environment variables with sensible defaults.
     fn default() -> Self {
         let redis_url =
             std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".to_string());

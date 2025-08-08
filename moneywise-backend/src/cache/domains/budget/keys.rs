@@ -1,8 +1,9 @@
-// Budget domain cache key management for MoneyWise backend
-// Provides consistent key generation for budget-related cache operations
-// All keys use the "moneywise:budget:" namespace prefix for organization
+//! Budget domain cache key management.
+//!
+//! Provides consistent key generation for budget-related cache operations.
+//! All keys use the `moneywise:budget:` namespace prefix for organization.
 
-/// Generates cache key for budget overview data with namespace prefix
+/// Generate cache key for budget overview data with namespace prefix.
 /// Key format: "moneywise:budget:overview:{month}:{year}" or with currency
 ///             "moneywise:budget:overview:{month}:{year}:{currency}"
 /// Used for caching monthly budget overview summaries
@@ -13,7 +14,7 @@ pub fn overview_key(month: &str, year: &str, currency: Option<&str>) -> String {
     }
 }
 
-/// Generates cache key for category budget data with namespace prefix
+/// Generate cache key for category budget data with namespace prefix.
 /// Key format: "moneywise:budget:categories:{month}:{year}" or with currency
 ///             "moneywise:budget:categories:{month}:{year}:{currency}"
 /// Used for caching category-specific budget breakdowns
@@ -24,7 +25,7 @@ pub fn categories_key(month: &str, year: &str, currency: Option<&str>) -> String
     }
 }
 
-/// Generates cache key for individual budget data with namespace prefix
+/// Generate cache key for individual budget data with namespace prefix.
 /// Key format: "moneywise:budget:item:{id}"
 /// Used for caching individual budget entries
 pub fn budget_key(id: &str) -> String {

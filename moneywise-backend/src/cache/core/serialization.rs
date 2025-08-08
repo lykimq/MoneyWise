@@ -1,13 +1,16 @@
-// JSON serialization utilities for cache data
-// Provides consistent serialization/deserialization for Redis storage
+//! JSON serialization utilities for cache data.
+//!
+//! Provides consistent serialization/deserialization for Redis storage.
+//! Deserialization failures are treated as soft-errors so callers can
+//! gracefully degrade to DB reads.
 
 use serde_json;
 use tracing::{error, warn};
 
 use crate::error::{AppError, Result};
 
-/// Serializes data to JSON for Redis storage
-/// Returns serialized JSON string or error
+/// Serialize data to JSON for Redis storage.
+/// Returns serialized JSON string or error.
 pub fn serialize<T: serde::Serialize>(data: &T) -> Result<String> {
     serde_json::to_string(data).map_err(|e| {
         error!("Failed to serialize data for cache: {}", e);
@@ -15,8 +18,8 @@ pub fn serialize<T: serde::Serialize>(data: &T) -> Result<String> {
     })
 }
 
-/// Deserializes data from JSON stored in Redis
-/// Returns deserialized data or None on corruption
+/// Deserialize data from JSON stored in Redis.
+/// Returns deserialized data or `None` on corruption.
 pub fn deserialize<T: serde::de::DeserializeOwned>(json: String) -> Result<Option<T>> {
     match serde_json::from_str::<T>(&json) {
         Ok(data) => Ok(Some(data)),

@@ -1,5 +1,9 @@
-// Retry logic and error handling for Redis operations
-// Provides exponential backoff with jitter for transient failures
+//! Retry helpers for Redis operations.
+//!
+//! Implements exponential backoff with full jitter for transient failures.
+//! Classification is based on `redis::ErrorKind` to avoid brittle
+//! string matching.
+//!
 
 use std::time::Duration;
 use tokio_retry::{
@@ -12,8 +16,8 @@ use crate::error::{AppError, Result};
 use redis::ErrorKind as RedisErrorKind;
 use crate::cache::core::config::CacheConfig;
 
-/// Determines if a Redis error is transient and should be retried
-/// Returns true for network-related errors, false for permanent errors
+/// Determine if a Redis error is transient and should be retried.
+/// Returns true for network/cluster and redirection issues.
 pub fn is_transient_error(error: &AppError) -> bool {
     match error {
         // Redis-specific classification using error kinds

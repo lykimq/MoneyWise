@@ -1,5 +1,12 @@
-// Core Redis operations for cache management
-// Provides low-level Redis operations with proper error handling
+//! Low-level Redis operations for cache management.
+//!
+//! Wraps `redis::AsyncCommands` with retry, error mapping, and logging.
+//! These functions are used by the higher-level `CacheService`.
+//!
+//! Organization:
+//! - set_with_ttl: write path with TTL
+//! - get_value: read path with JSON deserialize and self-healing
+//! - delete_keys: invalidate one or more keys
 
 use redis::{aio::ConnectionManager, AsyncCommands};
 use tracing::{debug, warn, error};
@@ -9,8 +16,8 @@ use crate::cache::core::retry::with_retry;
 use crate::cache::core::serialization::deserialize;
 use crate::cache::core::config::CacheConfig;
 
-/// Sets a key-value pair in Redis with TTL
-/// Uses SETEX for atomic TTL setting
+/// Set a key-value pair in Redis with TTL (seconds).
+/// Uses `SETEX` for atomic TTL setting.
 pub async fn set_with_ttl(
     conn: &ConnectionManager,
     config: &CacheConfig,
@@ -42,8 +49,8 @@ pub async fn set_with_ttl(
     }).await
 }
 
-/// Gets a value from Redis by key
-/// Returns deserialized data or None if not found
+/// Get a value from Redis by key.
+/// Returns deserialized data or `None` if not found or invalid.
 pub async fn get_value<T: serde::de::DeserializeOwned + Send + 'static>(
     conn: &ConnectionManager,
     config: &CacheConfig,
@@ -100,8 +107,8 @@ pub async fn get_value<T: serde::de::DeserializeOwned + Send + 'static>(
     }
 }
 
-/// Deletes keys from Redis
-/// Supports single key or multiple keys deletion
+/// Delete keys from Redis.
+/// Supports single key and batch deletion.
 pub async fn delete_keys(
     conn: &ConnectionManager,
     config: &CacheConfig,

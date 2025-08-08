@@ -1,6 +1,9 @@
-// Generic cache service for MoneyWise backend
-// Provides high-level caching operations with Redis backend
-// This service is domain-agnostic and can be used by all cache domains
+//! Generic cache service for MoneyWise backend.
+//!
+//! Provides high-level, domain-agnostic operations on top of Redis.
+//! Uses a simple round-robin pool of `ConnectionManager`s to improve
+//! concurrency and match configured `max_connections`.
+//!
 
 use redis::{Client, aio::ConnectionManager};
 use tracing::{info, error};
@@ -29,7 +32,7 @@ pub struct CacheService {
 }
 
 impl CacheService {
-    /// Creates a new Redis cache service with connection pooling
+    /// Creates a new Redis cache service with a simple connection pool.
     pub async fn new(config: CacheConfig) -> Result<Self> {
         // Build a simple pool of ConnectionManager instances to honor max_connections
         let mut pool = Vec::with_capacity(config.max_connections);
@@ -59,6 +62,7 @@ impl CacheService {
         })
     }
 
+    /// Select a connection via round-robin.
     fn select_connection(&self) -> &ConnectionManager {
         let idx = self
             .next_index
@@ -66,7 +70,10 @@ impl CacheService {
         &self.connection_pool[idx]
     }
 
-    /// Generic method to cache any serializable data with a custom key and TTL
+    /// Cache any serializable data with a custom key and TTL (seconds).
+    ///
+    /// - Serializes using JSON
+    /// - Uses `SETEX` under the hood for atomic TTL
     pub async fn cache_data<T: serde::Serialize>(
         &self,
         key: &str,
@@ -85,7 +92,10 @@ impl CacheService {
         ).await
     }
 
-    /// Generic method to retrieve cached data by key
+    /// Retrieve cached data by key (typed).
+    ///
+    /// Returns `Ok(None)` on cache miss or when deserialization fails
+    /// (corrupted data is purged proactively).
     pub async fn get_cached_data<T: serde::de::DeserializeOwned + Send + 'static>(
         &self,
         key: &str,
@@ -98,7 +108,7 @@ impl CacheService {
         ).await
     }
 
-    /// Generic method to invalidate cache by key
+    /// Invalidate a single cache key.
     pub async fn invalidate_cache(&self, key: &str) -> Result<()> {
         let conn = self.select_connection().clone();
         delete_keys(
@@ -108,7 +118,7 @@ impl CacheService {
         ).await
     }
 
-    /// Generic method to invalidate multiple cache keys
+    /// Invalidate multiple cache keys.
     pub async fn invalidate_multiple_keys(&self, keys: &[&str]) -> Result<()> {
         let conn = self.select_connection().clone();
         delete_keys(
@@ -118,7 +128,7 @@ impl CacheService {
         ).await
     }
 
-    /// Get the cache configuration
+    /// Get the cache configuration.
     pub fn config(&self) -> &CacheConfig {
         &self.config
     }
