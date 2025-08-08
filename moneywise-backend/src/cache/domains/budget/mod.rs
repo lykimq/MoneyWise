@@ -33,9 +33,10 @@ impl BudgetCache {
         &self,
         month: &str,
         year: &str,
+        currency: Option<&str>,
         overview: &BudgetOverviewApi,
     ) -> Result<()> {
-        let key = keys::overview_key(month, year);
+        let key = keys::overview_key(month, year, currency);
         let ttl_seconds = self.cache_service.config().overview_ttl.as_secs() as usize;
 
         self.cache_service.cache_data(&key, overview, ttl_seconds).await
@@ -46,8 +47,9 @@ impl BudgetCache {
         &self,
         month: &str,
         year: &str,
+        currency: Option<&str>,
     ) -> Result<Option<BudgetOverviewApi>> {
-        let key = keys::overview_key(month, year);
+        let key = keys::overview_key(month, year, currency);
 
         self.cache_service.get_cached_data::<BudgetOverviewApi>(&key).await
     }
@@ -57,9 +59,10 @@ impl BudgetCache {
         &self,
         month: &str,
         year: &str,
+        currency: Option<&str>,
         categories: &[CategoryBudgetApi],
     ) -> Result<()> {
-        let key = keys::categories_key(month, year);
+        let key = keys::categories_key(month, year, currency);
         let ttl_seconds = self.cache_service.config().categories_ttl.as_secs() as usize;
 
         self.cache_service.cache_data(&key, &categories.to_vec(), ttl_seconds).await
@@ -70,8 +73,9 @@ impl BudgetCache {
         &self,
         month: &str,
         year: &str,
+        currency: Option<&str>,
     ) -> Result<Option<Vec<CategoryBudgetApi>>> {
-        let key = keys::categories_key(month, year);
+        let key = keys::categories_key(month, year, currency);
 
         self.cache_service.get_cached_data::<Vec<CategoryBudgetApi>>(&key).await
     }
@@ -103,9 +107,10 @@ impl BudgetCache {
         &self,
         month: &str,
         year: &str,
+        currency: Option<&str>,
     ) -> Result<()> {
-        let overview_key = keys::overview_key(month, year);
-        let categories_key = keys::categories_key(month, year);
+        let overview_key = keys::overview_key(month, year, currency);
+        let categories_key = keys::categories_key(month, year, currency);
 
         self.cache_service.invalidate_multiple_keys(&[&overview_key, &categories_key]).await
     }

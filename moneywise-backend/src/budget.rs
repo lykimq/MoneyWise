@@ -37,6 +37,7 @@ pub type AppState = (PgPool, BudgetCache);
 pub struct BudgetQuery {
     pub month: Option<i16>,  // smallint in PostgreSQL - matches database schema
     pub year: Option<i32>,
+    pub currency: Option<String>,
 }
 
 /// Creates and configures the budget router with all budget-related endpoints
@@ -131,6 +132,7 @@ async fn get_category_budgets(
     pool: &PgPool,
     month: i16,
     year: i32,
+    currency: Option<&str>,
 ) -> Result<Vec<CategoryBudgetApi>> {
     let rows = sqlx::query!(
         r#"
@@ -143,15 +145,17 @@ async fn get_category_budgets(
             b.planned,
             b.spent,
             b.carryover,
-            b.currency
+            TRIM(b.currency) as "currency!"
         FROM budgets b
         JOIN categories c ON b.category_id = c.id
         LEFT JOIN category_groups cg ON c.group_id = cg.id
         WHERE b.month = $1 AND b.year = $2
+        AND ($3::text IS NULL OR b.currency = $3)
         ORDER BY COALESCE(cg.sort_order, 999), c.name
         "#,
         month as i16,
-        year
+        year,
+        currency
     )
     .fetch_all(pool)
     .await?;
@@ -207,16 +211,18 @@ async fn get_budget_overview(
     let month_str = month.to_string();
     let year_str = year.to_string();
 
+    let currency_filter = query.currency.as_deref();
+
     // Try to get data from cache first
-    if let Some(cached_overview) = cache.get_cached_budget_overview(&month_str, &year_str).await? {
+    if let Some(cached_overview) = cache.get_cached_budget_overview(&month_str, &year_str, currency_filter).await? {
         return Ok(Json(cached_overview));
     }
 
     // Cache miss - fetch from database and cache the result
-    let overview = get_budget_overview_data(&pool, month, year).await?;
+    let overview = get_budget_overview_data(&pool, month, year, currency_filter).await?;
 
     // Cache the result for future requests (don't block on cache write)
-    let _ = cache.cache_budget_overview(&month_str, &year_str, &overview).await;
+    let _ = cache.cache_budget_overview(&month_str, &year_str, currency_filter, &overview).await;
 
     Ok(Json(overview))
 }
@@ -247,8 +253,9 @@ async fn get_budgets(
     let year_str = year.to_string();
 
     // Try to get cached data first
-    let cached_overview = cache.get_cached_budget_overview(&month_str, &year_str).await?;
-    let cached_categories = cache.get_cached_category_budgets(&month_str, &year_str).await?;
+    let currency_filter = query.currency.as_deref();
+    let cached_overview = cache.get_cached_budget_overview(&month_str, &year_str, currency_filter).await?;
+    let cached_categories = cache.get_cached_category_budgets(&month_str, &year_str, currency_filter).await?;
 
     let (overview, categories) = match (cached_overview, cached_categories) {
         (Some(overview), Some(categories)) => {
@@ -258,13 +265,13 @@ async fn get_budgets(
         _ => {
             // Cache miss - fetch from database and cache the results
             let (overview, categories) = tokio::try_join!(
-                get_budget_overview_data(&pool, month, year),
-                get_category_budgets(&pool, month, year),
+                get_budget_overview_data(&pool, month, year, currency_filter),
+                get_category_budgets(&pool, month, year, currency_filter),
             )?;
 
             // Cache the results for future requests (don't block on cache writes)
-            let _ = cache.cache_budget_overview(&month_str, &year_str, &overview).await;
-            let _ = cache.cache_category_budgets(&month_str, &year_str, &categories).await;
+            let _ = cache.cache_budget_overview(&month_str, &year_str, currency_filter, &overview).await;
+            let _ = cache.cache_category_budgets(&month_str, &year_str, currency_filter, &categories).await;
 
             (overview, categories)
         }
@@ -292,6 +299,7 @@ async fn get_budget_overview_data(
     pool: &PgPool,
     month: i16,
     year: i32,
+    currency: Option<&str>,
 ) -> Result<BudgetOverviewApi> {
     let result = sqlx::query!(
         r#"
@@ -299,14 +307,16 @@ async fn get_budget_overview_data(
             COALESCE(SUM(planned), 0) as planned,
             COALESCE(SUM(spent), 0) as spent,
             COALESCE(SUM(carryover), 0) as carryover,
-            currency
+            TRIM(currency) as "currency!"
         FROM budgets
         WHERE month = $1::smallint AND year = $2
+        AND ($3::text IS NULL OR currency = $3)
         GROUP BY currency
         LIMIT 1
         "#,
         month as i16,
-        year
+        year,
+        currency
     )
     .fetch_optional(pool)
     .await?;
@@ -329,7 +339,7 @@ async fn get_budget_overview_data(
             planned: Decimal::from(0),
             spent: Decimal::from(0),
             remaining: Decimal::from(0),
-            currency: "EUR".to_string(),
+            currency: currency.unwrap_or("EUR").to_string(),
         })
     }
 }
@@ -347,7 +357,7 @@ async fn create_budget(
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Validate input data
-    if payload.planned >= Decimal::from(0) {
+    if payload.planned <= Decimal::from(0) {
         return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
     }
 
@@ -443,7 +453,7 @@ async fn create_budget(
     // This ensures cache consistency when new data is added
     let month_str = budget.month.to_string();
     let year_str = budget.year.to_string();
-    let _ = cache.invalidate_month_cache(&month_str, &year_str).await;
+    let _ = cache.invalidate_month_cache(&month_str, &year_str, Some(payload.currency.as_str())).await;
 
     Ok(Json(budget_api))
 }
@@ -508,6 +518,7 @@ async fn update_budget(
     .await?;
 
     // Convert to API model with proper timezone handling
+    let currency_owned = updated_budget.currency.clone();
     let budget_api = BudgetApi {
         id: updated_budget.id.to_string(),
         month: updated_budget.month,
@@ -516,7 +527,7 @@ async fn update_budget(
         planned: updated_budget.planned,
         spent: updated_budget.spent,
         carryover: updated_budget.carryover,
-        currency: updated_budget.currency,
+        currency: currency_owned.clone(),
         created_at: updated_budget.created_at,
         updated_at: updated_budget.updated_at,
     };
@@ -526,7 +537,7 @@ async fn update_budget(
     let month_str = updated_budget.month.to_string();
     let year_str = updated_budget.year.to_string();
     let _ = cache.invalidate_budget_cache(&id).await;
-    let _ = cache.invalidate_month_cache(&month_str, &year_str).await;
+    let _ = cache.invalidate_month_cache(&month_str, &year_str, Some(currency_owned.as_str())).await;
 
     Ok(Json(budget_api))
 }
