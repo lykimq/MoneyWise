@@ -349,6 +349,23 @@ async fn create_budget(
         return Err(AppError::Validation("Currency is required".to_string()));
     }
 
+    // Validate optional month/year range to match database constraints
+    if let Some(m) = payload.month {
+        if m < 1 || m > 12 {
+            return Err(AppError::Validation("Month must be between 1 and 12".to_string()));
+        }
+    }
+    if let Some(y) = payload.year {
+        if y < 2000 {
+            return Err(AppError::Validation("Year must be 2000 or later".to_string()));
+        }
+    }
+
+    // Validate currency length to match char(3)
+    if payload.currency.len() != 3 {
+        return Err(AppError::Validation("Currency must be a 3-letter code".to_string()));
+    }
+
     // Parse category_id to UUID
     let category_id = Uuid::parse_str(&payload.category_id)
         .map_err(|_| AppError::Validation("Invalid category ID format".to_string()))?;
