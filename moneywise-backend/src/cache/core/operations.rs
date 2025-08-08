@@ -2,7 +2,7 @@
 // Provides low-level Redis operations with proper error handling
 
 use redis::{aio::ConnectionManager, AsyncCommands};
-use tracing::{info, warn, error};
+use tracing::{debug, warn, error};
 
 use crate::error::{AppError, Result};
 use crate::cache::core::retry::with_retry;
@@ -30,12 +30,12 @@ pub async fn set_with_ttl(
         async move {
             match conn.set_ex::<_, _, ()>(&key, &value, ttl_seconds as u64).await {
                 Ok(_) => {
-                    info!("Cached data for key {} with TTL {}s", key, ttl_seconds);
+                    debug!("Cached data for key {} with TTL {}s", key, ttl_seconds);
                     Ok(())
                 }
                 Err(e) => {
                     warn!("Failed to cache data for key {}: {}", key, e);
-                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                    Err(AppError::from(e))
                 }
             }
         }
@@ -44,7 +44,7 @@ pub async fn set_with_ttl(
 
 /// Gets a value from Redis by key
 /// Returns deserialized data or None if not found
-pub async fn get_value<T: serde::de::DeserializeOwned>(
+pub async fn get_value<T: serde::de::DeserializeOwned + Send + 'static>(
     conn: &ConnectionManager,
     config: &CacheConfig,
     key: &str,
@@ -61,7 +61,7 @@ pub async fn get_value<T: serde::de::DeserializeOwned>(
                 Ok(Some(json)) => {
                     match deserialize::<T>(json) {
                         Ok(Some(data)) => {
-                            info!("Cache hit for key {}", key);
+                            debug!("Cache hit for key {}", key);
                             Ok(Some(data))
                         }
                         Ok(None) => {
@@ -70,17 +70,23 @@ pub async fn get_value<T: serde::de::DeserializeOwned>(
                         }
                         Err(e) => {
                             error!("Failed to deserialize cached data for key {}: {}", key, e);
+                            // Self-heal: purge the corrupt key and return None
+                            // Clone again inside to satisfy Send bounds for retry wrapper
+                            let inner_conn = conn.clone();
+                            let inner_key = key.clone();
+                            let keys: [&str; 1] = [&inner_key];
+                            let _ = delete_keys(&inner_conn, config, &keys).await;
                             Ok(None)
                         }
                     }
                 }
                 Ok(None) => {
-                    info!("Cache miss for key {}", key);
+                    debug!("Cache miss for key {}", key);
                     Ok(None)
                 }
                 Err(e) => {
                     warn!("Redis error for key {}: {}", key, e);
-                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                    Err(AppError::from(e))
                 }
             }
         }
@@ -111,12 +117,12 @@ pub async fn delete_keys(
         async move {
             match conn.del::<_, ()>(&keys).await {
                 Ok(_) => {
-                    info!("Deleted keys: {:?}", keys);
+                    debug!("Deleted keys: {:?}", keys);
                     Ok(())
                 }
                 Err(e) => {
                     warn!("Failed to delete keys {:?}: {}", keys, e);
-                    Err(AppError::Internal(format!("Redis cache error: {}", e)))
+                    Err(AppError::from(e))
                 }
             }
         }
