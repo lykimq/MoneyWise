@@ -62,6 +62,20 @@ pub struct BudgetQuery {
 /// - POST / - Create a new budget
 /// - PUT /:id - Update an existing budget
 /// - GET /:id - Get a specific budget by ID
+///
+/// # Examples
+///
+/// ```ignore
+/// use axum::Router;
+/// use moneywise_backend::budget::{budget_routes, AppState};
+/// # use sqlx::PgPool;
+/// # use moneywise_backend::cache::domains::budget::BudgetCache;
+/// # async fn build_state() -> AppState { todo!() }
+/// # async fn example() {
+/// let state: AppState = build_state().await;
+/// let app: Router<AppState> = Router::new().nest("/budgets", budget_routes()).with_state(state);
+/// # }
+/// ```
 pub fn budget_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(get_budgets))
@@ -78,6 +92,24 @@ pub fn budget_routes() -> Router<AppState> {
 /// Retrieves budget overview for a specific month/year.
 ///
 /// Lightweight alternative to the full response; great for dashboards/widgets.
+///
+/// # Examples
+///
+/// Request (current month/year by default):
+/// ```bash
+/// curl -s \
+///   "http://localhost:3000/budgets/overview?currency=EUR"
+/// ```
+///
+/// Response body (JSON):
+/// ```json
+/// {
+///   "planned": "1200.00",
+///   "spent": "850.50",
+///   "remaining": "349.50",
+///   "currency": "EUR"
+/// }
+/// ```
 async fn get_budget_overview(
     State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
@@ -119,6 +151,38 @@ async fn get_budget_overview(
 /// - Performs calculations in database queries (better performance than in-memory)
 /// - Uses proper indexing on month/year columns for fast filtering
 /// - Implements Redis caching for frequently accessed data
+///
+/// # Examples
+///
+/// Request:
+/// ```bash
+/// curl -s \
+///   "http://localhost:3000/budgets?month=6&year=2025&currency=EUR"
+/// ```
+///
+/// Response body (JSON):
+/// ```json
+/// {
+///   "overview": { "planned": "1200.00", "spent": "850.50", "remaining": "349.50", "currency": "EUR" },
+///   "categories": [
+///     {
+///       "id": "b8e6...",
+///       "category_name": "Groceries",
+///       "group_name": "Household",
+///       "category_color": "#00AA88",
+///       "group_color": "#224466",
+///       "planned": "400.00",
+///       "spent": "350.25",
+///       "remaining": "49.75",
+///       "percentage": "87.5625",
+///       "currency": "EUR"
+///     }
+///   ],
+///   "insights": [
+///     { "type_": "positive", "message": "You have $349.50 remaining for other expenses", "icon": "checkmark-circle-outline", "color": "#4ECDC4" }
+///   ]
+/// }
+/// ```
 async fn get_budgets(
     State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
@@ -180,6 +244,37 @@ async fn get_budgets(
 /// - Uses parameterized queries to prevent SQL injection
 /// - Returns complete budget object for immediate use
 /// - Invalidates related cache entries to ensure data consistency
+///
+/// # Examples
+///
+/// Request:
+/// ```bash
+/// curl -s -X POST "http://localhost:3000/budgets" \
+///   -H 'Content-Type: application/json' \
+///   -d '{
+///         "category_id": "7f1e1c6a-3a3e-4b32-a3d1-8d1cc3dfaa10",
+///         "planned": "250.00",
+///         "currency": "EUR",
+///         "month": 6,
+///         "year": 2025
+///       }'
+/// ```
+///
+/// Response body (JSON):
+/// ```json
+/// {
+///   "id": "c0a8...",
+///   "month": 6,
+///   "year": 2025,
+///   "category_id": "7f1e1c6a-3a3e-4b32-a3d1-8d1cc3dfaa10",
+///   "planned": "250.00",
+///   "spent": "0",
+///   "carryover": "0",
+///   "currency": "EUR",
+///   "created_at": "2025-06-10T12:34:56Z",
+///   "updated_at": "2025-06-10T12:34:56Z"
+/// }
+/// ```
 async fn create_budget(
     State((pool, cache)): State<AppState>,
     Json(payload): Json<CreateBudgetRequest>,
@@ -294,6 +389,31 @@ async fn create_budget(
 /// - Updates timestamp automatically
 /// - Returns complete updated object
 /// - Invalidates related cache entries to ensure data consistency
+///
+/// # Examples
+///
+/// Request:
+/// ```bash
+/// curl -s -X PUT "http://localhost:3000/budgets/8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a" \
+///   -H 'Content-Type: application/json' \
+///   -d '{ "planned": "300.00", "carryover": "10.00" }'
+/// ```
+///
+/// Response body (JSON):
+/// ```json
+/// {
+///   "id": "8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a",
+///   "month": 6,
+///   "year": 2025,
+///   "category_id": "7f1e1c6a-3a3e-4b32-a3d1-8d1cc3dfaa10",
+///   "planned": "300.00",
+///   "spent": "150.00",
+///   "carryover": "10.00",
+///   "currency": "EUR",
+///   "created_at": "2025-06-10T12:34:56Z",
+///   "updated_at": "2025-06-11T08:00:00Z"
+/// }
+/// ```
 async fn update_budget(
     State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
@@ -376,6 +496,29 @@ async fn update_budget(
 /// - Returns 404 if budget not found (proper REST semantics)
 /// - Uses proper error mapping for database errors
 /// - Implements caching for frequently accessed individual budgets
+///
+/// # Examples
+///
+/// Request:
+/// ```bash
+/// curl -s "http://localhost:3000/budgets/8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a"
+/// ```
+///
+/// Response body (JSON):
+/// ```json
+/// {
+///   "id": "8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a",
+///   "month": 6,
+///   "year": 2025,
+///   "category_id": "7f1e1c6a-3a3e-4b32-a3d1-8d1cc3dfaa10",
+///   "planned": "300.00",
+///   "spent": "150.00",
+///   "carryover": "10.00",
+///   "currency": "EUR",
+///   "created_at": "2025-06-10T12:34:56Z",
+///   "updated_at": "2025-06-11T08:00:00Z"
+/// }
+/// ```
 async fn get_budget_by_id(
     State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
