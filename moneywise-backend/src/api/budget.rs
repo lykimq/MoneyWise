@@ -41,8 +41,6 @@ pub fn budget_routes() -> Router<AppState> {
         .route("/:id", get(get_budget_by_id))
 }
 
-/// Backwards-compat wrapper used by `api::create_api_router`
-pub fn create_budget_routes() -> Router<AppState> { budget_routes() }
 
 // ================================================================
 // 2) Public HTTP handlers
