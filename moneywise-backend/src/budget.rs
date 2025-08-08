@@ -308,20 +308,30 @@ async fn get_budget_overview_data(
         month as i16,
         year
     )
-    .fetch_one(pool)
+    .fetch_optional(pool)
     .await?;
 
-    let planned = result.planned.unwrap_or_default();
-    let spent = result.spent.unwrap_or_default();
-    let carryover = result.carryover.unwrap_or_default();
-    let remaining = &planned - &spent + &carryover;
+    if let Some(result) = result {
+        let planned = result.planned.unwrap_or_default();
+        let spent = result.spent.unwrap_or_default();
+        let carryover = result.carryover.unwrap_or_default();
+        let remaining = &planned - &spent + &carryover;
 
-    Ok(BudgetOverviewApi {
-        planned,
-        spent,
-        remaining,
-        currency: result.currency,
-    })
+        Ok(BudgetOverviewApi {
+            planned,
+            spent,
+            remaining,
+            currency: result.currency,
+        })
+    } else {
+        // No budgets for this month/year: return zeros and a default currency
+        Ok(BudgetOverviewApi {
+            planned: Decimal::from(0),
+            spent: Decimal::from(0),
+            remaining: Decimal::from(0),
+            currency: "EUR".to_string(),
+        })
+    }
 }
 
 /// Creates a new budget entry
