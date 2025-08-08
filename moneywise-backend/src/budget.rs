@@ -334,12 +334,14 @@ async fn get_budget_overview_data(
             currency: result.currency,
         })
     } else {
-        // No budgets for this month/year: return zeros and a default currency
+        // No budgets for this month/year: return zeros and a default currency (EUR) if not provided
+        let currency_fallback = currency.unwrap_or("EUR").to_string();
+
         Ok(BudgetOverviewApi {
             planned: Decimal::from(0),
             spent: Decimal::from(0),
             remaining: Decimal::from(0),
-            currency: currency.unwrap_or("EUR").to_string(),
+            currency: currency_fallback,
         })
     }
 }
