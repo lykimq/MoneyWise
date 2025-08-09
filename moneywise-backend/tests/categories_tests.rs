@@ -39,12 +39,23 @@ async fn categories_roundtrip() {
         },
     ];
 
+    // verify the categories are not cached before caching where the month is January and the year is 2024 and the currency is USD, it is a fixed month, year and currency for this test to run correctly
     assert!(cache.get_cached_category_budgets("January", "2024", Some("USD")).await.is_none());
+
+    // cache the categories
     cache.cache_category_budgets("January", "2024", Some("USD"), &categories).await;
+
+    // verify the categories are cached
     let cached = cache.get_cached_category_budgets("January", "2024", Some("USD")).await;
     assert!(cached.is_some());
+
+    // verify the categories are in the cache
     let cached_categories = cached.unwrap();
+
+    // verify the categories are in the correct number
     assert_eq!(cached_categories.len(), 2);
+
+    // verify the categories are in the correct order
     assert_eq!(cached_categories[0].category_name, "Food");
     assert_eq!(cached_categories[1].category_name, "Transport");
 }
