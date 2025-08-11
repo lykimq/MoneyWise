@@ -3,8 +3,14 @@
  * In development this points to the local backend exposed under `/api`.
  * The backend HTTP server and route mounting live in the Rust project
  * (see `moneywise-backend/src/api/mod.rs` for route wiring and handlers).
+ *
+ * Production-ready configuration:
+ *   Use the Expo-supported public env var `EXPO_PUBLIC_API_BASE_URL` to set
+ *   this value per environment (dev/staging/prod). Falls back to localhost
+ *   if not provided.
  */
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL =
+    process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api';
 
 export class HttpClient {
     private baseUrl: string;
