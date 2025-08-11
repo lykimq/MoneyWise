@@ -13,7 +13,21 @@ pub mod budget;
 /// This function combines all API routes into a single router
 /// and returns the router with state already configured
 pub fn create_api_router() -> Router<(PgPool, BudgetCache)> {
-    budget::budget_routes()
+    /*
+     * Frontend linkage:
+     * - The MoneyWise web app consumes these routes via the service client in
+     *   `moneywise-app/src/services/budget/client.ts` using paths like:
+     *       GET    /api/budgets
+     *       GET    /api/budgets/overview
+     *       POST   /api/budgets
+     *       PUT    /api/budgets/{id}
+     *       GET    /api/budgets/{id}
+     * - Keep the response JSON shape in sync with the TypeScript types in
+     *   `moneywise-app/src/services/budget/types.ts`.
+     * - This module is typically mounted under the "/api" prefix in the main
+     *   server/router configuration.
+     */
+    Router::new().nest("/budgets", budget::budget_routes())
     // Future API routes can be added here by merging routers:
     // .merge(transactions::create_transaction_routes())
     // .merge(goals::create_goal_routes())
