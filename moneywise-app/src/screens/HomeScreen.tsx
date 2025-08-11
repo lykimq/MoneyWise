@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -6,10 +6,37 @@ import {
     ScrollView,
     TouchableOpacity,
     SafeAreaView,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import apiService, { BudgetOverviewApi } from '../services/api';
 
 const HomeScreen: React.FC = () => {
+    const [overview, setOverview] = useState<BudgetOverviewApi | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchOverview = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const now = new Date();
+                const data = await apiService.getBudgetOverview({
+                    month: String(now.getMonth() + 1),
+                    year: String(now.getFullYear()),
+                });
+                setOverview(data);
+            } catch (e) {
+                console.error('Failed to fetch budget overview:', e);
+                setError('Failed to load');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOverview();
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
@@ -17,12 +44,24 @@ const HomeScreen: React.FC = () => {
                 <View style={styles.overviewContainer}>
                     <View style={styles.overviewCard}>
                         <Text style={styles.overviewLabel}>Total Spent</Text>
-                        <Text style={styles.overviewAmount}>$2,450</Text>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#007AFF" />
+                        ) : (
+                            <Text style={styles.overviewAmount}>
+                                {overview ? `$${Number(overview.spent).toLocaleString()}` : '—'}
+                            </Text>
+                        )}
                         <Text style={styles.overviewPeriod}>This Month</Text>
                     </View>
                     <View style={styles.overviewCard}>
                         <Text style={styles.overviewLabel}>Remaining</Text>
-                        <Text style={styles.overviewAmount}>$550</Text>
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#007AFF" />
+                        ) : (
+                            <Text style={styles.overviewAmount}>
+                                {overview ? `$${Number(overview.remaining).toLocaleString()}` : '—'}
+                            </Text>
+                        )}
                         <Text style={styles.overviewPeriod}>This Month</Text>
                     </View>
                     <View style={styles.overviewCard}>
