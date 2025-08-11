@@ -9,8 +9,18 @@
  *   this value per environment (dev/staging/prod). Falls back to localhost
  *   if not provided.
  */
-const API_BASE_URL =
-    process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000/api';
+import { Platform } from 'react-native';
+
+// Default base URL with platform-aware fallback for Android emulator.
+// - Prefer EXPO_PUBLIC_API_BASE_URL when provided (use this for physical devices: http://<LAN-IP>:3000/api)
+// - On Android emulator, 'localhost' points to the emulator itself. Use 10.0.2.2 to reach the host machine.
+// - On iOS simulator and web, 'http://localhost:3000/api' works.
+const API_BASE_URL = (() => {
+    const fromEnv = process.env.EXPO_PUBLIC_API_BASE_URL;
+    if (fromEnv && fromEnv.length > 0) return fromEnv;
+    if (Platform.OS === 'android') return 'http://10.0.2.2:3000/api';
+    return 'http://localhost:3000/api';
+})();
 
 export class HttpClient {
     private baseUrl: string;
