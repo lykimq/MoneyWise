@@ -1,131 +1,42 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+/**
+ * Public API surface for service calls used by the app.
+ * This file re-exports the Budget domain and provides a single `apiService` facade.
+ *
+ * Frontend note:
+ *   Prefer importing domain-specific clients from `./budget` when you need
+ *   richer typing and methods. `apiService` is a convenience wrapper.
+ *
+ * Backend note:
+ *   Methods map to REST endpoints implemented in `moneywise-backend`, e.g.:
+ *     GET    /api/budgets
+ *     GET    /api/budgets/overview
+ *     POST   /api/budgets
+ *     PUT    /api/budgets/{id}
+ *     GET    /api/budgets/{id}
+ *   See `moneywise-backend/src/api/mod.rs` for router setup.
+ */
+// Thin compatibility wrapper. Prefer importing from './budget'.
+export * from './budget';
 
-export interface BudgetOverview {
-    planned: number;
-    spent: number;
-    remaining: number;
-    currency: string;
-}
+import { budgetClient } from './budget';
+import type {
+    BudgetApi,
+    BudgetOverviewApi,
+    BudgetResponse,
+    CreateBudgetRequest,
+    UpdateBudgetRequest,
+} from './budget';
 
-export interface CategoryBudget {
-    id: string;
-    category_name: string;
-    group_name: string;
-    category_color: string;
-    group_color: string;
-    planned: number;
-    spent: number;
-    remaining: number;
-    percentage: number;
-    currency: string;
-}
+export const apiService = {
+    getBudgets: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetResponse> =>
+        budgetClient.list(params),
+    getBudgetOverview: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetOverviewApi> =>
+        budgetClient.overview(params),
+    createBudget: (budget: CreateBudgetRequest): Promise<BudgetApi> =>
+        budgetClient.create(budget),
+    updateBudget: (id: string, budget: UpdateBudgetRequest): Promise<BudgetApi> =>
+        budgetClient.update(id, budget),
+    getBudgetById: (id: string): Promise<BudgetApi> => budgetClient.getById(id),
+};
 
-export interface BudgetInsight {
-    type_: string;
-    message: string;
-    icon: string;
-    color: string;
-}
-
-export interface BudgetResponse {
-    overview: BudgetOverview;
-    categories: CategoryBudget[];
-    insights: BudgetInsight[];
-}
-
-export interface CreateBudgetRequest {
-    category_id: string;
-    planned: number;
-    currency: string;
-    month: string;
-    year: string;
-}
-
-export interface UpdateBudgetRequest {
-    planned?: number;
-    carryover?: number;
-}
-
-class ApiService {
-    private baseUrl: string;
-
-    constructor(baseUrl: string = API_BASE_URL) {
-        this.baseUrl = baseUrl;
-    }
-
-    private async request<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const url = `${this.baseUrl}${endpoint}`;
-
-        const defaultOptions: RequestInit = {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-        };
-
-        const response = await fetch(url, { ...defaultOptions, ...options });
-
-        if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-        }
-
-        return response.json();
-    }
-
-    // Budget endpoints
-    async getBudgets(params?: {
-        month?: string;
-        year?: string;
-        period?: string;
-    }): Promise<BudgetResponse> {
-        const searchParams = new URLSearchParams();
-        if (params?.month) searchParams.append('month', params.month);
-        if (params?.year) searchParams.append('year', params.year);
-        if (params?.period) searchParams.append('period', params.period);
-
-        const queryString = searchParams.toString();
-        const endpoint = queryString ? `/budgets?${queryString}` : '/budgets';
-
-        return this.request<BudgetResponse>(endpoint);
-    }
-
-    async getBudgetOverview(params?: {
-        month?: string;
-        year?: string;
-        period?: string;
-    }): Promise<BudgetOverview> {
-        const searchParams = new URLSearchParams();
-        if (params?.month) searchParams.append('month', params.month);
-        if (params?.year) searchParams.append('year', params.year);
-        if (params?.period) searchParams.append('period', params.period);
-
-        const queryString = searchParams.toString();
-        const endpoint = queryString ? `/budgets/overview?${queryString}` : '/budgets/overview';
-
-        return this.request<BudgetOverview>(endpoint);
-    }
-
-    async createBudget(budget: CreateBudgetRequest): Promise<any> {
-        return this.request('/budgets', {
-            method: 'POST',
-            body: JSON.stringify(budget),
-        });
-    }
-
-    async updateBudget(id: string, budget: UpdateBudgetRequest): Promise<any> {
-        return this.request(`/budgets/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(budget),
-        });
-    }
-
-    async getBudgetById(id: string): Promise<any> {
-        return this.request(`/budgets/${id}`);
-    }
-}
-
-export const apiService = new ApiService();
 export default apiService;
