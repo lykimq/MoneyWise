@@ -10,7 +10,7 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import apiService, { BudgetResponse, CategoryBudget, BudgetInsight } from '../services/api';
+import apiService, { BudgetResponse } from '../services/api';
 
 const BudgetsScreen: React.FC = () => {
     const [selectedPeriod, setSelectedPeriod] = useState('Monthly');
@@ -18,7 +18,7 @@ const BudgetsScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const periods = ['Monthly', 'Yearly', 'Custom Range'];
+    const periods = ['Monthly', 'Yearly'];
 
     const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
         const iconMap: { [key: string]: keyof typeof Ionicons.glyphMap } = {
@@ -50,9 +50,16 @@ const BudgetsScreen: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const data = await apiService.getBudgets({
-                period: selectedPeriod.toLowerCase(),
-            });
+            const now = new Date();
+            const params: { month?: string; year?: string } = {};
+            if (selectedPeriod === 'Monthly') {
+                params.month = String(now.getMonth() + 1);
+                params.year = String(now.getFullYear());
+            } else if (selectedPeriod === 'Yearly') {
+                params.year = String(now.getFullYear());
+            }
+
+            const data = await apiService.getBudgets(params);
 
             setBudgetData(data);
         } catch (err) {
@@ -126,22 +133,22 @@ const BudgetsScreen: React.FC = () => {
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Planned</Text>
                             <Text style={styles.overviewAmount}>
-                                ${budgetData.overview.planned.toLocaleString()}
+                                ${Number(budgetData.overview.planned).toLocaleString()}
                             </Text>
                         </View>
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Spent</Text>
                             <Text style={styles.overviewAmount}>
-                                ${budgetData.overview.spent.toLocaleString()}
+                                ${Number(budgetData.overview.spent).toLocaleString()}
                             </Text>
                         </View>
                         <View style={styles.overviewCard}>
                             <Text style={styles.overviewLabel}>Remaining</Text>
                             <Text style={[
                                 styles.overviewAmount,
-                                { color: budgetData.overview.remaining >= 0 ? '#007AFF' : '#FF6B6B' }
+                                { color: Number(budgetData.overview.remaining) >= 0 ? '#007AFF' : '#FF6B6B' }
                             ]}>
-                                ${budgetData.overview.remaining.toLocaleString()}
+                                ${Number(budgetData.overview.remaining).toLocaleString()}
                             </Text>
                         </View>
                     </View>
@@ -150,11 +157,6 @@ const BudgetsScreen: React.FC = () => {
                 {/* Category Budgets */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Category Budgets</Text>
-
-                    <TouchableOpacity style={styles.addCategoryButton}>
-                        <Ionicons name="add-circle-outline" size={24} color="#007AFF" />
-                        <Text style={styles.addCategoryText}>Add Category</Text>
-                    </TouchableOpacity>
 
                     <View style={styles.categoryList}>
                         {budgetData.categories.map((category) => (
@@ -168,7 +170,7 @@ const BudgetsScreen: React.FC = () => {
                                     <View style={styles.categoryInfo}>
                                         <Text style={styles.categoryName}>{category.category_name}</Text>
                                         <Text style={styles.categoryAmount}>
-                                            ${category.spent.toLocaleString()} / ${category.planned.toLocaleString()}
+                                            ${Number(category.spent).toLocaleString()} / ${Number(category.planned).toLocaleString()}
                                         </Text>
                                     </View>
                                 </View>
@@ -177,20 +179,20 @@ const BudgetsScreen: React.FC = () => {
                                         <View style={[
                                             styles.progressFill,
                                             {
-                                                width: `${Math.min(category.percentage, 100)}%`,
-                                                backgroundColor: category.percentage > 100 ? '#FF6B6B' : category.category_color
+                                                width: `${Math.min(Number(category.percentage), 100)}%`,
+                                                backgroundColor: Number(category.percentage) > 100 ? '#FF6B6B' : category.category_color
                                             }
                                         ]} />
                                     </View>
-                                    <Text style={styles.progressText}>{Math.round(category.percentage)}%</Text>
+                                    <Text style={styles.progressText}>{Math.round(Number(category.percentage))}%</Text>
                                 </View>
                                 <Text style={[
                                     styles.remainingText,
-                                    { color: category.remaining < 0 ? '#FF6B6B' : '#666' }
+                                    { color: Number(category.remaining) < 0 ? '#FF6B6B' : '#666' }
                                 ]}>
-                                    {category.remaining >= 0
-                                        ? `-$${category.remaining.toLocaleString()} remaining`
-                                        : `+$${Math.abs(category.remaining).toLocaleString()} over budget`
+                                    {Number(category.remaining) >= 0
+                                        ? `-$${Number(category.remaining).toLocaleString()} remaining`
+                                        : `+$${Math.abs(Number(category.remaining)).toLocaleString()} over budget`
                                     }
                                 </Text>
                             </View>
@@ -396,25 +398,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#666',
     },
-    addCategoryButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
-        padding: 15,
-        borderRadius: 12,
-        marginTop: 10,
-        marginBottom: 15,
-        borderWidth: 2,
-        borderColor: '#007AFF',
-        borderStyle: 'dashed',
-    },
-    addCategoryText: {
-        fontSize: 14,
-        color: '#007AFF',
-        marginLeft: 8,
-        fontWeight: '500',
-    },
+
     insightsContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 12,
