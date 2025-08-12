@@ -1,349 +1,443 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
-    TouchableOpacity,
     SafeAreaView,
-    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import apiService, { BudgetOverviewApi } from '../services/api';
+
+// Import our custom components and hooks
+import OverviewCard from '../components/OverviewCard';
+import QuickActionButton from '../components/QuickActionButton';
+import { useBudgetOverview } from '../hooks/useBudgetOverview';
+
+/**
+ * HomeScreen Component - Refactored Version
+ *
+ * ORGANIZATION IMPROVEMENTS:
+ * 1. Separated into smaller, reusable components
+ * 2. Data fetching logic moved to custom hook
+ * 3. Styles organized by section with clear naming
+ * 4. Educational comments explaining each section
+ *
+ * ARCHITECTURE PATTERN:
+ * - Custom Hook (useBudgetOverview): Handles data fetching and state
+ * - Presentational Components: Focus only on rendering UI
+ * - Container Component (this): Orchestrates data and UI components
+ */
 
 const HomeScreen: React.FC = () => {
-    const [overview, setOverview] = useState<BudgetOverviewApi | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    // Custom hook handles all data fetching logic
+    // This separates concerns: UI logic vs Data logic
+    const { overview, loading, error } = useBudgetOverview();
 
-    useEffect(() => {
-        const fetchOverview = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const now = new Date();
-                const data = await apiService.getBudgetOverview({
-                    month: String(now.getMonth() + 1),
-                    year: String(now.getFullYear()),
-                });
-                setOverview(data);
-            } catch (e) {
-                console.error('Failed to fetch budget overview:', e);
-                setError('Failed to load');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOverview();
-    }, []);
+    /**
+     * Quick Action Handlers
+     * In a real app, these would navigate to different screens
+     * or trigger specific actions
+     */
+    const handleAddTransaction = () => {
+        console.log('Navigate to Add Transaction screen');
+        // navigation.navigate('AddTransaction');
+    };
+
+    const handleViewBudget = () => {
+        console.log('Navigate to Budget screen');
+        // navigation.navigate('Budget');
+    };
+
+    const handleGoalsProgress = () => {
+        console.log('Navigate to Goals screen');
+        // navigation.navigate('Goals');
+    };
+
+    const handleViewReports = () => {
+        console.log('Navigate to Reports screen');
+        // navigation.navigate('Reports');
+    };
+
+    const handleSearchTransactions = () => {
+        console.log('Navigate to Search screen');
+        // navigation.navigate('Search');
+    };
+
+    const handleUpcomingBills = () => {
+        console.log('Navigate to Bills screen');
+        // navigation.navigate('Bills');
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
-                {/* Spending Overview Cards */}
-                <View style={styles.overviewContainer}>
-                    <View style={styles.overviewCard}>
-                        <Text style={styles.overviewLabel}>Total Spent</Text>
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#007AFF" />
-                        ) : (
-                            <Text style={styles.overviewAmount}>
-                                {overview ? `$${Number(overview.spent).toLocaleString()}` : '—'}
-                            </Text>
-                        )}
-                        <Text style={styles.overviewPeriod}>This Month</Text>
-                    </View>
-                    <View style={styles.overviewCard}>
-                        <Text style={styles.overviewLabel}>Remaining</Text>
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#007AFF" />
-                        ) : (
-                            <Text style={styles.overviewAmount}>
-                                {overview ? `$${Number(overview.remaining).toLocaleString()}` : '—'}
-                            </Text>
-                        )}
-                        <Text style={styles.overviewPeriod}>This Month</Text>
-                    </View>
-                    <View style={styles.overviewCard}>
-                        <Text style={styles.overviewLabel}>Savings</Text>
-                        <Text style={styles.overviewAmount}>$1,200</Text>
-                        <Text style={styles.overviewPeriod}>Progress</Text>
-                    </View>
+
+                {/* SECTION 1: Budget Overview Cards */}
+                <View style={styles.overviewSection}>
+                    <OverviewCard
+                        label="Total Spent"
+                        amount={overview?.spent || 0}
+                        period="This Month"
+                        loading={loading}
+                        color="#FF6B6B" // Red for spending
+                    />
+                    <OverviewCard
+                        label="Remaining"
+                        amount={overview?.remaining || 0}
+                        period="This Month"
+                        loading={loading}
+                        color="#4ECDC4" // Teal for remaining budget
+                    />
+                    <OverviewCard
+                        label="Savings"
+                        amount={1200} // This would come from API in real app
+                        period="Progress"
+                        loading={false}
+                        color="#45B7D1" // Blue for savings
+                    />
                 </View>
 
-                {/* Quick Actions */}
+                {/* SECTION 2: Quick Actions Grid */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Quick Actions</Text>
                     <View style={styles.quickActionsGrid}>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="add-circle-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>Add Transaction</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="bar-chart-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>View Budget</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="flag-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>Goals Progress</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="analytics-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>View Reports</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="search-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>Search Transactions</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionButton}>
-                            <Ionicons name="calendar-outline" size={24} color="#007AFF" />
-                            <Text style={styles.quickActionText}>Upcoming Bills</Text>
-                        </TouchableOpacity>
+                        <QuickActionButton
+                            iconName="add-circle-outline"
+                            text="Add Transaction"
+                            onPress={handleAddTransaction}
+                        />
+                        <QuickActionButton
+                            iconName="bar-chart-outline"
+                            text="View Budget"
+                            onPress={handleViewBudget}
+                        />
+                        <QuickActionButton
+                            iconName="flag-outline"
+                            text="Goals Progress"
+                            onPress={handleGoalsProgress}
+                        />
+                        <QuickActionButton
+                            iconName="analytics-outline"
+                            text="View Reports"
+                            onPress={handleViewReports}
+                        />
+                        <QuickActionButton
+                            iconName="search-outline"
+                            text="Search Transactions"
+                            onPress={handleSearchTransactions}
+                        />
+                        <QuickActionButton
+                            iconName="calendar-outline"
+                            text="Upcoming Bills"
+                            onPress={handleUpcomingBills}
+                        />
                     </View>
                 </View>
 
-                {/* Spending by Category */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Spending by Category</Text>
-                    <View style={styles.categoryChart}>
-                        <View style={styles.chartPlaceholder}>
-                            <Ionicons name="pie-chart-outline" size={48} color="#007AFF" />
-                            <Text style={styles.chartPlaceholderText}>Pie Chart</Text>
-                        </View>
-                    </View>
-                    <View style={styles.categoryList}>
-                        <View style={styles.categoryItem}>
-                            <Ionicons name="home-outline" size={20} color="#007AFF" />
-                            <Text style={styles.categoryText}>Housing: $800</Text>
-                        </View>
-                        <View style={styles.categoryItem}>
-                            <Ionicons name="restaurant-outline" size={20} color="#007AFF" />
-                            <Text style={styles.categoryText}>Dining: $450</Text>
-                        </View>
-                        <View style={styles.categoryItem}>
-                            <Ionicons name="car-outline" size={20} color="#007AFF" />
-                            <Text style={styles.categoryText}>Transport: $300</Text>
-                        </View>
-                        <View style={styles.categoryItem}>
-                            <Ionicons name="bag-outline" size={20} color="#007AFF" />
-                            <Text style={styles.categoryText}>Shopping: $400</Text>
-                        </View>
-                    </View>
-                </View>
+                {/* SECTION 3: Spending by Category */}
+                <CategorySpendingSection />
 
-                {/* Recent Transactions */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Recent Transactions</Text>
-                    <View style={styles.transactionList}>
-                        <View style={styles.transactionItem}>
-                            <View style={styles.transactionIcon}>
-                                <Ionicons name="restaurant-outline" size={24} color="#FF6B6B" />
-                            </View>
-                            <View style={styles.transactionDetails}>
-                                <Text style={styles.transactionTitle}>Dining Out</Text>
-                                <Text style={styles.transactionTime}>Today 2:30 PM</Text>
-                            </View>
-                            <Text style={styles.transactionAmount}>-$45.00</Text>
-                        </View>
-                        <View style={styles.transactionItem}>
-                            <View style={styles.transactionIcon}>
-                                <Ionicons name="home-outline" size={24} color="#4ECDC4" />
-                            </View>
-                            <View style={styles.transactionDetails}>
-                                <Text style={styles.transactionTitle}>Rent Payment</Text>
-                                <Text style={styles.transactionTime}>Yesterday 9:00 AM</Text>
-                            </View>
-                            <Text style={styles.transactionAmount}>-$1,200.00</Text>
-                        </View>
-                        <View style={styles.transactionItem}>
-                            <View style={styles.transactionIcon}>
-                                <Ionicons name="cash-outline" size={24} color="#45B7D1" />
-                            </View>
-                            <View style={styles.transactionDetails}>
-                                <Text style={styles.transactionTitle}>Salary</Text>
-                                <Text style={styles.transactionTime}>2 days ago 9:00 AM</Text>
-                            </View>
-                            <Text style={styles.transactionAmount}>+$3,500.00</Text>
-                        </View>
-                    </View>
-                </View>
+                {/* SECTION 4: Recent Transactions */}
+                <RecentTransactionsSection />
 
-                {/* Upcoming Bills */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Upcoming Bills</Text>
-                    <View style={styles.billsList}>
-                        <View style={styles.billItem}>
-                            <Ionicons name="phone-portrait-outline" size={20} color="#FF6B6B" />
-                            <Text style={styles.billText}>Phone Bill - $85 due in 3 days</Text>
-                        </View>
-                        <View style={styles.billItem}>
-                            <Ionicons name="flash-outline" size={20} color="#FF6B6B" />
-                            <Text style={styles.billText}>Electricity - $120 due in 5 days</Text>
-                        </View>
-                    </View>
-                </View>
+                {/* SECTION 5: Upcoming Bills */}
+                <UpcomingBillsSection />
+
             </ScrollView>
         </SafeAreaView>
     );
 };
 
+/**
+ * CategorySpendingSection Component
+ *
+ * Extracted as separate component for better organization
+ * In a larger app, this might be in its own file
+ */
+const CategorySpendingSection: React.FC = () => (
+    <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Spending by Category</Text>
+
+        {/* Chart Placeholder - In real app, this would be a chart library component */}
+        <View style={styles.chartContainer}>
+            <View style={styles.chartPlaceholder}>
+                <Ionicons name="pie-chart-outline" size={48} color="#007AFF" />
+                <Text style={styles.chartPlaceholderText}>Pie Chart</Text>
+            </View>
+        </View>
+
+        {/* Category List - Shows spending breakdown */}
+        <View style={styles.categoryList}>
+            <CategoryItem iconName="home-outline" text="Housing: $800" />
+            <CategoryItem iconName="restaurant-outline" text="Dining: $450" />
+            <CategoryItem iconName="car-outline" text="Transport: $300" />
+            <CategoryItem iconName="bag-outline" text="Shopping: $400" />
+        </View>
+    </View>
+);
+
+/**
+ * CategoryItem Component
+ * Small reusable component for category display
+ */
+const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
+    <View style={styles.categoryItem}>
+        <Ionicons name={iconName} size={20} color="#007AFF" />
+        <Text style={styles.categoryText}>{text}</Text>
+    </View>
+);
+
+/**
+ * RecentTransactionsSection Component
+ * Shows recent transaction history
+ */
+const RecentTransactionsSection: React.FC = () => (
+    <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <View style={styles.transactionList}>
+            <TransactionItem
+                iconName="restaurant-outline"
+                iconColor="#FF6B6B"
+                title="Dining Out"
+                time="Today 2:30 PM"
+                amount="-$45.00"
+                amountColor="#FF6B6B"
+            />
+            <TransactionItem
+                iconName="home-outline"
+                iconColor="#4ECDC4"
+                title="Rent Payment"
+                time="Yesterday 9:00 AM"
+                amount="-$1,200.00"
+                amountColor="#FF6B6B"
+            />
+            <TransactionItem
+                iconName="cash-outline"
+                iconColor="#45B7D1"
+                title="Salary"
+                time="2 days ago 9:00 AM"
+                amount="+$3,500.00"
+                amountColor="#4ECDC4"
+            />
+        </View>
+    </View>
+);
+
+/**
+ * TransactionItem Component
+ * Reusable component for individual transaction display
+ */
+const TransactionItem: React.FC<{
+    iconName: keyof typeof Ionicons.glyphMap;
+    iconColor: string;
+    title: string;
+    time: string;
+    amount: string;
+    amountColor: string;
+}> = ({ iconName, iconColor, title, time, amount, amountColor }) => (
+    <View style={styles.transactionItem}>
+        <View style={styles.transactionIcon}>
+            <Ionicons name={iconName} size={24} color={iconColor} />
+        </View>
+        <View style={styles.transactionDetails}>
+            <Text style={styles.transactionTitle}>{title}</Text>
+            <Text style={styles.transactionTime}>{time}</Text>
+        </View>
+        <Text style={[styles.transactionAmount, { color: amountColor }]}>
+            {amount}
+        </Text>
+    </View>
+);
+
+/**
+ * UpcomingBillsSection Component
+ * Shows upcoming bill reminders
+ */
+const UpcomingBillsSection: React.FC = () => (
+    <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Upcoming Bills</Text>
+        <View style={styles.billsList}>
+            <BillItem iconName="phone-portrait-outline" text="Phone Bill - $85 due in 3 days" />
+            <BillItem iconName="flash-outline" text="Electricity - $120 due in 5 days" />
+        </View>
+    </View>
+);
+
+/**
+ * BillItem Component
+ * Reusable component for individual bill display
+ */
+const BillItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
+    <View style={styles.billItem}>
+        <Ionicons name={iconName} size={20} color="#FF6B6B" />
+        <Text style={styles.billText}>{text}</Text>
+    </View>
+);
+
+/**
+ * REUSABLE STYLE OBJECTS
+ *
+ * Extract common patterns into reusable objects
+ * This prevents duplication and ensures consistency
+ */
+const cardShadow = {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+};
+
+/**
+ * STYLES ORGANIZATION
+ *
+ * Organized by hierarchy and purpose:
+ * 1. Layout styles (container, sections)
+ * 2. Component-specific styles (grouped by component)
+ * 3. Text styles
+ * 4. Interactive element styles
+ *
+ * NAMING CONVENTION:
+ * - Descriptive names that indicate purpose
+ * - Grouped by component/section
+ * - Consistent naming patterns
+ */
 const styles = StyleSheet.create({
+    // === LAYOUT STYLES ===
+
+    // Main container - defines overall screen layout
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: '#F8F9FA', // Light gray background for entire screen
     },
+
+    // Scrollable content area
     scrollView: {
         flex: 1,
     },
-    overviewContainer: {
-        flexDirection: 'row',
+
+    // Generic section container - used for each major section
+    section: {
+        paddingHorizontal: 20,      // Consistent horizontal padding
+        paddingVertical: 15,        // Vertical spacing between sections
+    },
+
+    // Special section for overview cards at top
+    overviewSection: {
+        flexDirection: 'row',       // Horizontal layout for cards
         paddingHorizontal: 20,
         paddingVertical: 20,
-        gap: 10,
+        gap: 10,                    // Space between cards
     },
-    overviewCard: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-        padding: 15,
-        borderRadius: 12,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    overviewLabel: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 5,
-    },
-    overviewAmount: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#007AFF',
-        marginBottom: 5,
-    },
-    overviewPeriod: {
-        fontSize: 10,
-        color: '#999',
-    },
-    section: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-    },
+
+    // === TEXT STYLES ===
+
+    // Section headers - consistent styling for all section titles
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
         marginBottom: 15,
     },
+
+    // === QUICK ACTIONS STYLES ===
+
+    // Grid layout for quick action buttons
     quickActionsGrid: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
+        flexWrap: 'wrap',          // Allow wrapping to next row
+        gap: 10,                   // Space between buttons
     },
-    quickActionButton: {
-        width: '30%',
-        backgroundColor: '#FFFFFF',
-        padding: 15,
-        borderRadius: 12,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    quickActionText: {
-        fontSize: 12,
-        color: '#333',
-        marginTop: 8,
-        textAlign: 'center',
-    },
-    categoryChart: {
+
+    // === CATEGORY SECTION STYLES ===
+
+    // Chart container with card styling
+    chartContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 12,
         padding: 20,
         marginBottom: 15,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        ...cardShadow, // Reusable shadow style (defined below)
     },
+
+    // Placeholder for actual chart component
     chartPlaceholder: {
         alignItems: 'center',
         justifyContent: 'center',
         height: 120,
     },
+
     chartPlaceholderText: {
         marginTop: 10,
         color: '#666',
     },
+
+    // List container for categories
     categoryList: {
-        gap: 10,
+        gap: 10, // Space between category items
     },
+
+    // Individual category item layout
     categoryItem: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 10,
     },
+
     categoryText: {
         fontSize: 14,
         color: '#333',
     },
+
+    // === TRANSACTION SECTION STYLES ===
+
+    // List container for transactions
     transactionList: {
         gap: 10,
     },
+
+    // Individual transaction item with card styling
     transactionItem: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#FFFFFF',
         padding: 15,
         borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        ...cardShadow,
     },
+
     transactionIcon: {
         marginRight: 15,
     },
+
     transactionDetails: {
-        flex: 1,
+        flex: 1, // Take remaining space
     },
+
     transactionTitle: {
         fontSize: 16,
         fontWeight: '600',
         color: '#333',
     },
+
     transactionTime: {
         fontSize: 12,
         color: '#666',
         marginTop: 2,
     },
+
     transactionAmount: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#FF6B6B',
+        // Color is set dynamically
     },
+
+    // === BILLS SECTION STYLES ===
+
     billsList: {
         gap: 10,
     },
+
     billItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -351,15 +445,9 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 12,
         gap: 10,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        ...cardShadow,
     },
+
     billText: {
         fontSize: 14,
         color: '#333',
