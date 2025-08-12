@@ -19,8 +19,8 @@ pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>> 
     tracing::info!("Initializing server configuration");
 
     // Configure server host and port from environment variables
-    // Default to 127.0.0.1 if HOST is not set
-    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    // Default to 0.0.0.0 if HOST is not set, make host accessible from outside
+    let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
 
     // Default to 3000 if PORT is not set
     // Parse the port from the environment variable and convert it to a u16
