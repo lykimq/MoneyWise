@@ -14,13 +14,7 @@ import QuickActionButton from '../components/QuickActionButton';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
 
 /**
- * HomeScreen Component - Refactored Version
- *
- * ORGANIZATION IMPROVEMENTS:
- * 1. Separated into smaller, reusable components
- * 2. Data fetching logic moved to custom hook
- * 3. Styles organized by section with clear naming
- * 4. Educational comments explaining each section
+ * HomeScreen Component
  *
  * ARCHITECTURE PATTERN:
  * - Custom Hook (useBudgetOverview): Handles data fetching and state
@@ -29,9 +23,14 @@ import { useBudgetOverview } from '../hooks/useBudgetOverview';
  */
 
 const HomeScreen: React.FC = () => {
-    // Custom hook handles all data fetching logic
-    // This separates concerns: UI logic vs Data logic
-    const { overview, loading, error } = useBudgetOverview();
+    const {
+        overview,
+        loading,
+        error,
+        isStale,        // Know if data might be outdated
+        isFetching,     // Know if background update is happening
+        refetch         // Better refetch functionality
+    } = useBudgetOverview();
 
     /**
      * Quick Action Handlers

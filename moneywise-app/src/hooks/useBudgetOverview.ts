@@ -1,126 +1,68 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import apiService, { BudgetOverviewApi } from '../services/api';
+import { queryKeys } from '../services/queryClient';
 
 /**
- * Custom Hook: useBudgetOverview
+ * Custom Hook: useBudgetOverview - Powered by TanStack Query
  *
- * Purpose: Encapsulates budget overview data fetching logic
+ * 🎯 PURPOSE: Fetch and manage budget overview data with automatic caching
  *
- * Why use a custom hook instead of useEffect directly in component?
- *
- * ADVANTAGES:
- * 1. Separation of Concerns: Data logic separated from UI logic
- * 2. Reusability: Can be used in multiple components
- * 3. Testability: Easier to test data logic in isolation
- * 4. Cleaner Components: Components focus only on rendering
- * 5. Centralized Error Handling: Consistent error handling across app
- *
- * SAFER ALTERNATIVES TO useEffect:
- * 1. React Query/TanStack Query - Better caching, background updates
- * 2. SWR - Stale-while-revalidate pattern
- * 3. Custom hooks like this one - Encapsulate useEffect logic
- * 4. State management libraries (Redux Toolkit Query, Zustand)
+ * ✅ BENEFITS:
+ * - Automatic caching and background updates
+ * - Built-in retry logic and error handling
+ * - Request deduplication
+ * - No race conditions or memory leaks
+ * - Better loading and error states
  */
 
 interface UseBudgetOverviewReturn {
-    overview: BudgetOverviewApi | null;
+    overview: BudgetOverviewApi | undefined;
     loading: boolean;
-    error: string | null;
-    refetch: () => Promise<void>;  // Allows manual refresh
+    error: Error | null;
+    refetch: () => Promise<any>;
+    isStale: boolean;             // Know if data might be outdated
+    isFetching: boolean;          // Know if background update is happening
+    dataUpdatedAt: number;        // When data was last updated
 }
-
-/**
- * Safe Implementation with AbortController
- * This prevents race conditions and memory leaks
- *
- * IMPROVEMENTS OVER BASIC useEffect:
- * - Prevents state updates after component unmounts
- * - Cancels ongoing requests when dependencies change
- * - Eliminates race conditions from multiple concurrent requests
- * - Cleaner memory management
- */
 export const useBudgetOverview = (
     month?: string,
-    year?: string
+    year?: string,
+    currency?: string
 ): UseBudgetOverviewReturn => {
-    const [overview, setOverview] = useState<BudgetOverviewApi | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
 
-    /**
-     * Fetch function with AbortController support
-     * Prevents race conditions and memory leaks
-     */
-    const fetchOverview = async (abortSignal?: AbortSignal) => {
-        try {
-            setLoading(true);
-            setError(null);
+    // Use current month/year if not provided
+    const now = new Date();
+    const targetMonth = month || String(now.getMonth() + 1);
+    const targetYear = year || String(now.getFullYear());
 
-            const now = new Date();
-            const targetMonth = month || String(now.getMonth() + 1);
-            const targetYear = year || String(now.getFullYear());
-
-            // Pass abort signal to API call (if your API supports it)
-            const data = await apiService.getBudgetOverview({
-                month: targetMonth,
-                year: targetYear,
-            });
-
-            // Check if request was aborted before setting state
-            if (!abortSignal?.aborted) {
-                setOverview(data);
-            }
-        } catch (e) {
-            // Don't set error if request was aborted
-            if (!abortSignal?.aborted) {
-                console.error('Failed to fetch budget overview:', e);
-                setError('Failed to load budget overview');
-            }
-        } finally {
-            if (!abortSignal?.aborted) {
-                setLoading(false);
-            }
-        }
+    const queryParams = {
+        month: targetMonth,
+        year: targetYear,
+        currency: currency || 'USD',
     };
 
-    /**
-     * useEffect with AbortController - SAFER APPROACH
-     *
-     * WHY THIS IS BETTER THAN BASIC useEffect:
-     *
-     * PROBLEMS WITH BASIC useEffect:
-     * - Race conditions: Multiple requests can complete out of order
-     * - Memory leaks: State updates after component unmounts
-     * - No request cancellation: Ongoing requests continue even when not needed
-     * - Unnecessary re-renders: Can cause performance issues
-     *
-     * HOW AbortController SOLVES THESE:
-     * - Cancels ongoing requests when dependencies change
-     * - Prevents state updates after component unmounts
-     * - Eliminates race conditions from concurrent requests
-     * - Better memory management and performance
-     *
-     * EVEN BETTER ALTERNATIVES:
-     * 1. React Query/TanStack Query - Built-in caching, background updates
-     * 2. SWR - Stale-while-revalidate pattern
-     * 3. Zustand/Redux Toolkit Query - Global state management
-     */
-    useEffect(() => {
-        // Create AbortController for this effect
-        const abortController = new AbortController();
-
-        fetchOverview(abortController.signal);
-
-        // Cleanup: abort the request if component unmounts or dependencies change
-        return () => {
-            abortController.abort();
-        };
-    }, [month, year]); // Dependencies: refetch when month or year changes
+    const {
+        data: overview,
+        isLoading: loading,
+        error,
+        refetch,
+        isStale,
+        isFetching,
+        dataUpdatedAt,
+    } = useQuery({
+        queryKey: queryKeys.budgets.overview(queryParams),
+        queryFn: () => apiService.getBudgetOverview(queryParams),
+        staleTime: 5 * 60 * 1000, // 5 minutes - budget data doesn't change frequently
+        enabled: Boolean(targetMonth && targetYear),
+    });
 
     return {
         overview,
         loading,
         error,
-        refetch: () => fetchOverview(), // Manual refetch without abort signal
+        refetch,
+        isStale,
+        isFetching,
+        dataUpdatedAt,
     };
 };
