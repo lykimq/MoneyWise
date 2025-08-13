@@ -20,23 +20,30 @@ export * from './budget';
 
 import { budgetClient } from './budget';
 import type {
-    BudgetApi,
     BudgetOverviewApi,
     BudgetResponse,
-    CreateBudgetRequest,
-    UpdateBudgetRequest,
 } from './budget';
 
+/**
+ * SIMPLIFIED API SERVICE - ONLY ACTIVE ENDPOINTS
+ *
+ * EDUCATIONAL NOTE:
+ * We've removed unused functions (create, update, getById) to keep the API surface clean.
+ * Only keeping the functions that are actually used in the app:
+ * - getBudgets: Used by useBudgetData hook
+ * - getBudgetOverview: Used by useBudgetOverview hook
+ *
+ * WHY REMOVE UNUSED CODE?
+ * - Reduces bundle size
+ * - Eliminates maintenance overhead
+ * - Makes the API contract clearer
+ * - Follows YAGNI principle (You Aren't Gonna Need It)
+ */
 export const apiService = {
     getBudgets: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetResponse> =>
         budgetClient.list(params),
     getBudgetOverview: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetOverviewApi> =>
         budgetClient.overview(params),
-    createBudget: (budget: CreateBudgetRequest): Promise<BudgetApi> =>
-        budgetClient.create(budget),
-    updateBudget: (id: string, budget: UpdateBudgetRequest): Promise<BudgetApi> =>
-        budgetClient.update(id, budget),
-    getBudgetById: (id: string): Promise<BudgetApi> => budgetClient.getById(id),
 };
 
 export default apiService;
