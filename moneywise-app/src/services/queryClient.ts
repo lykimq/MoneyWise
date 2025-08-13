@@ -102,8 +102,12 @@ export const queryClient = new QueryClient({
 export const queryKeys = {
     // BUDGET-RELATED QUERIES
     budgets: {
-        // Only keeping the overview query key that's actually used
+        // Budget overview data (used by useBudgetOverview hook)
         overview: (params: { month?: string; year?: string; currency?: string }) =>
             ['budgets', 'overview', params] as const,
+
+        // Complete budget data with categories and insights (used by useBudgetData hook)
+        data: (params: { timePeriod: string; month?: string; year?: string; currency?: string }) =>
+            ['budgets', 'data', params] as const,
     },
 } as const;
