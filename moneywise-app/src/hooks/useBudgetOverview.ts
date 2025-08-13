@@ -1,18 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import apiService, { BudgetOverviewApi } from '../services/api';
 import { queryKeys } from '../services/queryClient';
+import { buildDateParams } from '../utils/dateUtils';
 
 /**
- * Custom Hook: useBudgetOverview - Powered by TanStack Query
+ * 🏠 useBudgetOverview - Dashboard Summary Hook
  *
- * 🎯 PURPOSE: Fetch and manage budget overview data with automatic caching
+ * PURPOSE: Provides lightweight budget summary data for the HomeScreen dashboard.
+ * Returns only essential overview metrics (planned, spent, remaining) without
+ * heavy category breakdowns or insights.
  *
- * ✅ BENEFITS:
- * - Automatic caching and background updates
- * - Built-in retry logic and error handling
- * - Request deduplication
- * - No race conditions or memory leaks
- * - Better loading and error states
+ * USED BY: HomeScreen component for dashboard cards and summary widgets
+ * API ENDPOINT: GET /api/budgets/overview (lightweight response ~200 bytes)
+ *
+ * DESIGN DECISION: Separate from useBudgetData to optimize performance.
+ * HomeScreen doesn't need category details, so we avoid fetching unnecessary data.
  */
 
 interface UseBudgetOverviewReturn {
@@ -30,17 +32,16 @@ export const useBudgetOverview = (
     currency?: string
 ): UseBudgetOverviewReturn => {
 
-    // Use current month/year if not provided
-    const now = new Date();
-    const targetMonth = month || String(now.getMonth() + 1);
-    const targetYear = year || String(now.getFullYear());
+    // Build date parameters with current month/year as fallbacks
+    const dateParams = buildDateParams(month, year);
 
     const queryParams = {
-        month: targetMonth,
-        year: targetYear,
+        month: dateParams.month,
+        year: dateParams.year,
         currency: currency || 'USD',
     };
 
+    // Fetch overview data using centralized query configuration
     const {
         data: overview,
         isLoading: loading,
@@ -52,8 +53,7 @@ export const useBudgetOverview = (
     } = useQuery({
         queryKey: queryKeys.budgets.overview(queryParams),
         queryFn: () => apiService.getBudgetOverview(queryParams),
-        staleTime: 5 * 60 * 1000, // 5 minutes - budget data doesn't change frequently
-        enabled: Boolean(targetMonth && targetYear),
+        enabled: Boolean(dateParams.month && dateParams.year),
     });
 
     return {
