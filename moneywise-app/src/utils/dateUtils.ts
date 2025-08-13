@@ -1,15 +1,5 @@
 /**
  * 📅 Date Utility Functions for MoneyWise App
- *
- * EDUCATIONAL NOTE:
- * Centralizing date logic prevents duplication and ensures consistency
- * across all budget-related hooks and components.
- *
- * WHY CENTRALIZE DATE LOGIC?
- * - Consistent date handling across the app
- * - Single source of truth for date calculations
- * - Easier to modify date logic in one place
- * - Reduces bugs from inconsistent implementations
  */
 
 /**
