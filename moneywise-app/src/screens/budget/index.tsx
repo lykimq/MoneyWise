@@ -110,30 +110,43 @@ const BudgetsScreen: React.FC = () => {
         );
     }
 
-    // Main Screen Content
-    // Organized into logical sections: time selector, overview, categories, and insights
+    // MAIN SCREEN CONTENT - Complete budget interface with organized sections
+    // Uses SafeAreaView for proper spacing on devices with notches/home indicators
+    // ScrollView enables vertical scrolling through all budget sections
     return (
+        // SAFE AREA CONTAINER - Ensures content respects device safe areas
         <SafeAreaView style={screenStyles.mainContainer}>
+            {/* SCROLL CONTAINER - Vertical scrolling for all budget content */}
             <ScrollView style={screenStyles.scrollContainer}>
-                {/* Time Period Selector Section */}
+
+                {/* TIME PERIOD SELECTOR SECTION - Monthly/Yearly toggle at top */}
+                {/* Allows users to switch between different time periods for budget data */}
+                {/* Shows loading indicator when fetching new data */}
                 <TimePeriodSelector
                     availablePeriods={availableTimePeriods}
                     selectedPeriod={selectedTimePeriod}
                     onPeriodChange={setSelectedTimePeriod}
-                    isUpdating={isFetching}
+                    isUpdating={isFetching}  // Shows spinner during data updates
                 />
 
-                {/* Budget Overview Section */}
+                {/* BUDGET OVERVIEW SECTION - High-level budget summary cards */}
+                {/* Displays planned, spent, and remaining amounts in card format */}
+                {/* Uses color coding to indicate over-budget status */}
                 <BudgetOverviewSection overview={budgetData!.overview} />
 
-                {/* Category Budgets Section */}
+                {/* CATEGORY BUDGETS SECTION - Detailed category-wise breakdown */}
+                {/* Shows individual category cards with icons, progress bars, and spending details */}
+                {/* Each card displays spending progress, remaining budget, and visual indicators */}
                 <CategoryBudgetsSection
                     categories={budgetData!.categories}
-                    getCategoryIcon={getCategoryIconName}
+                    getCategoryIcon={getCategoryIconName}  // Dynamic icon selection
                 />
 
-                {/* Budget Insights Section */}
+                {/* BUDGET INSIGHTS SECTION - AI-generated recommendations */}
+                {/* Displays smart insights and suggestions based on spending patterns */}
+                {/* Only renders if insights are available from the API */}
                 <BudgetInsightsSection insights={budgetData!.insights} />
+
             </ScrollView>
         </SafeAreaView>
     );

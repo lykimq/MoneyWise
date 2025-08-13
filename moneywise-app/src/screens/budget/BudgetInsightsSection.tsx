@@ -29,22 +29,31 @@ interface BudgetInsightsSectionProps {
  * @param insights - Array of insight objects containing type, message, icon, and color
  */
 export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({ insights }) => {
-    // Don't render section if no insights are available
+    // EMPTY STATE HANDLING - Don't render section if no insights are available
+    // This prevents showing an empty section and maintains clean UI
     if (!insights || insights.length === 0) {
         return null;
     }
 
     return (
+        // MAIN SECTION CONTAINER - Uses shared section styling for consistency
         <View style={sectionStyles.container}>
+            {/* SECTION TITLE - Uses shared title styling across all budget sections */}
             <Text style={sectionStyles.title}>Budget Insights</Text>
+
+            {/* INSIGHTS CONTAINER - White card container for all insight items */}
             <View style={styles.container}>
                 {insights.map((insight, index) => (
+                    // INDIVIDUAL INSIGHT ITEM - Single insight with icon and message
                     <View key={index} style={styles.item}>
+                        {/* INSIGHT ICON - Contextual icon with dynamic color from API */}
                         <Ionicons
                             name={insight.icon as keyof typeof Ionicons.glyphMap}
                             size={20}
-                            color={insight.color}
+                            color={insight.color}  // Dynamic color based on insight type
                         />
+
+                        {/* INSIGHT MESSAGE - AI-generated recommendation text */}
                         <Text style={styles.message}>{insight.message}</Text>
                     </View>
                 ))}
@@ -54,29 +63,46 @@ export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({ in
 };
 
 /**
- * Styles for the BudgetInsightsSection component
+ * LOCAL STYLES - BudgetInsightsSection Component Styling
+ *
+ * Creates a clean, card-based layout for displaying AI-generated budget insights.
+ * Uses consistent spacing and typography to present recommendations in an
+ * easily scannable format with visual hierarchy.
  */
 const styles = StyleSheet.create({
+    // INSIGHTS CONTAINER - Main card container for all insights
+    // Creates elevated white card with rounded corners and shadow
+    // Contains all insight items in a vertical list
     container: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        backgroundColor: '#FFFFFF',  // Pure white background
+        borderRadius: 12,        // Rounded corners for modern look
+        padding: 15,             // Internal spacing for content
+
+        // SHADOW PROPERTIES - Creates subtle elevation effect
+        shadowColor: '#000',     // Black shadow for depth
+        shadowOffset: { width: 0, height: 2 },  // Slight downward shadow
+        shadowOpacity: 0.1,      // Light shadow (10% opacity)
+        shadowRadius: 3.84,      // Soft shadow blur
+        elevation: 5,            // Android shadow elevation
     },
+
+    // INSIGHT ITEM - Individual insight row layout
+    // Horizontal arrangement of icon and message text
+    // Provides consistent spacing between multiple insights
     item: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+        flexDirection: 'row',    // Horizontal arrangement of icon and text
+        alignItems: 'center',    // Vertical center alignment
+        marginBottom: 10,        // Space between insight items (last item keeps margin)
     },
+
+    // INSIGHT MESSAGE - AI-generated recommendation text
+    // Readable typography with proper line height for multi-line text
+    // Takes remaining space after icon
     message: {
-        fontSize: 14,
-        color: '#333',
-        marginLeft: 10,
-        flex: 1,
-        lineHeight: 20,
+        fontSize: 14,            // Standard readable text size
+        color: '#333',           // Dark gray for high contrast
+        marginLeft: 10,          // Space between icon and text
+        flex: 1,                 // Takes remaining horizontal space
+        lineHeight: 20,          // Improved readability for longer messages
     },
 });
