@@ -54,41 +54,15 @@ export interface BudgetResponse {
 }
 
 /**
- * Single budget row as stored/returned by the backend.
- * Backend: commonly returned by POST/PUT/GET /api/budgets/{id}
+ * UNUSED TYPES REMOVED
+ *
+ * EDUCATIONAL NOTE:
+ * We removed the following unused interfaces to keep the codebase clean:
+ * - BudgetApi: Single budget row (not used by current read-only functionality)
+ * - CreateBudgetRequest: Budget creation payload (no create functionality yet)
+ * - UpdateBudgetRequest: Budget update payload (no update functionality yet)
+ *
+ * These can be added back when CRUD operations are implemented in the future.
  */
-export interface BudgetApi {
-    id: string;
-    month: number;
-    year: number;
-    category_id: string;
-    planned: Money;
-    spent: Money;
-    carryover: Money;
-    currency: string;
-    created_at: string;
-    updated_at: string;
-}
-
-/**
- * Payload for creating a budget entry.
- * Note: `month` and `year` may be null if the backend infers them from context.
- */
-export interface CreateBudgetRequest {
-    category_id: string;
-    planned: Money;
-    currency: string;
-    month: number | null;
-    year: number | null;
-}
-
-/**
- * Partial update payload for a budget entry.
- * Optional fields allow targeted updates.
- */
-export interface UpdateBudgetRequest {
-    planned?: Money | null;
-    carryover?: Money | null;
-}
 
 
