@@ -25,19 +25,23 @@ import type {
 } from './budget';
 
 /**
- * SIMPLIFIED API SERVICE - ONLY ACTIVE ENDPOINTS
+ * API Service - Thin wrapper around budgetClient
  *
- * EDUCATIONAL NOTE:
- * We've removed unused functions (create, update, getById) to keep the API surface clean.
- * Only keeping the functions that are actually used in the app:
- * - getBudgets: Used by useBudgetData hook
- * - getBudgetOverview: Used by useBudgetOverview hook
+ * This is a thin wrapper around the budgetClient.
+ * It is used to fetch the budgets and budget overview.
  *
- * WHY REMOVE UNUSED CODE?
- * - Reduces bundle size
- * - Eliminates maintenance overhead
- * - Makes the API contract clearer
- * - Follows YAGNI principle (You Aren't Gonna Need It)
+ * Frontend note:
+ *   Prefer importing domain-specific clients from `./budget` when you need
+ *   richer typing and methods. `apiService` is a convenience wrapper.
+ *
+ * Backend note:
+ *   Methods map to REST endpoints implemented in `moneywise-backend`, e.g.:
+ *     GET    /api/budgets
+ *     GET    /api/budgets/overview
+ *     POST   /api/budgets
+ *     PUT    /api/budgets/{id}
+ *     GET    /api/budgets/{id}
+ *   See `moneywise-backend/src/api/mod.rs` for router setup.
  */
 export const apiService = {
     getBudgets: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetResponse> =>
