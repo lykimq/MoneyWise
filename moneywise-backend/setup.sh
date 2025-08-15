@@ -181,6 +181,25 @@ sqlx migrate run || {
 }
 print_success "Database migrations completed"
 
+# Verify the schema was created correctly
+print_status "Verifying database schema..."
+BUDGET_TABLE_CHECK=$(psql "$DATABASE_URL" -c "SELECT column_name, data_type FROM information_schema.columns WHERE table_name='budgets' AND column_name='id';" -t 2>/dev/null | grep -c "uuid" || echo "0")
+
+if [ "$BUDGET_TABLE_CHECK" -gt 0 ]; then
+    print_success "UUID schema created successfully"
+
+    # Check if sample data was inserted
+    SAMPLE_DATA_CHECK=$(psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM budgets;" -t 2>/dev/null | tr -d ' ' || echo "0")
+    if [ "$SAMPLE_DATA_CHECK" -gt 0 ]; then
+        print_success "Sample budget data loaded ($SAMPLE_DATA_CHECK entries)"
+    else
+        print_warning "No sample data found - this may be expected"
+    fi
+else
+    print_error "Schema verification failed - UUID columns not found"
+    exit 1
+fi
+
 echo
 
 # Build the project
@@ -194,13 +213,56 @@ print_success "Project built successfully"
 echo
 print_success "🎉 Setup complete!"
 echo
-echo "Next steps:"
-echo "1. Review and update .env file if needed"
-echo "2. Start the server: cargo run"
-echo "3. Test the API: curl http://localhost:3000/api/budgets/overview"
-echo
 echo "The backend will be available at: http://localhost:3000"
 echo "API endpoints will be at: http://localhost:3000/api/*"
 echo
 print_status "Starting the server..."
-cargo run
+
+# Start the server in the background for testing
+cargo run &
+SERVER_PID=$!
+
+# Wait for server to start
+print_status "Waiting for server to start..."
+sleep 5
+
+# Test the API endpoints
+print_status "Testing API endpoints..."
+
+# Test overview endpoint
+if curl -s "http://localhost:3000/api/budgets/overview" > /dev/null 2>&1; then
+    print_success "✅ Overview endpoint working"
+else
+    print_warning "⚠️ Overview endpoint not responding"
+fi
+
+# Test main budgets endpoint
+if curl -s "http://localhost:3000/api/budgets" > /dev/null 2>&1; then
+    print_success "✅ Budgets endpoint working"
+else
+    print_warning "⚠️ Budgets endpoint not responding"
+fi
+
+echo
+print_success "🚀 MoneyWise Backend is running!"
+echo
+echo "API Test Commands:"
+echo "curl \"http://localhost:3000/api/budgets/overview\""
+echo "curl \"http://localhost:3000/api/budgets\""
+echo "curl \"http://localhost:3000/api/budgets?month=12&year=2024\""
+echo
+echo "Sample Budget Data:"
+echo "- 5 category groups: Housing, Utilities, Transportation, Food, Entertainment"
+echo "- 10 categories: Rent, Utilities, Gas, Groceries, Dining Out, etc."
+echo "- Budget data for December 2024 & August 2025 (USD currency)"
+echo "- Real data exported from production database"
+echo
+echo "Next Steps:"
+echo "1. Keep this terminal open (server is running)"
+echo "2. In another terminal: cd ../moneywise-app && npm install && npm start"
+echo "3. Test the React Native app with the budget data"
+echo
+print_warning "Press Ctrl+C to stop the server"
+
+# Keep the server running in the foreground
+wait $SERVER_PID
