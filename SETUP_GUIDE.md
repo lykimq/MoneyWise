@@ -69,9 +69,15 @@ createdb moneywise
 # Install SQLx CLI
 cargo install sqlx-cli --no-default-features --features postgres
 
-# Run migrations (creates tables and sample data)
+# Run migrations (creates tables and loads sample data from CSV files)
 sqlx migrate run
 ```
+
+**Sample Data Loaded:**
+- **Category Groups**: Housing, Utilities, Transportation, Food, Entertainment (with emoji icons)
+- **Categories**: 10 categories including Rent, Utilities, Gas, Groceries, Dining Out, etc.
+- **Budget Entries**: Real budget data for December 2024 and August 2025 in USD
+- **Data Source**: CSV files exported from production database for realistic testing
 
 ### 4. Start Backend
 ```bash
@@ -116,10 +122,10 @@ The app will automatically connect to the backend at `http://localhost:3000/api`
 ## 🎯 What You'll Get
 
 **Backend Features:**
-- ✅ Full REST API for budget management
-- ✅ PostgreSQL database with sample data
-- ✅ Redis caching for performance
-- ✅ Comprehensive error handling
+- ✅ Full REST API for budget management (CRU operations, no DELETE yet)
+- ✅ PostgreSQL database with real sample data loaded from CSV files
+- ✅ Redis caching for performance (optional)
+- ✅ Comprehensive error handling and validation
 
 **Frontend Features:**
 - ✅ Budget overview with spending insights
