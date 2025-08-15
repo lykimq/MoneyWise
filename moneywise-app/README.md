@@ -1,110 +1,135 @@
 # MoneyWise App
 
-A React Native financial management application with a Rust backend.
+A React Native personal finance app that helps you track budgets, manage spending, and get insights into your financial habits.
 
-## Features
+## 🚀 What's Inside
 
-- **Budget Management**: Track and manage your monthly budgets
-- **Category-based Spending**: Organize expenses by categories
-- **Real-time Insights**: Get AI-powered budget insights and recommendations
-- **Cross-platform**: Works on both iOS and Android
-- **Modern UI**: Clean and intuitive user interface
+**Core Features:**
+- **Budget Tracking**: View planned vs actual spending with visual progress indicators
+- **Category Management**: Organize expenses by categories with color-coded progress
+- **Time Periods**: Switch between monthly and yearly budget views
+- **Smart Insights**: Get AI-generated recommendations based on spending patterns
+- **Modern UI**: Clean, intuitive interface with tab navigation
 
-## Prerequisites
+**Technical Stack:**
+- **Frontend**: React Native with Expo
+- **Navigation**: React Navigation with bottom tabs
+- **Data Management**: TanStack Query for caching and state management
+- **Backend Integration**: RESTful API with Rust backend
+- **Testing**: Jest with comprehensive integration tests
 
-- Node.js (v16 or higher)
-- npm or yarn
-- React Native development environment
+## 📱 App Structure
+
+```
+MoneyWise App
+├── Home        # Dashboard overview
+├── Budgets     # Main budget management (primary feature)
+├── Transactions# Transaction history (placeholder)
+├── Goals       # Financial goals (placeholder)
+└── Settings    # App settings (placeholder)
+```
+
+The **Budgets** screen is the main feature, providing:
+- Time period selection (Monthly/Yearly)
+- Budget overview cards (Planned, Spent, Remaining)
+- Category breakdown with progress bars
+- AI-generated insights and alerts
+
+## 🛠 Quick Start
+
+### Prerequisites
+- Node.js 16+
 - Expo CLI
-- PostgreSQL (for backend)
+- MoneyWise backend running on `localhost:3000`
 
-## Setup
-
-### 1. Install Dependencies
-
+### Setup
 ```bash
 cd moneywise-app
 npm install
+npm start
 ```
 
-### 2. Backend Setup
+Then use the Expo app on your phone or run in iOS/Android simulator.
 
-The app requires the Rust backend to be running. See the [backend README](../moneywise-backend/README.md) for setup instructions.
+## 🧪 Testing
 
-### 3. Configure API Endpoint
-
-The app is configured to connect to `http://localhost:3000` by default. If your backend is running on a different address, update the `API_BASE_URL` in `src/services/api.ts`.
-
-### 4. Run the App
+The app includes educational integration tests covering:
 
 ```bash
-# Start the development server
-npm start
+# Run all tests
+npm test
 
-# Run on iOS simulator
-npm run ios
+# Run specific test types
+npm test demo           # Basic Jest learning examples
+npm test calculations   # Business logic testing
+npm test dateUtils      # Utility function testing
 
-# Run on Android emulator
-npm run android
+# Coverage report
+npm run test:coverage
 ```
 
-## Project Structure
+**Test Structure:**
+- `src/__tests__/` - Main integration tests
+- `src/utils/__tests__/` - Utility function tests
+
+See `TESTING_GUIDE.md` for detailed testing documentation.
+
+## 📁 Code Organization
 
 ```
 src/
-├── components/          # Reusable UI components
-├── screens/            # Screen components
-│   ├── BudgetsScreen.tsx    # Budget management screen
-│   ├── GoalsScreen.tsx      # Financial goals screen
-│   ├── HomeScreen.tsx       # Dashboard screen
-│   ├── SettingsScreen.tsx   # App settings screen
-│   └── TransactionsScreen.tsx # Transaction history screen
-├── services/           # API and external services
-│   └── api.ts         # Backend API integration
-├── types/             # TypeScript type definitions
+├── components/         # Reusable UI components
+│   ├── OverviewCard.tsx
+│   └── QuickActionButton.tsx
+├── hooks/             # Custom React hooks
+│   ├── useBudgetData.ts
+│   └── useBudgetOverview.ts
+├── screens/           # Screen components
+│   ├── budget/        # Budget screen components
+│   │   ├── BudgetOverviewSection.tsx
+│   │   ├── CategoryBudgetsSection.tsx
+│   │   ├── BudgetInsightsSection.tsx
+│   │   └── TimePeriodSelector.tsx
+│   └── [Other screens - basic placeholders]
+├── services/          # API and data services
+│   ├── budget/        # Budget-specific API client
+│   ├── http.ts        # HTTP client configuration
+│   └── queryClient.ts # TanStack Query setup
 └── utils/             # Utility functions
+    └── dateUtils.ts   # Date formatting and manipulation
 ```
 
-## API Integration
+## 🔌 API Integration
 
-The app communicates with the Rust backend through the `api.ts` service:
+The app connects to a Rust backend via REST API:
 
-- **Budget Data**: Fetches budget overview, categories, and insights
-- **Real-time Updates**: Automatically refreshes data when needed
-- **Error Handling**: Graceful error handling with user-friendly messages
-- **Loading States**: Shows loading indicators during API calls
+- **Endpoint**: `http://localhost:3000/api/budgets`
+- **Data Format**: JSON with string-based monetary values (avoiding floating-point precision issues)
+- **Caching**: TanStack Query provides intelligent caching and background updates
+- **Error Handling**: Comprehensive error states with retry functionality
 
-## Development
+## 🚧 Current Status
 
-### Adding New Features
+**Implemented:**
+- ✅ Budget overview and category tracking
+- ✅ Time period selection
+- ✅ AI insights display
+- ✅ Comprehensive test suite
+- ✅ Error handling and loading states
 
-1. Create new components in `src/components/`
-2. Add new screens in `src/screens/`
-3. Update API service in `src/services/api.ts` if needed
-4. Add TypeScript types in `src/types/`
+**Placeholder Screens:**
+- 🚧 Transactions, Goals, Settings (basic UI only)
+- 🚧 No CRUD operations (read-only for now)
 
-### Code Style
+## 📚 Documentation
 
-- Use TypeScript for type safety
-- Follow React Native best practices
-- Use functional components with hooks
-- Implement proper error handling
-- Add loading states for async operations
+- Inline code comments with educational notes throughout
 
-## Troubleshooting
+## 🤝 Development Notes
 
-### Common Issues
-
-1. **Backend Connection Failed**
-   - Ensure the Rust backend is running on `http://localhost:3000`
-   - Check if PostgreSQL is running
-   - Verify database migrations have been applied
-
-2. **Build Errors**
-   - Clear Metro cache: `npx react-native start --reset-cache`
-   - Reinstall dependencies: `rm -rf node_modules && npm install`
-
-3. **API Errors**
-   - Check browser console for detailed error messages
-   - Verify API endpoint configuration
-   - Ensure backend is properly configured
+This codebase emphasizes:
+- **Clean Architecture**: Modular, well-organized code structure
+- **Educational Value**: Extensive comments explaining concepts and patterns
+- **Type Safety**: Full TypeScript implementation
+- **Testing**: Comprehensive test coverage with learning examples
+- **Best Practices**: Modern React Native and TanStack Query patterns
