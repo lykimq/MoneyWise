@@ -1,165 +1,122 @@
 #!/bin/bash
 
-set -e  # Exit on any error
+# =============================================================================
+# MoneyWise Backend Setup Script
+# =============================================================================
+# This script automates the complete setup of the MoneyWise backend service.
+# It handles: services, database, migrations, and testing.
+#
+# Why this approach?
+# - Automated setup reduces human error and setup time
+# - Service management handles different OS environments (Linux/macOS)
+# - Database verification ensures data integrity
+# - API testing validates the complete setup
+#
+# Note: Prerequisites are checked by the root script, so this script
+# focuses on backend-specific setup tasks.
+# =============================================================================
+
+set -e  # Exit immediately if any command fails (fail-fast approach)
+
+# =============================================================================
+# SOURCE SHARED UTILITIES
+# =============================================================================
+# Why source utilities? Eliminates code duplication and centralizes maintenance.
+# The utilities script provides all common functions and service management.
+# =============================================================================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UTILS_SCRIPT="$SCRIPT_DIR/../scripts/setup-utils.sh"
+
+if [ ! -f "$UTILS_SCRIPT" ]; then
+    echo "❌ Error: Shared utilities script not found at $UTILS_SCRIPT"
+    echo "Please ensure the scripts/setup-utils.sh file exists"
+    exit 1
+fi
+
+# Source the utilities script to get all shared functions
+source "$UTILS_SCRIPT"
 
 echo "🚀 MoneyWise Backend Setup"
 echo "========================="
 echo
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# =============================================================================
+# PREREQUISITES VERIFICATION
+# =============================================================================
+# Why check if prerequisites were already verified? Prevents redundant checking
+# when called from the root script, improving efficiency and user experience.
+# =============================================================================
+if ! is_prereqs_checked; then
+    print_warning "Prerequisites not verified by root script"
+    print_status "Running prerequisite check for standalone execution..."
+    check_all_prerequisites || exit 1
+else
+    print_success "Prerequisites already verified by root script"
+fi
 
-print_status() {
-    echo -e "${BLUE}▶${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}✅${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}❌${NC} $1"
-}
-
-# Check prerequisites
-print_status "Checking prerequisites..."
-
-# Check if we're in the right directory
+# =============================================================================
+# VERIFY BACKEND PROJECT STRUCTURE
+# =============================================================================
+# Why check Cargo.toml? Ensures we're in a Rust project directory.
+# This prevents running the script from the wrong location.
+# =============================================================================
 if [ ! -f "Cargo.toml" ]; then
     print_error "Please run this script from the moneywise-backend directory"
+    print_warning "Cargo.toml not found - this indicates we're not in a Rust project"
     exit 1
 fi
 
-# Check Rust installation
-if ! command -v cargo &> /dev/null; then
-    print_error "Rust/Cargo not found. Install from https://rustup.rs/"
+print_success "Backend project structure verified"
+
+# =============================================================================
+# SERVICE MANAGEMENT
+# =============================================================================
+# Why auto-start services? Users often forget to start services.
+# The utilities script handles different OS environments automatically.
+# =============================================================================
+print_status "Starting required services..."
+
+# Start PostgreSQL service
+start_postgresql || exit 1
+
+# Start Redis service (optional)
+start_redis
+
+echo
+
+# =============================================================================
+# DATABASE ENVIRONMENT SETUP
+# =============================================================================
+# Why use database utilities? Provides consistent database operations.
+# This includes environment file creation, database setup, and verification.
+# =============================================================================
+print_status "Setting up database environment..."
+
+# Setup complete database environment using shared utilities
+if ! setup_database_environment ".env" "moneywise"; then
+    print_error "Database environment setup failed"
     exit 1
-fi
-print_success "Rust/Cargo found"
-
-# Check PostgreSQL installation
-if ! command -v psql &> /dev/null; then
-    print_error "PostgreSQL not found. Install from https://postgresql.org/download/"
-    exit 1
-fi
-print_success "PostgreSQL found"
-
-# Check if PostgreSQL is running
-if ! pg_isready -q 2>/dev/null; then
-    print_warning "PostgreSQL is not running. Attempting to start..."
-
-    # Try to start PostgreSQL (different methods for different systems)
-    if command -v systemctl &> /dev/null; then
-        sudo systemctl start postgresql || {
-            print_error "Failed to start PostgreSQL with systemctl"
-            print_warning "Please start PostgreSQL manually and run this script again"
-            exit 1
-        }
-    elif command -v brew &> /dev/null; then
-        brew services start postgresql || {
-            print_error "Failed to start PostgreSQL with brew"
-            print_warning "Please start PostgreSQL manually and run this script again"
-            exit 1
-        }
-    else
-        print_error "Please start PostgreSQL manually and run this script again"
-        exit 1
-    fi
-
-    # Wait a moment for PostgreSQL to start
-    sleep 2
-
-    if ! pg_isready -q; then
-        print_error "PostgreSQL failed to start"
-        exit 1
-    fi
-fi
-print_success "PostgreSQL is running"
-
-# Check Redis (optional)
-if command -v redis-cli &> /dev/null; then
-    if redis-cli ping &> /dev/null; then
-        print_success "Redis is running"
-    else
-        print_warning "Redis found but not running. Attempting to start..."
-        if command -v systemctl &> /dev/null; then
-            sudo systemctl start redis &> /dev/null || true
-        elif command -v brew &> /dev/null; then
-            brew services start redis &> /dev/null || true
-        else
-            redis-server --daemonize yes &> /dev/null || true
-        fi
-
-        sleep 1
-        if redis-cli ping &> /dev/null; then
-            print_success "Redis started successfully"
-        else
-            print_warning "Could not start Redis (optional - backend will work without it)"
-        fi
-    fi
-else
-    print_warning "Redis not found (optional - backend will work without it)"
 fi
 
 echo
 
-# Create .env file if it doesn't exist
-print_status "Setting up environment configuration..."
-if [ ! -f ".env" ]; then
-    cat > .env << 'EOF'
-DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
-RUST_LOG=info
-EOF
-    print_success "Created .env file with default configuration"
-    print_warning "Please update DATABASE_URL in .env with your PostgreSQL credentials if needed"
-else
-    print_success ".env file already exists"
-fi
-
-echo
-
-# Create database
-print_status "Setting up database..."
-DB_NAME="moneywise"
-
-# Extract database name from DATABASE_URL if possible
-if [ -f ".env" ]; then
-    source .env
-    if [[ $DATABASE_URL =~ /([^/]+)$ ]]; then
-        DB_NAME="${BASH_REMATCH[1]}"
-    fi
-fi
-
-if ! psql -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
-    print_status "Creating database '$DB_NAME'..."
-    createdb "$DB_NAME" || {
-        print_error "Failed to create database. Please check your PostgreSQL permissions"
-        print_warning "You may need to:"
-        print_warning "1. Update DATABASE_URL in .env with correct credentials"
-        print_warning "2. Create the database manually: createdb $DB_NAME"
-        exit 1
-    }
-    print_success "Database '$DB_NAME' created"
-else
-    print_success "Database '$DB_NAME' already exists"
-fi
-
-echo
-
-# Install sqlx CLI
+# =============================================================================
+# SQLX CLI INSTALLATION
+# =============================================================================
+# Why install SQLx CLI? It's required to run database migrations.
+# SQLx is the Rust SQL toolkit that handles database operations.
+# =============================================================================
 print_status "Setting up SQLx CLI..."
 if ! command -v sqlx &> /dev/null; then
     print_status "Installing SQLx CLI (this may take a few minutes)..."
+
+    # Install SQLx CLI with PostgreSQL features only
+    # Why --no-default-features --features postgres?
+    # - Reduces installation time by excluding unnecessary database drivers
+    # - Ensures compatibility with our PostgreSQL setup
     cargo install sqlx-cli --no-default-features --features postgres || {
         print_error "Failed to install SQLx CLI"
+        print_warning "This may be due to network issues or Rust toolchain problems"
         exit 1
     }
     print_success "SQLx CLI installed"
@@ -169,7 +126,12 @@ fi
 
 echo
 
-# Run migrations
+# =============================================================================
+# DATABASE MIGRATIONS
+# =============================================================================
+# Why run migrations? They create the database schema and load initial data.
+# Migrations ensure the database structure matches the application requirements.
+# =============================================================================
 print_status "Running database migrations..."
 sqlx migrate run || {
     print_error "Failed to run migrations"
@@ -177,35 +139,38 @@ sqlx migrate run || {
     print_warning "1. DATABASE_URL in .env is correct"
     print_warning "2. PostgreSQL is accessible"
     print_warning "3. Database exists and has proper permissions"
+    print_warning "4. Migration files are present in migrations/ directory"
     exit 1
 }
 print_success "Database migrations completed"
 
-# Verify the schema was created correctly
+# =============================================================================
+# SCHEMA VERIFICATION
+# =============================================================================
+# Why verify schema? Ensures migrations actually created the expected structure.
+# This catches issues early rather than when the application tries to run.
+# =============================================================================
 print_status "Verifying database schema..."
-BUDGET_TABLE_CHECK=$(psql "$DATABASE_URL" -c "SELECT column_name, data_type FROM information_schema.columns WHERE table_name='budgets' AND column_name='id';" -t 2>/dev/null | grep -c "uuid" || echo "0")
 
-if [ "$BUDGET_TABLE_CHECK" -gt 0 ]; then
-    print_success "UUID schema created successfully"
-
-    # Check if sample data was inserted
-    SAMPLE_DATA_CHECK=$(psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM budgets;" -t 2>/dev/null | tr -d ' ' || echo "0")
-    if [ "$SAMPLE_DATA_CHECK" -gt 0 ]; then
-        print_success "Sample budget data loaded ($SAMPLE_DATA_CHECK entries)"
-    else
-        print_warning "No sample data found - this may be expected"
-    fi
-else
-    print_error "Schema verification failed - UUID columns not found"
+# Use shared database utilities for schema verification
+if ! verify_database_schema "$DATABASE_URL"; then
+    print_error "Schema verification failed"
     exit 1
 fi
 
 echo
 
-# Build the project
+# =============================================================================
+# PROJECT BUILD
+# =============================================================================
+# Why build the project? Ensures the code compiles without errors.
+# Catches compilation issues before trying to run the application.
+# =============================================================================
 print_status "Building the project..."
 cargo build || {
     print_error "Failed to build the project"
+    print_warning "This may indicate code compilation errors"
+    print_warning "Check the error messages above for specific issues"
     exit 1
 }
 print_success "Project built successfully"
@@ -218,18 +183,35 @@ echo "API endpoints will be at: http://localhost:3000/api/*"
 echo
 print_status "Starting the server..."
 
+# =============================================================================
+# SERVER STARTUP AND TESTING
+# =============================================================================
+# Why start server in background? Allows us to test it while keeping it running.
+# Background process with PID tracking enables proper cleanup.
+# =============================================================================
 # Start the server in the background for testing
+# Why background? We want to test the server while keeping it running.
+# The & operator runs the command in the background.
 cargo run &
-SERVER_PID=$!
+SERVER_PID=$!  # Store the process ID for later management
 
 # Wait for server to start
+# Why wait? Servers need time to bind to ports and initialize.
+# 5 seconds is usually sufficient for a Rust web server.
 print_status "Waiting for server to start..."
 sleep 5
 
-# Test the API endpoints
+# =============================================================================
+# API ENDPOINT TESTING
+# =============================================================================
+# Why test endpoints? Verifies the complete setup works end-to-end.
+# API testing ensures the server is responding correctly.
+# =============================================================================
 print_status "Testing API endpoints..."
 
 # Test overview endpoint
+# Why curl? It's a standard tool for testing HTTP endpoints.
+# Silent mode (-s) reduces output noise during testing.
 if curl -s "http://localhost:3000/api/budgets/overview" > /dev/null 2>&1; then
     print_success "✅ Overview endpoint working"
 else
@@ -264,5 +246,13 @@ echo "3. Test the React Native app with the budget data"
 echo
 print_warning "Press Ctrl+C to stop the server"
 
+# =============================================================================
+# SERVER MANAGEMENT
+# =============================================================================
+# Why wait for PID? Ensures the script doesn't exit while the server is running.
+# wait command blocks until the background process completes.
+# =============================================================================
 # Keep the server running in the foreground
+# Why wait? Prevents the script from exiting while the server is running.
+# The wait command blocks until the background process (SERVER_PID) completes.
 wait $SERVER_PID
