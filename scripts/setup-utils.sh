@@ -55,15 +55,12 @@ load_module() {
 
 # Load all core modules
 load_all_modules() {
-    print_status "Loading setup modules..."
+    # Note: print_status is not available yet, so we use echo
+    echo "▶ Loading setup modules..."
 
     local failed=0
 
-    # Load output utilities first (other modules depend on it)
-    if ! load_module "$OUTPUT_UTILS" "Output Utilities"; then
-        failed=1
-    fi
-
+    # Output utilities are already loaded by the initialization block
     # Load prerequisite checker
     if ! load_module "$PREREQ_CHECKER" "Prerequisites Checker"; then
         failed=1
@@ -80,10 +77,10 @@ load_all_modules() {
     fi
 
     if [ $failed -eq 0 ]; then
-        print_success "All setup modules loaded successfully"
+        echo "✅ All setup modules loaded successfully"
         return 0
     else
-        print_error "Failed to load some setup modules"
+        echo "❌ Failed to load some setup modules"
         return 1
     fi
 }
@@ -108,7 +105,7 @@ safe_cd() {
     if cd "$target_dir"; then
         echo "$original_dir"  # Return original directory for restoration
     else
-        print_error "Failed to change to directory: $target_dir"
+        echo "❌ Error: Failed to change to directory: $target_dir"
         return 1
     fi
 }
@@ -125,14 +122,15 @@ restore_cd() {
 # Why project structure verification? Ensures scripts are run from correct locations.
 # This prevents errors due to wrong working directory.
 # =============================================================================
+# Verify project structure
 verify_project_structure() {
     if [ ! -d "moneywise-backend" ] || [ ! -d "moneywise-app" ]; then
-        print_error "Please run this script from the MoneyWise project root directory"
-        print_warning "Expected structure: MoneyWise/{moneywise-backend, moneywise-app}"
-        print_warning "This ensures the script can find all necessary components"
+        echo "❌ Error: Please run this script from the MoneyWise project root directory"
+        echo "⚠️ Warning: Expected structure: MoneyWise/{moneywise-backend, moneywise-app}"
+        echo "⚠️ Warning: This ensures the script can find all necessary components"
         return 1
     fi
-    print_success "Project structure verified"
+    echo "✅ Project structure verified"
     return 0
 }
 
@@ -146,10 +144,17 @@ verify_project_structure() {
 # Auto-load modules when script is sourced
 if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
     # Script is being sourced, load modules automatically
+    # First, load output utilities to get print functions
+    if ! load_module "$OUTPUT_UTILS" "Output Utilities"; then
+        echo "❌ Error: Failed to load Output Utilities module"
+        return 1
+    fi
+
+    # Now we can use print functions to load other modules
     if load_all_modules; then
-        print_success "Setup utilities initialized successfully"
+        echo "✅ Setup utilities initialized successfully"
     else
-        print_error "Failed to initialize setup utilities"
+        echo "❌ Failed to initialize setup utilities"
         return 1
     fi
 fi
