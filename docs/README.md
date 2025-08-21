@@ -1,319 +1,215 @@
-# Money Wise Design Document
+# 💰 MoneyWise
 
-## 1. Overview
+> **Smart money management for everyone** - A beautiful, privacy-focused personal finance app that works offline.
 
-App name: MoneyWise
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue.svg)](https://reactnative.dev/)
+[![Framework](https://img.shields.io/badge/framework-React%20Native%20%2B%20Expo-61dafb.svg)](https://expo.dev/)
+[![Language](https://img.shields.io/badge/language-Rust-orange.svg)](https://rust-lang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A cross platform (Android/iOS) money management app built with React Native + Expo that allows users to track spending, plan budgets, set savings goals, and optionally connect to banks. The app is designed to be local-first, offline-capable, clean, and easy to use with multi-currency support and clear summaries via charts and lists.
+---
 
-## 2. Key Features
+## ✨ What is MoneyWise?
 
-### Core (Basic) Features
-- Manual expense entry (amount, category, note, date)
-- Monthly budget setup and tracking
-- Savings goal creation and tracking
-- Multi-currency support with real-time exchange rates
-- Multi-language support (English, French, Vietnamese)
-- Graphical summary (pie/bar charts, trend analysis)
-- Offline local storage (SQLite/MMKV)
-- Light/dark mode toggle
-- No sign-in required
-- Budget overview with tabs: Planned, Spent, Remaining per month and year
-- Transaction list view with support for income/expense, editable and deletable
+MoneyWise is a cross-platform personal finance app that helps you take control of your money. Built with privacy and simplicity in mind, it works completely offline while providing powerful insights into your spending habits, budget management, and savings goals.
 
+**🎯 Perfect for:**
+- Individuals who want to track daily expenses
+- Budget-conscious people planning monthly spending
+- Anyone saving for specific financial goals
+- Users who value privacy and offline functionality
 
+---
 
-## 3. UI/UX Design
+## 🚀 Key Features
 
-### Navigation
-- Bottom tab navigation: Home, Budgets, Transactions, Goals, Settings
+### 💳 **Expense Tracking**
+- Log income and expenses with categories and notes
+- Support for multiple currencies
+- Photo receipts and transaction history
+- Smart categorization and auto-suggestions
 
-### Screens & User Flows
-- Home Dashboard: Overview, quick actions, charts, insights, upcoming
-- Budget Management: Monthly/yearly toggle, category budgets, alerts
-- Transaction Management: List, entry, details, search/filter
-- Savings Goals: Goal cards, details, types
-- Settings & Preferences: Language, currency, theme, data management, notifications
-- Category Management: Organize and edit categories/groups
-- Reports & Analytics: Visual analytics, trends, insights
+### 📊 **Budget Management**
+- Set monthly and yearly budgets by category
+- Real-time spending alerts and notifications
+- Visual progress tracking with charts
+- Carryover budgets for long-term planning
 
-## 4. Technical Stack
+### 🎯 **Savings Goals**
+- Create personalized savings targets
+- Track progress with visual indicators
+- Set deadlines and milestone celebrations
+- Multiple goal management
 
-### Frontend
-- **Framework**: React Native (with Expo SDK 50+)
-- **UI Library**: NativeWind (Tailwind CSS for React Native) with custom theming
-- **Navigation**: React Navigation v6 with bottom tabs and stack navigation
-- **Charts**: Victory Native for data visualization
-- **State Management**: Zustand (lightweight, simple API)
-- **Local Storage**: Expo SQLite for structured data, MMKV for key-value storage
-- **Icons**: Expo Vector Icons or React Native Vector Icons
-- **Date Handling**: date-fns for date manipulation
-- **Form Handling**: React Hook Form with validation
-- **Animations**: React Native Reanimated for smooth animations
+### 🌍 **Multi-Language Support**
+- English, French, and Vietnamese
+- Localized currency formats
+- Cultural financial practices
+- Easy language switching
 
-### Development Tools
-- **TypeScript**: For type safety and better developer experience
-- **ESLint & Prettier**: Code formatting and linting
-- **Jest & Testing Library**: Unit and integration testing
-- **Flipper**: Debugging and performance monitoring
-- **Metro**: Bundler configuration
+### 🔒 **Privacy & Security**
+- **100% offline-first** - Your data stays on your device
+- No account creation required
+- Optional cloud backup (coming soon)
+- GDPR compliant
 
-### Optional Backend
-- **Server**: Node.js (Express) with TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Supabase Auth or Firebase Auth
-- **Currency API**: exchangerate.host or Fixer.io
-- **Bank API**: Plaid (US), Tink (EU), or Budget Insight (France)
-- **File Storage**: Supabase Storage or AWS S3
-- **Push Notifications**: Expo Notifications
-- **Analytics**: PostHog or Mixpanel (privacy-focused)
+---
 
-### Security Considerations
-- **Data Encryption**: SQLCipher for encrypted SQLite
-- **Secure Storage**: Expo SecureStore for sensitive data
-- **API Security**: JWT tokens, rate limiting
-- **Privacy**: GDPR compliance, data minimization
+## 🛠️ Built With
 
+### **Frontend**
+- **React Native** + **Expo SDK 53** - Cross-platform mobile development
+- **TypeScript** - Type-safe code and better developer experience
+- **React Navigation** - Smooth, native navigation experience
+- **TanStack Query** - Efficient data fetching and caching
+- **React Native Reanimated** - Buttery smooth animations
 
+### **Backend**
+- **Rust** - High-performance, memory-safe backend
+- **Axum** - Modern, fast web framework
+- **PostgreSQL** - Robust, scalable database
+- **Redis** - Lightning-fast caching layer
+- **SQLx** - Async, compile-time checked SQL
 
-## 5. Data Model/ Schema Design
+---
 
-### Table (SQLite or SQL-based)
+## 📱 Screenshots
 
-Each table below is listed in order from basic/core features. Each has a short, practical description for implementation reference.
+*Coming soon - Beautiful UI previews of the app in action*
 
-`languages`:
-**Description**: Supported languages for app localization and internationalization (basic feature)
-- `id`: string (UUID)
-- `code`: string (ISO 639-1 language code, e.g., 'en', 'fr', 'vi')
-- `name`: string (Language name in native script)
-- `native_name`: string (Language name in the language itself)
-- `is_rtl`: boolean (Right-to-left text direction)
-- `is_active`: boolean
-- `sort_order`: integer
-- `created_at`: datetime
-- Indexes: `code`, `is_active`
+---
 
-`translations`:
-**Description**: Localized UI strings for multi-language support (basic feature)
-- `id`: string (UUID)
-- `language_code`: string (FK to `languages.code`)
-- `key`: string (Translation key identifier)
-- `value`: string (Localized text)
-- `context`: string (Optional context for disambiguation)
-- `created_at`: datetime
-- `updated_at`: datetime
-- Indexes: (`language_code`, `key`), `context`
+## 🎯 Why Choose MoneyWise?
 
-`user_preferences`:
-**Description**: Stores user-specific settings such as language, currency, theme, and notification preferences (basic feature)
-- `id`: string (UUID)
-- `language_code`: string (FK to `languages.code`)
-- `primary_currency`: string (3-char ISO code)
-- `theme`: 'light' | 'dark' | 'auto'
-- `notifications_enabled`: boolean
-- `budget_alerts_enabled`: boolean
-- `goal_reminders_enabled`: boolean
-- `bill_reminders_enabled`: boolean
-- `created_at`: datetime
-- `updated_at`: datetime
-- Indexes: `language_code`, `primary_currency`
+| Feature | MoneyWise | Other Apps |
+|---------|-----------|------------|
+| **Offline First** | ✅ Always works | ❌ Requires internet |
+| **Privacy** | ✅ Your data stays local | ❌ Cloud-dependent |
+| **Multi-Currency** | ✅ Native support | ❌ Limited options |
+| **No Signup** | ✅ Start immediately | ❌ Account required |
+| **Open Source** | ✅ Transparent & free | ❌ Proprietary |
 
-`category_groups`:
-**Description**: Logical grouping of categories for better organization in UI and reports (basic feature)
-- `id`: string (UUID)
-- `name`: string (e.g., `Housing`)
-- `sort_order`: integer
-- `color`: string (hex color)
-- `icon`: string (icon identifier)
-- `created_at`: datetime
+---
 
-`categories`:
-**Description**: Expense and income categories for transactions, linked to groups (basic feature)
-- `id`: string (UUID)
-- `name`: string (e.g., "Rent")
-- `group_id`: string (UUID, FK to `category_groups.id`)
-- `type`: 'expense' | 'income'
-- `icon`: string (optional, icon identifier)
-- `color`: string (hex color)
-- `is_default`: boolean (for system categories)
-- `created_at`: datetime
-- Indexes: `group_id`, `type`, `is_default`
+## 🚧 Current Status
 
-`transactions`:
-**Description**: Stores all user financial transactions (income/expense) with details (core feature)
-- `id`: string (UUID)
-- `type`: 'income' | 'expense'
-- `amount`: decimal(10,2)  // Use decimal for precision
-- `currency`: string (3-char ISO code)
-- `category_id`: string (UUID, FK to `categories.id`)
-- `note`: string
-- `date`: datetime (default to current date)
-- `created_at`: datetime
-- `updated_at`: datetime
-- `is_recurring`: boolean (for recurring transactions)
-- `recurrence_pattern`: string (JSON, for recurring transactions)
-- Indexes: `date`, `category_id`, `type`, `currency`
+**MVP Development Phase** - Core features are being actively developed:
 
-`budgets`:
-**Description**: Monthly/yearly budget plans per category, tracks planned and spent amounts (core feature)
-- `id`: string (UUID)
-- `month`: string (e.g., `2025-07`)
-- `year`: string (e.g., `2025`)
-- `category_id`: string (UUID, FK to `categories.id`)
-- `planned`: decimal(10,2)
-- `spent`: decimal(10,2) (calculated)
-- `carryover`: decimal(10,2) (optional, for sinking funds)
-- `currency`: string (3-char ISO code)
-- `created_at`: datetime
-- `updated_at`: datetime
-- Indexes: (`month`, `category_id`), (`year`, `category_id`), `currency`
+- ✅ **Project Setup** - React Native + Expo + Rust backend
+- ✅ **Navigation** - Bottom tab navigation with 5 main screens
+- ✅ **Basic UI** - Component library and design system
+- 🔄 **Core Features** - Transaction management, budgets, goals
+- 📋 **Testing** - Comprehensive test suite
+- 🎨 **Polish** - Animations, accessibility, performance
 
-`savings_goals`:
-**Description**: User-defined savings goals with target, progress, and completion date (core feature)
-- `id`: string (UUID)
-- `name`: string
-- `target_amount`: decimal(10,2)
-- `current_amount`: decimal(10,2)
-- `currency`: string (3-char ISO code)
-- `target_date`: datetime (optional)
-- `is_active`: boolean
-- `created_at`: datetime
-- `updated_at`: datetime
-- Indexes: `currency`, `created_at`, `is_active`
+---
 
+## 🚀 Getting Started
 
+### For Users
+*Coming soon to App Store and Google Play*
 
-### Database Architecture Overview
+### For Developers
 
-#### Core Tables
-1. **`languages`** - Supported languages metadata
-2. **`translations`** - Localized text strings
-3. **`user_preferences`** - User settings including language
-4. **`transactions`** - Financial transactions
-5. **`budgets`** - Monthly/yearly budget plans
-6. **`savings_goals`** - User-defined savings goals
-7. **`categories`** - Transaction categories
-8. **`category_groups`** - Category organization
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/moneywise.git
+   cd moneywise
+   ```
 
-#### Database Features
-- **SQLite compatible** with PostgreSQL extensions
-- **Proper indexing** for performance
-- **Foreign key constraints** for data integrity
-- **Triggers** for automatic timestamp updates
-- **Views** for common query patterns
-- **Sample data** for all supported languages
+2. **Frontend Setup**
+   ```bash
+   cd moneywise-app
+   npm install
+   npx expo start
+   ```
 
-### Table Relationships
-- Each `transaction.category_id` references `categories.id`
-- `budget.category_id` references `categories.id`
-- Each `category.group_id` references `category_groups.id`
-- `translation.language_code` references `languages.code`
-- `user_preferences.language_code` references `languages.code`
+3. **Backend Setup**
+   ```bash
+   cd moneywise-backend
+   cargo build
+   cargo run
+   ```
 
+4. **Database Setup**
+   ```bash
+   # PostgreSQL + Redis required
+   # See setup guide for detailed instructions
+   ```
 
+---
 
-## 6. Architecture & Implementation Strategy
+## 🤝 Contributing
 
-### App Architecture
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   UI Layer      │    │  Business Logic │    │   Data Layer    │
-│                 │    │                 │    │                 │
-│ - Components    │◄──►│ - Services      │◄──►│ - Database      │
-│ - Screens       │    │ - Hooks         │    │ - APIs          │
-│ - Navigation    │    │ - State Mgmt    │    │ - Storage       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+We welcome contributions! Here's how you can help:
 
-### Development Phases
+- 🐛 **Report bugs** - Open an issue with detailed steps
+- 💡 **Suggest features** - Share your ideas for improvement
+- 🔧 **Fix issues** - Pick up a good first issue
+- 📚 **Improve docs** - Help make MoneyWise easier to use
+- 🌍 **Add languages** - Help with translations
 
-#### Phase 1: Core MVP (4-6 weeks)
-1. **Basic Setup**: Project structure, navigation, theme
-2. **Data Layer**: SQLite setup, basic CRUD operations
-3. **Core Features**:
-   - Transaction entry and management
-   - Basic budget setup
-   - Simple charts and summaries
-4. **Testing**: Unit tests for core functionality
+**Getting Started with Contributing:**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-#### Phase 2: Polish & Optimization (2-3 weeks)
-1. **Performance**: Optimize queries, lazy loading
-2. **UX Improvements**: Animations, micro-interactions
-3. **Accessibility**: Screen reader support, high contrast
-4. **Testing**: Integration and E2E tests
+---
 
-### Performance Considerations
-- **Database Optimization**: Proper indexing, query optimization
-- **Memory Management**: Efficient list rendering, image optimization
-- **Offline Support**: Robust sync mechanisms
-- **Bundle Size**: Tree shaking, code splitting
-- **Startup Time**: Lazy loading, initialization optimization
-- **Translation Caching**: In-memory translation storage
+## 📋 Roadmap
 
-### Migration & Deployment
+### **Q1 2025** - Core MVP
+- [ ] Transaction management
+- [ ] Basic budget tracking
+- [ ] Savings goals
+- [ ] Multi-language support
 
-#### Adding New Languages
-1. Add language record to database
-2. Translate all UI strings
-3. Test with native speakers
-4. Update app store metadata
-5. Deploy with app update
+### **Q2 2025** - Enhanced Features
+- [ ] Advanced analytics and reports
+- [ ] Recurring transactions
+- [ ] Export/import functionality
+- [ ] Cloud sync (optional)
 
-#### Database Migrations
-- Version-controlled schema changes
-- Backward compatibility
-- Data migration scripts
-- Rollback procedures
+### **Q3 2025** - Advanced Features
+- [ ] Bank account integration
+- [ ] Investment tracking
+- [ ] Debt management
+- [ ] Financial insights AI
 
-### Security & Privacy
-- **Local-First**: All data stored locally by default
-- **Encryption**: Optional database encryption
-- **No Tracking**: Minimal analytics, user privacy focus
-- **Data Export**: Full control over user data
-- **GDPR Compliance**: Right to be forgotten, data portability
+---
 
-## 7. Language Support
+## 📄 License
 
-### Supported Languages
-- **English** (en) - Primary language
-- **French** (fr) - Français
-- **Vietnamese** (vi) - Tiếng Việt
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Language Features
-- Dynamic language switching in settings
-- Automatic language detection
-- RTL support for future languages
-- Context-aware translations
-- Fallback to English for missing translations
+---
 
-## 8. Testing Strategy
+## 🙏 Acknowledgments
 
-### Unit Testing
-- **Business Logic**: Services, utilities, calculations
-- **Components**: Individual component behavior
-- **Hooks**: Custom React hooks
-- **Database**: CRUD operations, migrations
+- **React Native community** - For the amazing mobile framework
+- **Expo team** - For simplifying React Native development
+- **Rust community** - For the performant backend language
+- **Contributors** - Everyone who helps make MoneyWise better
 
-### Integration Testing
-- **User Flows**: Complete transaction workflows
-- **Data Persistence**: Database operations
-- **Navigation**: Screen transitions and state
+---
 
-### E2E Testing
-- **Critical Paths**: Transaction entry, budget setup
-- **Cross-Platform**: iOS and Android compatibility
-- **Performance**: Load times, memory usage
+## 📞 Support & Community
 
-### Translation Testing
-- **Completeness**: Ensure all UI text has translations
-- **Accuracy**: Review by native speakers
-- **Context**: Verify correct context usage
-- **Length**: Test UI with longest translations
+- **GitHub Issues** - [Report bugs & request features](https://github.com/yourusername/moneywise/issues)
+- **Discussions** - [Join the community](https://github.com/yourusername/moneywise/discussions)
+- **Documentation** - [Setup & usage guides](https://github.com/yourusername/moneywise/docs)
 
-### Testing Tools
-- **Jest**: Unit and integration tests
-- **React Native Testing Library**: Component testing
-- **Detox**: E2E testing for React Native
-- **Flipper**: Debugging and performance monitoring
+---
+
+<div align="center">
+
+**Made with ❤️ by the MoneyWise team**
+
+*Empowering people to take control of their financial future*
+
+[⭐ Star this repo](https://github.com/yourusername/moneywise) • [🐛 Report an issue](https://github.com/yourusername/moneywise/issues) • [📖 View documentation](https://github.com/yourusername/moneywise/docs)
+
+</div>
 
