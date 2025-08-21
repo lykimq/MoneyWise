@@ -24,8 +24,8 @@ set -e  # Exit immediately if any command fails (fail-fast approach)
 # Why source utilities? Eliminates code duplication and centralizes maintenance.
 # The utilities script provides all common functions and service management.
 # =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$SCRIPT_DIR/../scripts/setup-utils.sh"
+BACKEND_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UTILS_SCRIPT="$BACKEND_SCRIPT_DIR/../scripts/setup-utils.sh"
 
 if [ ! -f "$UTILS_SCRIPT" ]; then
     echo "❌ Error: Shared utilities script not found at $UTILS_SCRIPT"
@@ -60,7 +60,7 @@ fi
 # Why check Cargo.toml? Ensures we're in a Rust project directory.
 # This prevents running the script from the wrong location.
 # =============================================================================
-if [ ! -f "Cargo.toml" ]; then
+if [ ! -f "$BACKEND_SCRIPT_DIR/Cargo.toml" ]; then
     print_error "Please run this script from the moneywise-backend directory"
     print_warning "Cargo.toml not found - this indicates we're not in a Rust project"
     exit 1
