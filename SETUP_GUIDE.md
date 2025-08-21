@@ -1,226 +1,170 @@
 # MoneyWise Setup Guide
 
-Get the MoneyWise personal finance app running in 5 minutes! This guide covers both the Rust backend API and React Native frontend.
+Get MoneyWise running in minutes with this streamlined setup guide. Designed for developers who want to get started quickly without getting bogged down in technical details.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (5 minutes)
 
-### Prerequisites
-- **Rust** (latest stable) - [Install here](https://rustup.rs/)
-- **Node.js 18+** - [Install here](https://nodejs.org/)
-- **PostgreSQL 12+** - [Install here](https://postgresql.org/download/)
-- **Redis** (optional but recommended) - [Install here](https://redis.io/download/)
+### 1. Prerequisites Check
+Ensure you have these installed:
+- **Rust** - [rustup.rs](https://rustup.rs/)
+- **Node.js 18+** - [nodejs.org](https://nodejs.org/)
+- **PostgreSQL 12+** - [postgresql.org](https://postgresql.org/download/)
+- **Redis** (optional) - [redis.io](https://redis.io/download/)
 
-### Option 1: Automated Setup (Recommended)
+### 2. Clone & Setup
 ```bash
-# Clone and navigate to the project
 git clone <repository-url>
 cd MoneyWise
 
-# Run the automated setup script
+# Backend setup (automated)
 cd moneywise-backend
 ./setup.sh
 
-# The script will:
-# ✅ Check prerequisites
-# ✅ Create database and .env file
-# ✅ Install dependencies and run migrations
-# ✅ Start the backend server
+# Frontend setup
+cd ../moneywise-app
+npm install
+npm start
 ```
 
-### Option 2: Manual Setup
-If you prefer manual control, follow the detailed steps below.
+That's it! The setup script handles everything else automatically.
 
 ---
 
-## 🔧 Backend Setup (Manual)
+## 🔧 What the Setup Script Does
 
-### 1. Start Required Services
-```bash
-# Ubuntu/Debian
-sudo systemctl start postgresql
-sudo systemctl start redis  # Optional
+The `./setup.sh` script automatically:
+- ✅ Verifies all prerequisites are installed
+- ✅ Starts PostgreSQL and Redis services
+- ✅ Creates database and environment files
+- ✅ Installs dependencies and runs migrations
+- ✅ Loads sample data (real production data)
+- ✅ Starts the backend server
+- ✅ Tests API endpoints
 
-# macOS (with Homebrew)
-brew services start postgresql
-brew services start redis    # Optional
+**Sample Data Included:**
+- 5 budget categories (Housing, Utilities, Transportation, Food, Entertainment)
+- Real budget data for December 2024 & August 2025
+- USD currency with realistic spending patterns
 
-# Or start Redis manually
-redis-server --daemonize yes
-```
+---
 
-### 2. Configure Environment
+## 🌐 Access Points
+
+Once running:
+- **Backend API**: http://localhost:3000/api
+- **Frontend App**: Expo development server (QR code in terminal)
+- **API Test**: `curl http://localhost:3000/api/budgets/overview`
+
+---
+
+## 🛠 Manual Setup (if needed)
+
+### Backend
 ```bash
 cd moneywise-backend
 
-# Create environment file
-cat > .env << 'EOF'
-DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
-RUST_LOG=info
-EOF
+# Start services
+sudo systemctl start postgresql  # Ubuntu/Debian
+brew services start postgresql    # macOS
 
-# Adjust the DATABASE_URL with your PostgreSQL credentials
-```
-
-### 3. Database Setup
-```bash
-# Create the database
+# Environment & database
+echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise" > .env
 createdb moneywise
-
-# Install SQLx CLI
 cargo install sqlx-cli --no-default-features --features postgres
-
-# Run migrations (creates tables and loads sample data from CSV files)
 sqlx migrate run
-```
-
-**Sample Data Loaded:**
-- **Category Groups**: Housing, Utilities, Transportation, Food, Entertainment (with emoji icons)
-- **Categories**: 10 categories including Rent, Utilities, Gas, Groceries, Dining Out, etc.
-- **Budget Entries**: Real budget data for December 2024 and August 2025 in USD
-- **Data Source**: CSV files exported from production database for realistic testing
-
-### 4. Start Backend
-```bash
-# Build and run
 cargo run
-
-# Backend will be available at http://localhost:3000
 ```
 
-### 5. Test Backend
-```bash
-# Test the API
-curl "http://localhost:3000/api/budgets/overview"
-curl "http://localhost:3000/api/budgets"
-```
-
----
-
-## 📱 Frontend Setup
-
-### 1. Install Dependencies
+### Frontend
 ```bash
 cd moneywise-app
 npm install
-```
-
-### 2. Start Development Server
-```bash
-# Start Expo development server
 npm start
-
-# Or run directly on platform
-npm run android  # Android emulator/device
-npm run ios      # iOS simulator
-npm run web      # Web browser
 ```
 
-The app will automatically connect to the backend at `http://localhost:3000/api`.
-
 ---
 
-## 🎯 What You'll Get
+## 🔧 Configuration
 
-**Backend Features:**
-- ✅ Full REST API for budget management (CRU operations, no DELETE yet)
-- ✅ PostgreSQL database with real sample data loaded from CSV files
-- ✅ Redis caching for performance (optional)
-- ✅ Comprehensive error handling and validation
-
-**Frontend Features:**
-- ✅ Budget overview with spending insights
-- ✅ Category-wise budget tracking
-- ✅ Time period selection (Monthly/Yearly)
-- ✅ AI-generated budget insights
-
----
-
-## 🔧 Configuration Options
-
-### Backend Environment Variables
-Create `moneywise-backend/.env` with:
+### Backend (.env)
 ```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/moneywise  # Required
-RUST_LOG=info                    # Logging level
-HOST=127.0.0.1                   # Server host (default: 127.0.0.1)
-PORT=3000                        # Server port (default: 3000)
-REDIS_URL=redis://localhost:6379 # Redis connection (optional)
+DATABASE_URL=postgresql://user:pass@localhost:5432/moneywise
+RUST_LOG=info
+HOST=127.0.0.1
+PORT=3000
+REDIS_URL=redis://localhost:6379  # Optional
 ```
 
-### Frontend Configuration
-To change the API endpoint, edit `moneywise-app/src/services/api.ts`:
-```typescript
-const API_BASE_URL = 'http://localhost:3000/api';
-```
+### Frontend API
+Edit `moneywise-app/src/services/api.ts` to change backend URL.
 
 ---
 
 ## 🧪 Testing
 
-### Backend Tests
 ```bash
-cd moneywise-backend
-cargo test
-```
+# Backend tests
+cd moneywise-backend && cargo test
 
-### Frontend Tests
-```bash
-cd moneywise-app
-npm test              # Run all tests
-npm run test:coverage # Run with coverage
+# Frontend tests
+cd moneywise-app && npm test
 ```
 
 ---
 
-## 🛠 Troubleshooting
+## 🚨 Troubleshooting
 
-### Backend Issues
-**"Connection refused" errors:**
-- Ensure PostgreSQL is running: `pg_isready`
-- Check database credentials in `.env`
-- Verify port 3000 is available
+### Common Issues
+- **PostgreSQL not running**: `sudo systemctl start postgresql`
+- **Port 3000 busy**: Change PORT in .env file
+- **Database errors**: Run `sqlx migrate run` again
+- **Frontend connection**: Ensure backend is running on correct port
 
-**"Database does not exist" errors:**
-- Create database: `createdb moneywise`
-- Run migrations: `sqlx migrate run`
-
-### Frontend Issues
-**"Network request failed" errors:**
-- Ensure backend is running on `http://localhost:3000`
-- Check if API endpoint is correct in `src/services/api.ts`
-- For Android emulator, you may need: `adb reverse tcp:3000 tcp:3000`
-
-**Metro bundler issues:**
-- Clear cache: `npx expo start --clear`
-- Reinstall dependencies: `rm -rf node_modules && npm install`
+### Reset Everything
+```bash
+cd moneywise-backend
+dropdb moneywise
+createdb moneywise
+sqlx migrate run
+```
 
 ---
 
 ## 📁 Project Structure
 ```
 MoneyWise/
-├── moneywise-backend/          # Rust API server
-│   ├── src/                    # Source code
-│   ├── migrations/             # Database migrations
-│   ├── setup.sh               # Automated setup script
-│   └── .env                   # Environment configuration
-└── moneywise-app/             # React Native app
-    ├── src/
-    │   ├── screens/           # App screens
-    │   ├── services/          # API integration
-    │   └── components/        # UI components
-    └── package.json
+├── moneywise-backend/     # Rust API server
+│   ├── setup.sh          # Automated setup
+│   ├── migrations/       # Database schema
+│   └── src/              # Source code
+└── moneywise-app/        # React Native app
+    ├── src/              # App source
+    └── package.json      # Dependencies
 ```
+
+---
+
+## 🎯 What You Get
+
+**Backend:**
+- Full REST API for budget management
+- PostgreSQL with real sample data
+- Redis caching (optional)
+- Comprehensive error handling
+
+**Frontend:**
+- Budget overview with insights
+- Category-wise tracking
+- Time period selection
+- AI-generated recommendations
 
 ---
 
 ## 🚀 Next Steps
 
-Once everything is running:
-1. Open the React Native app
-2. Navigate to the "Budgets" tab
-3. Explore the sample budget data
-4. Try the API endpoints with curl or Postman
-5. Check out the comprehensive test suites
+1. **Explore the app** - Navigate through budget categories
+2. **Test the API** - Use curl or Postman on the endpoints
+3. **Check the code** - Review the architecture in individual READMEs
+4. **Run tests** - Ensure everything works as expected
 
-For development, see the individual README files in each directory for detailed information about the codebase architecture and development workflows.
+The setup is designed to get you productive immediately. All technical complexity is abstracted away, so you can focus on building features rather than fighting with configuration.
