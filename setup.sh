@@ -81,9 +81,9 @@ if file_exists "setup.sh"; then
     chmod +x setup.sh
 
     # Execute the backend setup script
-    # Why execute from current directory? The backend script expects to be
-    # run from the moneywise-backend directory for proper path resolution.
-    ./setup.sh
+    # Why use full path? Prevents recursive calls to the root setup.sh
+    # This ensures we're calling the correct backend setup script.
+    "$(pwd)/moneywise-backend/setup.sh"
 else
     print_error "Backend setup script not found"
     print_warning "Expected: moneywise-backend/setup.sh"
