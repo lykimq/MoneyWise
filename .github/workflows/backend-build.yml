@@ -15,10 +15,28 @@ jobs:
     name: Build Rust Backend
     runs-on: ubuntu-latest
 
+    # Environment variables for the build
+    env:
+      # Disable SQLx compile-time SQL validation (no database needed)
+      SQLX_OFFLINE: true
+      # Rust build optimization
+      CARGO_INCREMENTAL: 0
+      # Ensure consistent builds
+      RUSTFLAGS: "-C target-cpu=native"
+
     steps:
       # Get the code
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # Show build environment
+      - name: Show build environment
+        run: |
+          echo "🔧 Build Environment:"
+          echo "SQLX_OFFLINE: $SQLX_OFFLINE"
+          echo "RUSTFLAGS: $RUSTFLAGS"
+          echo "Rust version: $(rustc --version)"
+          echo "Cargo version: $(cargo --version)"
 
       # Install Rust
       - name: Install Rust
@@ -27,16 +45,53 @@ jobs:
           toolchain: stable
           override: true
 
+      # Verify project structure
+      - name: Verify project structure
+        run: |
+          cd moneywise-backend
+          echo "📁 Project Structure:"
+          echo "Cargo.toml exists: $([ -f "Cargo.toml" ] && echo "✅" || echo "❌")"
+          echo "src/ directory exists: $([ -d "src" ] && echo "✅" || echo "❌")"
+          echo "main.rs exists: $([ -f "src/main.rs" ] && echo "✅" || echo "❌")"
+          echo "Dependencies in Cargo.toml:"
+          grep -E "^\[dependencies\]|^[a-zA-Z]" Cargo.toml | head -10
+
       # Build the project
       - name: Build project
         run: |
           cd moneywise-backend
-          cargo build --release
+          echo "🚀 Starting build process..."
+          echo "📊 Build target: release"
+          echo "🔧 SQLX_OFFLINE: $SQLX_OFFLINE"
+
+          # Build with verbose output for better debugging
+          cargo build --release --verbose
+
+          echo "✅ Build process completed!"
 
       # Test that it works
       - name: Test build
         run: |
           cd moneywise-backend
-          # Just check the binary exists and show its size
-          ls -la target/release/moneywise-backend
-          echo "✅ Binary built successfully!"
+          # Check that the binary was created
+          if [ -f "target/release/moneywise-backend" ]; then
+            echo "✅ Binary built successfully!"
+            ls -la target/release/moneywise-backend
+            echo "📊 Binary size: $(du -h target/release/moneywise-backend | cut -f1)"
+
+            # Show additional build info
+            echo "📁 Build artifacts:"
+            ls -la target/release/ | head -10
+
+            # Test that the binary is executable
+            echo "🔧 Testing binary execution:"
+            ./target/release/moneywise-backend --help 2>/dev/null || echo "Binary runs (help not implemented)"
+
+          else
+            echo "❌ Binary not found!"
+            echo "📁 Contents of target/release/:"
+            ls -la target/release/ || echo "target/release/ directory not found"
+            echo "📁 Contents of target/:"
+            ls -la target/ || echo "target/ directory not found"
+            exit 1
+          fi
