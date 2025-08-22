@@ -1,0 +1,60 @@
+# Simple Frontend Code Quality
+#
+# PURPOSE: Just check code quality (linting) for the React TypeScript frontend
+# WHY: Code quality is separated so you can fix formatting issues independently
+# WHEN: Runs on every push/PR to frontend code
+
+name: Simple Frontend Code Quality
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+
+jobs:
+  lint:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code from GitHub
+      - name: Get code
+        uses: actions/checkout@v4
+
+      # Install Node.js (JavaScript runtime)
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: moneywise-app/package-lock.json
+
+      # Install all the packages the app needs
+      - name: Install packages
+        run: |
+          cd moneywise-app
+          npm install
+
+      # Check TypeScript types (make sure types are correct)
+      - name: Check TypeScript types
+        run: |
+          cd moneywise-app
+          npx tsc --noEmit
+
+      # Check code formatting with Prettier (makes code look consistent)
+      - name: Check code formatting
+        run: |
+          cd moneywise-app
+          npx prettier --check "src/**/*.{ts,tsx}" || echo "Code formatting needs fixing"
+
+      # Check code quality with ESLint (finds potential bugs and style issues)
+      - name: Check code quality
+        run: |
+          cd moneywise-app
+          npx eslint src --ext .ts,.tsx --max-warnings 5 || echo "Some code quality issues found"
