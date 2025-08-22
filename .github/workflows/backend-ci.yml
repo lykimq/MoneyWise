@@ -1,10 +1,10 @@
-# Simple Backend CI
+# Production Backend CI
 #
-# PURPOSE: Coordinate simple backend workflows
-# WHY: Keep it simple and run basic checks
+# PURPOSE: Coordinate production-ready backend workflows with database
+# WHY: Real production setup with PostgreSQL integration
 # WHEN: Runs on every push/PR to backend code
 
-name: Simple Backend CI
+name: Production Backend CI
 
 # When to run this workflow
 on:
