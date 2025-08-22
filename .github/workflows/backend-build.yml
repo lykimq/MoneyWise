@@ -52,21 +52,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-            # Construct DATABASE_URL
+                  # Construct DATABASE_URL
       - name: Set up environment variables
         run: |
           echo "🔧 Setting up environment variables..."
 
-          # Construct DATABASE_URL from components
+          # Debug: Show what we have
+          echo "POSTGRES_USER: ${POSTGRES_USER}"
+          echo "POSTGRES_HOST: ${POSTGRES_HOST}"
+          echo "POSTGRES_PORT: ${POSTGRES_PORT}"
+          echo "POSTGRES_DB: ${POSTGRES_DB}"
+
           if [[ -n "$POSTGRES_PASSWORD" ]]; then
-            DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-            echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
-            echo "✅ DATABASE_URL constructed successfully"
-            echo "DATABASE_URL structure: postgresql://${POSTGRES_USER}:***@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+            echo "✅ POSTGRES_PASSWORD is available (length: ${#POSTGRES_PASSWORD})"
           else
-            echo "❌ POSTGRES_PASSWORD is not set!"
+            echo "❌ POSTGRES_PASSWORD is empty or not set!"
+            echo "Available environment variables:"
+            env | grep -i postgres || echo "No postgres-related variables found"
             exit 1
           fi
+
+          # Construct DATABASE_URL from components
+          DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+          echo "✅ DATABASE_URL constructed successfully"
+          echo "DATABASE_URL structure: postgresql://${POSTGRES_USER}:***@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
 
       # Show build environment
       - name: Show build environment
@@ -80,7 +90,9 @@ jobs:
           # Verify DATABASE_URL
           if [[ -n "$DATABASE_URL" ]]; then
             echo "✅ DATABASE_URL is properly set"
-            echo "DATABASE_URL structure: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
+            # Simple length check instead of sed masking to avoid corruption
+            echo "DATABASE_URL length: ${#DATABASE_URL} characters"
+            echo "DATABASE_URL starts with: $(echo "$DATABASE_URL" | cut -c1-20)..."
           else
             echo "❌ DATABASE_URL is not set!"
             exit 1
@@ -162,7 +174,7 @@ jobs:
             exit 1
           fi
 
-          echo "✅ DATABASE_URL is set: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
+          echo "✅ DATABASE_URL is set (${#DATABASE_URL} chars): $(echo "$DATABASE_URL" | cut -c1-25)..."
 
           # Test SQLx can connect
           echo "🔍 Testing SQLx connection..."
@@ -174,7 +186,7 @@ jobs:
           cd moneywise-backend
           echo "🚀 Starting build process..."
           echo "📊 Build target: release"
-          echo "🔧 DATABASE_URL: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
+          echo "🔧 DATABASE_URL length: ${#DATABASE_URL} characters"
 
           # Build with verbose output for better debugging
           cargo build --release --verbose
