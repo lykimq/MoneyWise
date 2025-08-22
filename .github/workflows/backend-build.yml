@@ -33,7 +33,9 @@ jobs:
 
     # Environment variables for the build
     env:
-      # Individual components for DATABASE_URL construction
+      # Database connection for SQLx compile-time verification
+      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/MoneyWise
+      # Individual components for debugging
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
@@ -52,31 +54,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-                  # Construct DATABASE_URL
-      - name: Set up environment variables
+                        # Verify environment variables
+      - name: Verify environment setup
         run: |
-          echo "🔧 Setting up environment variables..."
+          echo "🔧 Verifying environment setup..."
 
-          # Debug: Show what we have
-          echo "POSTGRES_USER: ${POSTGRES_USER}"
-          echo "POSTGRES_HOST: ${POSTGRES_HOST}"
-          echo "POSTGRES_PORT: ${POSTGRES_PORT}"
-          echo "POSTGRES_DB: ${POSTGRES_DB}"
+          if [[ -n "$DATABASE_URL" ]]; then
+            echo "✅ DATABASE_URL is available at job level (${#DATABASE_URL} chars)"
+            echo "✅ DATABASE_URL starts with: $(echo "$DATABASE_URL" | cut -c1-25)..."
+          else
+            echo "❌ DATABASE_URL is not available at job level!"
+            exit 1
+          fi
 
           if [[ -n "$POSTGRES_PASSWORD" ]]; then
             echo "✅ POSTGRES_PASSWORD is available (length: ${#POSTGRES_PASSWORD})"
           else
-            echo "❌ POSTGRES_PASSWORD is empty or not set!"
-            echo "Available environment variables:"
-            env | grep -i postgres || echo "No postgres-related variables found"
+            echo "❌ POSTGRES_PASSWORD is not available!"
             exit 1
           fi
-
-          # Construct DATABASE_URL from components
-          DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-          echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
-          echo "✅ DATABASE_URL constructed successfully"
-          echo "DATABASE_URL structure: postgresql://${POSTGRES_USER}:***@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
 
       # Show build environment
       - name: Show build environment
