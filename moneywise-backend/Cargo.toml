@@ -11,7 +11,7 @@ tower = "0.4"
 tower-http = { version = "0.4", features = ["cors"] }
 
 # Database
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "decimal", "offline"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "decimal"] }
 postgres = "0.19"
 
 # Redis for caching
