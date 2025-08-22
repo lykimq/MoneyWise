@@ -25,7 +25,7 @@ use connections::init_connections;
 /// CORS configuration, and starts the HTTP server
 ///
 /// CI/CD Test: This comment was added to test the fixed backend build workflow
-/// with database connection.
+/// with PostgreSQL database connection.
 #[tokio::main]
 async fn main() {
     // Initialize tracing for structured logging
