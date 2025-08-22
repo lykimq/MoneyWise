@@ -1,0 +1,51 @@
+# Simple Backend CI
+#
+# PURPOSE: Coordinate simple backend workflows
+# WHY: Keep it simple and run basic checks
+# WHEN: Runs on every push/PR to backend code
+
+name: Simple Backend CI
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-backend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-backend/**'
+
+# ENVIRONMENT VARIABLES: Shared across all jobs
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # JOB 1: Just build the backend
+  build:
+    name: 🏗️ Build Backend
+    uses: ./.github/workflows/backend-build.yml
+    secrets: inherit
+
+  # JOB 2: Simple Summary
+  summary:
+    name: 📊 Summary
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: always()
+
+    steps:
+      - name: 📋 Show Results
+        run: |
+          build_result="${{ needs.build.result }}"
+
+          echo "=== Backend CI Results ==="
+          echo "Build: $build_result"
+
+          if [ "$build_result" = "success" ]; then
+            echo "✅ Backend build completed successfully!"
+          else
+            echo "❌ Backend build failed!"
+          fi
