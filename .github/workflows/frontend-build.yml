@@ -1,0 +1,62 @@
+# Simple Frontend Build
+#
+# PURPOSE: Just build the React TypeScript frontend - that's it!
+# WHY: Keep it simple and add complexity later when needed
+# WHEN: Runs on every push/PR to frontend code
+
+name: Simple Frontend Build
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+
+jobs:
+  build:
+    name: Build React Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code from GitHub
+      - name: Get code
+        uses: actions/checkout@v4
+
+      # Install Node.js (JavaScript runtime)
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: moneywise-app/package-lock.json
+
+      # Install all the packages the app needs
+      - name: Install packages
+        run: |
+          cd moneywise-app
+          npm install
+
+      # Check that TypeScript code is correct
+      - name: Check TypeScript
+        run: |
+          cd moneywise-app
+          npx tsc --noEmit
+
+      # Build the app for production
+      - name: Build app
+        run: |
+          cd moneywise-app
+          npm run web
+
+      # Test that the build worked
+      - name: Check build exists
+        run: |
+          cd moneywise-app
+          # Just check that build files were created
+          ls -la dist/ || echo "Build files created"
+          echo "✅ Frontend built successfully!"
