@@ -12,12 +12,10 @@ on:
     branches: [ main, develop ]
     paths:
       - 'moneywise-backend/**'
-      - '.github/workflows/backend-*.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'moneywise-backend/**'
-      - '.github/workflows/backend-*.yml'
 
 # ENVIRONMENT VARIABLES: Shared across all jobs
 env:
