@@ -1,0 +1,49 @@
+# Simple Backend Build
+#
+# PURPOSE: Just compile the Rust backend - that's it!
+# WHY: Keep it simple and add complexity later when needed
+# WHEN: Runs on every push/PR to backend code
+
+name: Simple Backend Build
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-backend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-backend/**'
+
+jobs:
+  build:
+    name: Build Rust Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Rust
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Build the project
+      - name: Build project
+        run: |
+          cd moneywise-backend
+          cargo build --release
+
+      # Test that it works
+      - name: Test build
+        run: |
+          cd moneywise-backend
+          # Just check the binary exists and show its size
+          ls -la target/release/moneywise-backend
+          echo "✅ Binary built successfully!"
