@@ -21,8 +21,8 @@ jobs:
         image: postgres:14
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'postgres' }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'MoneyWise' }}
+          POSTGRES_USER: postgres
+          POSTGRES_DB: MoneyWise
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -34,7 +34,7 @@ jobs:
     # Environment variables for the build
     env:
       # Database connection for SQLx compile-time verification (using secrets)
-      DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER || 'postgres' }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB || 'MoneyWise' }}
+      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/MoneyWise
       DATABASE_MAX_CONNECTIONS: 5
       # Rust build optimization
       CARGO_INCREMENTAL: 0
@@ -75,18 +75,16 @@ jobs:
           done
           echo "✅ PostgreSQL is ready!"
 
-            # Set up database schema
+                  # Set up database schema
       - name: Set up database
         env:
           PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'postgres' }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'MoneyWise' }}
         run: |
           cd moneywise-backend
           echo "🗄️ Setting up database schema..."
 
           # Create the trigger function first
-          psql -h localhost -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
+          psql -h localhost -U postgres -d MoneyWise -c "
           CREATE OR REPLACE FUNCTION public.update_updated_at_column()
           RETURNS TRIGGER AS \$\$
           BEGIN
@@ -96,7 +94,7 @@ jobs:
           \$\$ language 'plpgsql';"
 
           # Run the migration
-          psql -h localhost -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f migrations/20241201000000_initial_schema.sql
+          psql -h localhost -U postgres -d MoneyWise -f migrations/20241201000000_initial_schema.sql
 
           echo "✅ Database setup completed!"
 
