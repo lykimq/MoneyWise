@@ -33,8 +33,12 @@ jobs:
 
     # Environment variables for the build
     env:
-      # Database connection for SQLx compile-time verification (using secrets)
-      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/MoneyWise
+      # Individual components for DATABASE_URL construction
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_DB: MoneyWise
       DATABASE_MAX_CONNECTIONS: 5
       # Rust build optimization
       CARGO_INCREMENTAL: 0
@@ -48,23 +52,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+            # Construct DATABASE_URL
+      - name: Set up environment variables
+        run: |
+          echo "🔧 Setting up environment variables..."
+
+          # Construct DATABASE_URL from components
+          if [[ -n "$POSTGRES_PASSWORD" ]]; then
+            DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+            echo "DATABASE_URL=$DATABASE_URL" >> $GITHUB_ENV
+            echo "✅ DATABASE_URL constructed successfully"
+            echo "DATABASE_URL structure: postgresql://${POSTGRES_USER}:***@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+          else
+            echo "❌ POSTGRES_PASSWORD is not set!"
+            exit 1
+          fi
+
       # Show build environment
       - name: Show build environment
         run: |
           echo "🔧 Build Environment:"
-          echo "DATABASE_URL: $DATABASE_URL"
           echo "RUSTFLAGS: $RUSTFLAGS"
           echo "Rust version: $(rustc --version)"
           echo "Cargo version: $(cargo --version)"
           echo "PostgreSQL version: $(psql --version)"
-          
-          # Debug: Check if DATABASE_URL is properly constructed
-          if [[ -z "$DATABASE_URL" ]]; then
-            echo "❌ DATABASE_URL is empty!"
+
+          # Verify DATABASE_URL
+          if [[ -n "$DATABASE_URL" ]]; then
+            echo "✅ DATABASE_URL is properly set"
+            echo "DATABASE_URL structure: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
           else
-            echo "✅ DATABASE_URL is set"
-            # Show just the structure without password
-            echo "DATABASE_URL structure: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
+            echo "❌ DATABASE_URL is not set!"
+            exit 1
           fi
 
       # Install Rust
@@ -83,7 +102,7 @@ jobs:
             sleep 2
           done
           echo "✅ PostgreSQL is ready!"
-          
+
           # Test database connection
           echo "🔍 Testing database connection..."
           if [[ -n "${{ secrets.POSTGRES_PASSWORD }}" ]]; then
@@ -134,7 +153,7 @@ jobs:
         run: |
           cd moneywise-backend
           echo "🔍 Verifying build environment..."
-          
+
           # Check if DATABASE_URL is set and valid
           if [[ -z "$DATABASE_URL" ]]; then
             echo "❌ ERROR: DATABASE_URL is not set!"
@@ -142,9 +161,9 @@ jobs:
             env | grep -E "(DATABASE|POSTGRES)" || echo "No database-related environment variables found"
             exit 1
           fi
-          
-          echo "✅ DATABASE_URL is set: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
-          
+
+          echo "✅ DATABASE_URL is set: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
+
           # Test SQLx can connect
           echo "🔍 Testing SQLx connection..."
           cargo check --quiet 2>&1 | head -20 || true
@@ -155,7 +174,7 @@ jobs:
           cd moneywise-backend
           echo "🚀 Starting build process..."
           echo "📊 Build target: release"
-          echo "🔧 DATABASE_URL: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
+          echo "🔧 DATABASE_URL: $(echo "$DATABASE_URL" | sed 's/\/\/[^:]*:[^@]*@/\/\/user:***@/')"
 
           # Build with verbose output for better debugging
           cargo build --release --verbose
