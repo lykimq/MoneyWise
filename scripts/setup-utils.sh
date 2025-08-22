@@ -105,7 +105,7 @@ safe_cd() {
     if cd "$target_dir"; then
         echo "$original_dir"  # Return original directory for restoration
     else
-        echo "❌ Error: Failed to change to directory: $target_dir"
+        print_error "Failed to change to directory: $target_dir"
         return 1
     fi
 }
@@ -122,15 +122,14 @@ restore_cd() {
 # Why project structure verification? Ensures scripts are run from correct locations.
 # This prevents errors due to wrong working directory.
 # =============================================================================
-# Verify project structure
 verify_project_structure() {
     if [ ! -d "moneywise-backend" ] || [ ! -d "moneywise-app" ]; then
-        echo "❌ Error: Please run this script from the MoneyWise project root directory"
-        echo "⚠️ Warning: Expected structure: MoneyWise/{moneywise-backend, moneywise-app}"
-        echo "⚠️ Warning: This ensures the script can find all necessary components"
+        print_error "Please run this script from the MoneyWise project root directory"
+        print_warning "Expected structure: MoneyWise/{moneywise-backend, moneywise-app}"
+        print_warning "This ensures the script can find all necessary components"
         return 1
     fi
-    echo "✅ Project structure verified"
+    print_success "Project structure verified"
     return 0
 }
 
@@ -152,9 +151,9 @@ if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
 
     # Now we can use print functions to load other modules
     if load_all_modules; then
-        echo "✅ Setup utilities initialized successfully"
+        print_success "Setup utilities initialized successfully"
     else
-        echo "❌ Failed to initialize setup utilities"
+        print_error "Failed to initialize setup utilities"
         return 1
     fi
 fi
