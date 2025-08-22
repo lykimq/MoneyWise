@@ -1,0 +1,55 @@
+# Simple Frontend Tests
+#
+# PURPOSE: Just run tests for the React TypeScript frontend
+# WHY: Testing is separated from building so you can run them independently
+# WHEN: Runs on every push/PR to frontend code
+
+name: Simple Frontend Tests
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code from GitHub
+      - name: Get code
+        uses: actions/checkout@v4
+
+      # Install Node.js (JavaScript runtime)
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: moneywise-app/package-lock.json
+
+      # Install all the packages the app needs
+      - name: Install packages
+        run: |
+          cd moneywise-app
+          npm install
+
+      # Run the tests
+      - name: Run tests
+        run: |
+          cd moneywise-app
+          npm test
+
+      # Optional: Run tests with coverage (shows how much code is tested)
+      - name: Run tests with coverage
+        run: |
+          cd moneywise-app
+          npm run test:coverage
+          echo "✅ Tests completed successfully!"
