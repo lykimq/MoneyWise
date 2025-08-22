@@ -6,16 +6,9 @@
 
 name: Simple Frontend Build
 
-# When to run this workflow
+# When to run this workflow - only when called by frontend-ci.yml
 on:
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-app/**'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-app/**'
+  workflow_call:
 
 jobs:
   build:
@@ -41,13 +34,7 @@ jobs:
           cd moneywise-app
           npm install
 
-      # Check that TypeScript code is correct
-      - name: Check TypeScript
-        run: |
-          cd moneywise-app
-          npx tsc --noEmit
-
-      # Build the app for production
+      # Build the app for production (TypeScript check already done in lint job)
       - name: Build app
         run: |
           cd moneywise-app

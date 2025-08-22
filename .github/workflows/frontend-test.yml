@@ -6,16 +6,9 @@
 
 name: Simple Frontend Tests
 
-# When to run this workflow
+# When to run this workflow - only when called by frontend-ci.yml
 on:
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-app/**'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-app/**'
+  workflow_call:
 
 jobs:
   test:

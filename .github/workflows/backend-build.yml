@@ -6,16 +6,9 @@
 
 name: Simple Backend Build
 
-# When to run this workflow
+# When to run this workflow - only when called by backend-ci.yml
 on:
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-backend/**'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'moneywise-backend/**'
+  workflow_call:
 
 jobs:
   build:
