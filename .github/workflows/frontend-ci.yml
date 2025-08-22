@@ -1,0 +1,63 @@
+# Simple Frontend CI
+#
+# PURPOSE: Coordinate simple frontend workflows
+# WHY: Keep it simple and run basic checks
+# WHEN: Runs on every push/PR to frontend code
+
+name: Simple Frontend CI
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'moneywise-app/**'
+
+jobs:
+  # JOB 1: Check code quality (linting, formatting, types)
+  lint:
+    name: 🔍 Code Quality
+    uses: ./.github/workflows/frontend-lint.yml
+    secrets: inherit
+
+  # JOB 2: Run tests
+  test:
+    name: 🧪 Tests
+    uses: ./.github/workflows/frontend-test.yml
+    secrets: inherit
+
+  # JOB 3: Build the app
+  build:
+    name: 🏗️ Build
+    needs: [lint, test]  # Only build if linting and tests pass
+    uses: ./.github/workflows/frontend-build.yml
+    secrets: inherit
+
+  # JOB 4: Simple summary
+  summary:
+    name: 📊 Summary
+    runs-on: ubuntu-latest
+    needs: [lint, test, build]
+    if: always()  # Always run, even if other jobs fail
+
+    steps:
+      - name: 📋 Show Results
+        run: |
+          lint_result="${{ needs.lint.result }}"
+          test_result="${{ needs.test.result }}"
+          build_result="${{ needs.build.result }}"
+
+          echo "=== Frontend CI Results ==="
+          echo "Code Quality: $lint_result"
+          echo "Tests: $test_result"
+          echo "Build: $build_result"
+
+          if [ "$lint_result" = "success" ] && [ "$test_result" = "success" ] && [ "$build_result" = "success" ]; then
+            echo "✅ All frontend checks passed!"
+          else
+            echo "❌ Some frontend checks failed!"
+          fi
