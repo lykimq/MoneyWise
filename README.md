@@ -1,5 +1,7 @@
 # 💰 MoneyWise
 
+<!-- CI/CD Test: This comment was added to test the GitHub Actions workflows -->
+
 > **Smart money management for everyone** - A beautiful, privacy-focused personal finance app that works offline.
 
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue.svg)](https://reactnative.dev/)
