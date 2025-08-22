@@ -57,6 +57,15 @@ jobs:
           echo "Rust version: $(rustc --version)"
           echo "Cargo version: $(cargo --version)"
           echo "PostgreSQL version: $(psql --version)"
+          
+          # Debug: Check if DATABASE_URL is properly constructed
+          if [[ -z "$DATABASE_URL" ]]; then
+            echo "❌ DATABASE_URL is empty!"
+          else
+            echo "✅ DATABASE_URL is set"
+            # Show just the structure without password
+            echo "DATABASE_URL structure: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
+          fi
 
       # Install Rust
       - name: Install Rust
@@ -74,6 +83,17 @@ jobs:
             sleep 2
           done
           echo "✅ PostgreSQL is ready!"
+          
+          # Test database connection
+          echo "🔍 Testing database connection..."
+          if [[ -n "${{ secrets.POSTGRES_PASSWORD }}" ]]; then
+            echo "✅ POSTGRES_PASSWORD secret is available"
+            # Test connection (will fail if password is wrong)
+            PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" psql -h localhost -U postgres -d MoneyWise -c "SELECT 1;" && echo "✅ Database connection successful" || echo "❌ Database connection failed"
+          else
+            echo "❌ POSTGRES_PASSWORD secret is not set!"
+            exit 1
+          fi
 
                   # Set up database schema
       - name: Set up database
@@ -109,13 +129,33 @@ jobs:
           echo "Dependencies in Cargo.toml:"
           grep -E "^\[dependencies\]|^[a-zA-Z]" Cargo.toml | head -10
 
+      # Verify environment before build
+      - name: Verify build environment
+        run: |
+          cd moneywise-backend
+          echo "🔍 Verifying build environment..."
+          
+          # Check if DATABASE_URL is set and valid
+          if [[ -z "$DATABASE_URL" ]]; then
+            echo "❌ ERROR: DATABASE_URL is not set!"
+            echo "Available environment variables:"
+            env | grep -E "(DATABASE|POSTGRES)" || echo "No database-related environment variables found"
+            exit 1
+          fi
+          
+          echo "✅ DATABASE_URL is set: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
+          
+          # Test SQLx can connect
+          echo "🔍 Testing SQLx connection..."
+          cargo check --quiet 2>&1 | head -20 || true
+
       # Build the project
       - name: Build project
         run: |
           cd moneywise-backend
           echo "🚀 Starting build process..."
           echo "📊 Build target: release"
-          echo "🔧 DATABASE_URL: $DATABASE_URL"
+          echo "🔧 DATABASE_URL: $(echo $DATABASE_URL | sed 's/:[^@]*@/:***@/')"
 
           # Build with verbose output for better debugging
           cargo build --release --verbose
