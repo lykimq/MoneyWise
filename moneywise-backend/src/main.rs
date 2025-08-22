@@ -23,8 +23,9 @@ use connections::init_connections;
 /// Main entry point for the MoneyWise backend server
 /// This function initializes the application, sets up logging, database connection,
 /// CORS configuration, and starts the HTTP server
-/// 
+///
 /// CI/CD Test: This comment was added to test the fixed backend build workflow
+/// with database connection.
 #[tokio::main]
 async fn main() {
     // Initialize tracing for structured logging
