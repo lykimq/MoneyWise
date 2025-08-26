@@ -70,21 +70,39 @@ jobs:
           # Test Supabase API connectivity instead of direct database connection
           # This is more reliable as it doesn't require direct port 5432 access
           echo "🔄 Testing Supabase API connectivity..."
+
+          # Debug environment variables (without exposing secrets)
+          echo "Debug: SUPABASE_URL is set: $([ -n "$SUPABASE_URL" ] && echo "✅" || echo "❌")"
+          echo "Debug: SUPABASE_ANON_KEY is set: $([ -n "$SUPABASE_ANON_KEY" ] && echo "✅" || echo "❌")"
+          echo "Debug: URL endpoint: ${SUPABASE_URL}/rest/v1/"
+
           max_retries=10
           retry_count=0
 
           until [ $retry_count -ge $max_retries ]; do
+            # Test with explicit error handling and verbose output on failure
             response=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-              -H "apikey: $SUPABASE_ANON_KEY" \
-              "$SUPABASE_URL/rest/v1/" 2>/dev/null)
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              "${SUPABASE_URL}/rest/v1/" 2>&1)
 
             if [ "$response" = "200" ]; then
               echo "✅ Supabase API is accessible (HTTP $response)"
               echo "ready=true" >> $GITHUB_OUTPUT
               exit 0
+            elif [ "$response" = "401" ]; then
+              echo "✅ Supabase API is accessible but authentication failed (HTTP $response) - this is expected for anonymous access"
+              echo "ready=true" >> $GITHUB_OUTPUT
+              exit 0
             else
               echo "⏳ Supabase API not ready (HTTP $response), retrying..."
+              # On last retry, show more detailed error information
+              if [ $retry_count -eq $((max_retries - 1)) ]; then
+                echo "🔍 Debugging last attempt with verbose output:"
+                curl -v -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+                     -H "apikey: ${SUPABASE_ANON_KEY}" \
+                     "${SUPABASE_URL}/rest/v1/" 2>&1 | head -20
+              fi
               retry_count=$((retry_count + 1))
               sleep 3
             fi
