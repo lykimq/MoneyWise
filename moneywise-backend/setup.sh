@@ -4,10 +4,11 @@
 # MoneyWise Backend Setup Script
 # =============================================================================
 # This script automates the complete setup of the MoneyWise backend service.
-# It handles: services, database, migrations, and testing.
+# It automatically detects if you're using Supabase or local database and adapts accordingly.
 #
 # Why this approach?
 # - Automated setup reduces human error and setup time
+# - Environment detection prevents conflicts between local and Supabase
 # - Service management handles different OS environments (Linux/macOS)
 # - Database verification ensures data integrity
 # - API testing validates the complete setup
@@ -69,20 +70,68 @@ fi
 print_success "Backend project structure verified"
 
 # =============================================================================
-# SERVICE MANAGEMENT
+# ENVIRONMENT DETECTION AND SETUP
 # =============================================================================
-# Why auto-start services? Users often forget to start services.
-# The utilities script handles different OS environments automatically.
+# Why detect environment? Different setup paths for Supabase vs local development
+# This ensures the right configuration is applied for each environment.
 # =============================================================================
-print_status "Starting required services..."
+print_status "Detecting database environment..."
 
-# Start PostgreSQL service
-start_postgresql || exit 1
+# Check if .env file exists
+if [ ! -f "$BACKEND_SCRIPT_DIR/.env" ]; then
+    print_warning "No .env file found"
+    print_status "Creating environment file from template..."
 
-# Start Redis service (optional)
-start_redis
+    if [ -f "$BACKEND_SCRIPT_DIR/env.example" ]; then
+        cp "$BACKEND_SCRIPT_DIR/env.example" "$BACKEND_SCRIPT_DIR/.env"
+        print_warning "⚠️  IMPORTANT: Please edit .env file with your database credentials"
+        print_warning "   - For Supabase: Update DATABASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY"
+        print_warning "   - For local: Update DATABASE_URL to point to local PostgreSQL"
+        print_warning "   - Then run this script again"
+        exit 1
+    else
+        print_error "No env.example template found"
+        exit 1
+    fi
+fi
+
+# Load environment variables
+source "$BACKEND_SCRIPT_DIR/.env"
+
+# Detect if using Supabase or local database
+if [[ "$DATABASE_URL" == *"supabase.com"* ]] || [[ "$DATABASE_URL" == *"supabase.co"* ]]; then
+    DATABASE_TYPE="supabase"
+    print_success "✅ Detected Supabase database environment"
+elif [[ "$DATABASE_URL" == *"localhost"* ]] || [[ "$DATABASE_URL" == *"127.0.0.1"* ]]; then
+    DATABASE_TYPE="local"
+    print_success "✅ Detected local database environment"
+else
+    print_warning "⚠️  Unknown database environment - assuming Supabase"
+    DATABASE_TYPE="supabase"
+fi
 
 echo
+
+# =============================================================================
+# SERVICE MANAGEMENT (Local Development Only)
+# =============================================================================
+# Why only start services locally? Supabase handles database services remotely.
+# Local services are only needed for local development.
+# =============================================================================
+if [ "$DATABASE_TYPE" = "local" ]; then
+    print_status "Starting required services for local development..."
+
+    # Start PostgreSQL service
+    start_postgresql || exit 1
+
+    # Start Redis service (optional)
+    start_redis
+
+    echo
+else
+    print_status "Skipping local service startup (using Supabase)"
+    echo
+fi
 
 # =============================================================================
 # DATABASE ENVIRONMENT SETUP
@@ -90,12 +139,24 @@ echo
 # Why use database utilities? Provides consistent database operations.
 # This includes environment file creation, database setup, and verification.
 # =============================================================================
-print_status "Setting up database environment..."
+if [ "$DATABASE_TYPE" = "local" ]; then
+    print_status "Setting up local database environment..."
 
-# Setup complete database environment using shared utilities
-if ! setup_database_environment ".env" "moneywise"; then
-    print_error "Database environment setup failed"
-    exit 1
+    # Setup complete database environment using shared utilities
+    if ! setup_database_environment ".env" "moneywise"; then
+        print_error "Local database environment setup failed"
+        exit 1
+    fi
+else
+    print_status "Verifying Supabase database connection..."
+
+    # Test Supabase connection
+    if ! test_database_connection "$DATABASE_URL"; then
+        print_error "Supabase database connection failed"
+        print_warning "Please check your DATABASE_URL in .env file"
+        exit 1
+    fi
+    print_success "Supabase database connection verified"
 fi
 
 echo
@@ -137,8 +198,13 @@ sqlx migrate run || {
     print_error "Failed to run migrations"
     print_warning "Please check:"
     print_warning "1. DATABASE_URL in .env is correct"
-    print_warning "2. PostgreSQL is accessible"
-    print_warning "3. Database exists and has proper permissions"
+    if [ "$DATABASE_TYPE" = "local" ]; then
+        print_warning "2. PostgreSQL is accessible"
+        print_warning "3. Database exists and has proper permissions"
+    else
+        print_warning "2. Supabase connection is working"
+        print_warning "3. Database credentials are correct"
+    fi
     print_warning "4. Migration files are present in migrations/ directory"
     exit 1
 }

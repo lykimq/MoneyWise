@@ -1,222 +1,123 @@
 # MoneyWise Backend
 
-A high-performance Rust API server that powers the MoneyWise personal finance app with budget data, caching, and financial insights.
+A high-performance Rust backend for the MoneyWise budget management application, designed to work with both **Supabase** (production) and **local PostgreSQL** (development).
 
-## 🚀 What's Inside
+## 🚀 Quick Start
 
-**Core Features:**
-- **Budget API**: REST endpoints for budget overview, categories, and insights
-- **Redis Caching**: High-performance caching layer for budget data
-- **PostgreSQL Database**: Robust data storage with migrations
-- **Financial Precision**: Rust Decimal for exact monetary calculations
-- **Smart Insights**: Budget analysis and recommendations
-
-**Technical Stack:**
-- **Framework**: Axum (async Rust web framework)
-- **Database**: PostgreSQL with SQLx for type-safe queries
-- **Caching**: Redis with connection pooling and retry logic
-- **Architecture**: Clean modular structure with domain separation
-- **Testing**: Comprehensive test suite with mocking
-
-## 📡 Budget API
-
-**Current Implementation:**
-- ✅ **CREATE** - POST new budget entries with validation
-- ✅ **READ** - GET budget data (overview, categories, insights, individual budgets)
-- ✅ **UPDATE** - PUT partial updates to existing budgets
-- 🚧 **DELETE** - Not implemented yet
-
-**Future Enhancements:**
-- DELETE operations for budget removal
-- Bulk operations for multiple budgets
-- Advanced filtering and sorting options
-- Budget templates and recurring budgets
-
----
-
-### Available Endpoints
-
-### **GET /api/budgets**
-Complete budget data with overview, categories, and insights.
-
-**Query Parameters:**
-- `month=12` (optional) - Filter by month (1-12), defaults to current month
-- `year=2024` (optional) - Filter by year, defaults to current year
-- `currency=EUR` (optional) - Currency filter
-
-**Example Request:**
-```bash
-curl "http://localhost:3000/api/budgets?month=6&year=2025&currency=EUR"
-```
-
-**Response:**
-```json
-{
-  "overview": {
-    "planned": "2500.00",
-    "spent": "1847.50",
-    "remaining": "652.50",
-    "currency": "EUR"
-  },
-  "categories": [
-    {
-      "id": "uuid-string",
-      "category_name": "Groceries",
-      "group_name": "Essentials",
-      "category_color": "#4CAF50",
-      "group_color": "#2E7D32",
-      "planned": "500.00",
-      "spent": "342.75",
-      "remaining": "157.25",
-      "percentage": "68.55",
-      "currency": "EUR"
-    }
-  ],
-  "insights": [
-    {
-      "type_": "warning",
-      "message": "You're 15% over budget in Dining Out",
-      "icon": "alert-triangle",
-      "color": "#FF6B6B"
-    }
-  ]
-}
-```
-
-### **GET /api/budgets/overview**
-Lightweight budget totals only - perfect for dashboards.
-
-**Query Parameters:** Same as above
-
-**Example Request:**
-```bash
-curl "http://localhost:3000/api/budgets/overview?currency=EUR"
-```
-
-**Response:**
-```json
-{
-  "planned": "1200.00",
-  "spent": "850.50",
-  "remaining": "349.50",
-  "currency": "EUR"
-}
-```
-
-### **POST /api/budgets**
-Create a new budget entry.
-
-**Request Body:**
-```json
-{
-  "category_id": "uuid-string",
-  "planned": "300.00",
-  "currency": "EUR",
-  "month": 6,
-  "year": 2025
-}
-```
-
-**Example Request:**
-```bash
-curl -X POST "http://localhost:3000/api/budgets" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "category_id": "8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a",
-    "planned": "300.00",
-    "currency": "EUR"
-  }'
-```
-
-**Response:** Complete budget object with generated ID and timestamps
-
-### **PUT /api/budgets/:id**
-Update an existing budget (partial updates supported).
-
-**Request Body:**
-```json
-{
-  "planned": "350.00",
-  "carryover": "25.00"
-}
-```
-
-**Example Request:**
-```bash
-curl -X PUT "http://localhost:3000/api/budgets/uuid-string" \
-  -H "Content-Type: application/json" \
-  -d '{"planned": "350.00"}'
-```
-
-### **GET /api/budgets/:id**
-Get a specific budget by ID.
-
-**Example Request:**
-```bash
-curl "http://localhost:3000/api/budgets/8d0b9b6f-5cfa-43ef-9a48-6a0f7d6cfb3a"
-```
-
-**Response:** Single budget object with all fields
-
-## 🛠 Quick Start
-
-### Prerequisites
-- Rust (latest stable)
-- PostgreSQL 12+
-- Redis (optional but recommended)
-
-### Setup
+### Option 1: Supabase (Production - Recommended)
 ```bash
 cd moneywise-backend
 
-# 1. Environment setup
-echo 'DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise' > .env
-echo 'RUST_LOG=info' >> .env
+# 1. Setup with Supabase
+make setup-supabase
 
-# 2. Database setup
-make install-sqlx
-sqlx database create || true
-make migrate
+# 2. Edit .env with your Supabase credentials:
+# DATABASE_URL=postgresql://postgres.[your-project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+# SUPABASE_URL=https://[your-project-ref].supabase.co
+# SUPABASE_ANON_KEY=[your-anon-key]
 
-# 3. Start Redis (optional)
-make start-redis
-
-# 4. Run the server
-make run
+# 3. Run setup again
+make setup
 ```
 
-Server runs at `http://localhost:3000` with API at `/api/*`
-
-### Development Commands
+### Option 2: Local Development
 ```bash
-make build     # Build the project
-make test      # Run all tests
-make dev       # Start Redis + run server
-make migrate   # Run database migrations
+cd moneywise-backend
+
+# 1. Setup for local development
+make setup-local
+
+# 2. Edit .env with local PostgreSQL:
+# DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
+
+# 3. Run setup again
+make setup
 ```
 
-## 🧪 Testing
+### Option 3: Auto-Detect (Recommended)
+```bash
+cd moneywise-backend
 
-Comprehensive test suite covering caching, database operations, and API logic:
+# 1. Copy environment template
+cp env.example .env
+
+# 2. Edit .env with your database credentials
+# 3. Run auto-detecting setup
+make setup
+```
+
+## 🗄️ Database Setup
+
+### Supabase (Production)
+1. **Get your connection string** from Supabase Dashboard → Settings → Database
+2. **Format**: `postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
+3. **Environment variables**:
+   ```bash
+   DATABASE_URL=your_supabase_connection_string
+   SUPABASE_URL=https://your-project-ref.supabase.co
+   SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+**💡 Pro Tip**: Use the helper script for easy setup:
+```bash
+# From the project root directory
+./scripts/get-supabase-credentials.sh
+```
+
+### Local PostgreSQL
+1. **Install PostgreSQL** (if not already installed)
+2. **Create database**: `createdb moneywise`
+3. **Environment variable**:
+   ```bash
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
+   ```
+
+## 🔧 Available Commands
 
 ```bash
-# Run all tests
-cargo test
+# Setup (auto-detects environment)
+make setup
 
-# Run specific test modules
-cargo test budget_item_tests
-cargo test categories_tests
-cargo test overview_tests
-cargo test connection_tests
+# Environment-specific setup
+make setup-supabase    # Supabase production
+make setup-local       # Local development
+
+# Database migrations
+make migrate           # Auto-detects environment
+make migrate-supabase  # Supabase only
+make migrate-local     # Local only
+
+# Development
+make build             # Build project
+make run               # Run server
+make test              # Run tests
+make clean             # Clean build artifacts
+
+# Help
+make help              # Show all commands
 ```
 
-**Test Structure:**
-- `tests/` - Integration tests for all major components
-- `tests/common/` - Shared test utilities and mocks
-- Covers caching, database queries, and API endpoints
-- Mock Redis and database connections for isolated testing
+## 🌐 Environment Configuration
 
-## 📁 Code Architecture
+Copy `env.example` to `.env` and configure:
+
+```bash
+# Database Configuration (choose one)
+# For Supabase:
+DATABASE_URL=postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://[project-ref].supabase.co
+SUPABASE_ANON_KEY=[your-anon-key]
+
+# For Local:
+DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
+
+# Application Settings
+RUST_LOG=info
+HOST=127.0.0.1
+PORT=3000
+```
+
+## 🏗️ Architecture
 
 ```
 src/
@@ -233,13 +134,6 @@ src/
 └── main.rs            # Application entry point
 ```
 
-**Key Design Principles:**
-- **Domain Separation**: Budget logic isolated in dedicated modules
-- **Type Safety**: Rust's type system prevents runtime errors
-- **Async/Await**: Non-blocking I/O for high performance
-- **Error Handling**: Comprehensive error types with context
-- **Caching Strategy**: Intelligent cache invalidation and retry logic
-
 ## 🗄️ Database Schema
 
 PostgreSQL schema optimized for financial data:
@@ -249,37 +143,34 @@ PostgreSQL schema optimized for financial data:
 categories          # Budget categories (Food, Transport, etc.)
 category_groups     # Category groupings (Essentials, Lifestyle)
 budgets            # Budget allocations per category/month
-transactions       # Income and expense records
 
--- Localization
-languages          # Supported languages
-translations       # Multi-language text
-user_preferences   # User settings and preferences
-
--- Future features
-savings_goals      # Financial goals (placeholder)
+-- Features
+- UUID primary keys for scalability
+- Automatic updated_at timestamps
+- Proper foreign key constraints
+- Performance indexes
+- Sample data included
 ```
 
-## 🔧 Configuration
+## 🧪 Testing
 
-**Environment Variables:**
 ```bash
-DATABASE_URL=postgresql://user:pass@localhost:5432/moneywise
-REDIS_URL=redis://localhost:6379    # Optional
-RUST_LOG=info                       # Logging level
-```
+# Run all tests
+cargo test
 
-**Features:**
-- **Connection Pooling**: Efficient database and Redis connections
-- **CORS**: Configured for React Native app integration
-- **Logging**: Structured logging with tracing
-- **Error Recovery**: Automatic retry logic for cache operations
+# Run specific test modules
+cargo test budget_item_tests
+cargo test categories_tests
+cargo test overview_tests
+cargo test connection_tests
+```
 
 ## 🚧 Current Status
 
 **Production Ready:**
 - ✅ Budget data API with caching
-- ✅ PostgreSQL integration with migrations
+- ✅ Supabase integration (primary)
+- ✅ Local PostgreSQL support (development)
 - ✅ Redis caching with retry logic
 - ✅ Comprehensive error handling
 - ✅ Full test coverage
@@ -289,15 +180,54 @@ RUST_LOG=info                       # Logging level
 - 🚧 Single-user focused (no authentication)
 - 🚧 Basic insights (expandable for AI features)
 
+## 🔄 Migration Strategy
+
+The backend now supports **hybrid deployment**:
+
+1. **Production**: Uses Supabase (hosted, managed, scalable)
+2. **Development**: Can use local PostgreSQL for offline work
+3. **CI/CD**: Automatically detects and uses Supabase
+4. **Migrations**: Work on both environments seamlessly
+
 ## 📚 Documentation
 
-- Extensive inline code documentation throughout
+- **Inline code documentation** throughout
+- **Environment detection** in setup scripts
+- **Flexible configuration** for different deployment scenarios
 
 ## 🤝 Development Notes
 
 This backend emphasizes:
+- **Production-first**: Supabase as primary database
+- **Developer experience**: Local development support
 - **Performance**: Redis caching and optimized queries
-- **Reliability**: Comprehensive error handling and testing
-- **Maintainability**: Clean architecture and extensive documentation
-- **Type Safety**: Leveraging Rust's type system for correctness
-- **Financial Accuracy**: Rust Decimal for precise monetary calculations
+- **Type Safety**: Rust's type system prevents runtime errors
+- **Async/Await**: Non-blocking I/O for high performance
+- **Error Handling**: Comprehensive error types with context
+- **Caching Strategy**: Intelligent cache invalidation and retry logic
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Supabase Connection Failed:**
+- Check `DATABASE_URL` format in `.env`
+- Verify Supabase project is active
+- Check network connectivity
+
+**Local Database Issues:**
+- Ensure PostgreSQL is running: `sudo systemctl start postgresql`
+- Verify database exists: `createdb moneywise`
+- Check credentials in `DATABASE_URL`
+
+**Migration Errors:**
+- Run `make migrate` to auto-detect environment
+- Use `make migrate-supabase` or `make migrate-local` for specific environments
+- Verify database connection before running migrations
+
+### Getting Help
+
+1. Check the environment detection output
+2. Verify your `.env` configuration
+3. Run `make help` for available commands
+4. Check the setup script output for specific errors
