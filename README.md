@@ -221,9 +221,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Community
 
-- **GitHub Issues** - [Report bugs & request features](https://github.com/yourusername/moneywise/issues)
-- **Discussions** - [Join the community](https://github.com/yourusername/moneywise/discussions)
-- **Documentation** - [Setup & usage guides](https://github.com/yourusername/moneywise/docs)
+- **GitHub Issues** - [Report bugs & request features](https://github.com/lykimq/MoneyWise/issues)
+- **Documentation** - [Setup & usage guides](https://github.com/lykimq/MoneyWise/tree/main/docs)
 
 ---
 
@@ -233,7 +232,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Empowering people to take control of their financial future*
 
-[⭐ Star this repo](https://github.com/yourusername/moneywise) • [🐛 Report an issue](https://github.com/yourusername/moneywise/issues) • [📖 View documentation](https://github.com/yourusername/moneywise/docs)
+[⭐ Star this repo](https://github.com/lykimq/MoneyWise) • [🐛 Report an issue](https://github.com/lykimq/MoneyWise/issues) • [📖 View documentation](https://github.com/lykimq/MoneyWise/tree/main/docs)
 
 </div>
 
