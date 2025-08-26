@@ -13,6 +13,17 @@ name: Production Backend Build
 
 on:
   workflow_call:
+    secrets:
+      DATABASE_URL:
+        required: true
+      SUPABASE_URL:
+        required: true
+      SUPABASE_ANON_KEY:
+        required: true
+      POSTGRES_HOST:
+        required: false
+      POSTGRES_PASSWORD:
+        required: false
 
 jobs:
   # ==========================================
