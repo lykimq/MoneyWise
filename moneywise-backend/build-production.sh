@@ -31,6 +31,18 @@ echo ""
 
 # Build the project
 echo "🏗️  Building MoneyWise Backend..."
+
+if [ "$SQLX_OFFLINE" = "true" ]; then
+    # Ensure sqlx-data.json exists and is populated
+    if [ ! -f "sqlx-data.json" ] || [ "$(cat sqlx-data.json | jq '.queries | length')" = "0" ]; then
+        echo "📄 Generating sqlx-data.json..."
+        python3 create-sqlx-data.py || {
+            echo "⚠️  Failed to generate sqlx-data.json, using minimal version"
+            echo '{"db": "PostgreSQL", "queries": []}' > sqlx-data.json
+        }
+    fi
+fi
+
 cargo build --release --verbose
 
 echo ""
