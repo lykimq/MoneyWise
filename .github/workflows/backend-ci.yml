@@ -27,7 +27,12 @@ jobs:
   build:
     name: 🏗️ Build Backend
     uses: ./.github/workflows/backend-build.yml
-    secrets: inherit
+    secrets:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
   # JOB 2: Simple Summary
   summary:

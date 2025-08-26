@@ -53,6 +53,18 @@ jobs:
       # This output is used by the build job to determine if it should run
       db_ready: ${{ steps.check_db.outputs.ready }}
     steps:
+      - name: Debug Database Environment
+        run: |
+          echo "=== Database Setup Debug ==="
+          echo "DATABASE_URL is set: $([ -n "$DATABASE_URL" ] && echo "✅ YES" || echo "❌ NO")"
+          echo "SUPABASE_URL is set: $([ -n "$SUPABASE_URL" ] && echo "✅ YES" || echo "❌ NO")"
+          echo "SUPABASE_ANON_KEY is set: $([ -n "$SUPABASE_ANON_KEY" ] && echo "✅ YES" || echo "❌ NO")"
+          if [ -n "$DATABASE_URL" ]; then
+            # Show just the protocol and host (not credentials)
+            echo "DATABASE_URL format: $(echo "$DATABASE_URL" | sed 's/:[^@]*@/:***@/')"
+          fi
+          echo "=== End Database Debug ==="
+
       - name: Verify dependencies
         run: |
           # Verify that curl is available (it should be pre-installed on ubuntu-latest)
@@ -164,9 +176,23 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Debug Environment Variables
+        run: |
+          echo "=== Environment Variable Debug ==="
+          echo "DATABASE_URL is set: $([ -n "$DATABASE_URL" ] && echo "✅ YES" || echo "❌ NO")"
+          echo "SUPABASE_URL is set: $([ -n "$SUPABASE_URL" ] && echo "✅ YES" || echo "❌ NO")"
+          echo "SUPABASE_ANON_KEY is set: $([ -n "$SUPABASE_ANON_KEY" ] && echo "✅ YES" || echo "❌ NO")"
+          if [ -n "$DATABASE_URL" ]; then
+            # Show just the protocol and host (not credentials)
+            echo "DATABASE_URL format: $(echo "$DATABASE_URL" | sed 's/:[^@]*@/:***@/')"
+          fi
+          echo "=== End Debug ==="
+
       - name: Build project
         run: |
           # Simplified version of build-and-test.yml
           # but maintains core build functionality
           cd moneywise-backend
+          echo "🚀 Starting build with environment variables..."
+          echo "DATABASE_URL available: $([ -n "$DATABASE_URL" ] && echo "YES" || echo "NO")"
           cargo build --release --verbose

@@ -1,9 +1,7 @@
 name: Local Test Workflow
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+  workflow_dispatch:  # Only run manually, not on push
 
 jobs:
   test-basic:
@@ -11,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Test Supabase API Connection
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -22,23 +20,23 @@ jobs:
             -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             "$SUPABASE_URL/rest/v1/" 2>/dev/null)
-          
+
           if [ "$response" = "200" ]; then
             echo "✅ Supabase API is accessible (HTTP $response)"
           else
             echo "❌ Supabase API not accessible (HTTP $response)"
             exit 1
           fi
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Check Rust Installation
         run: |
           rustc --version
           cargo --version
           echo "✅ Rust toolchain installed successfully"
-      
+
       - name: Verify Project Structure
         run: |
           cd moneywise-backend
@@ -49,7 +47,7 @@ jobs:
             echo "❌ Invalid Rust project structure"
             exit 1
           fi
-      
+
       - name: Build Backend (Check Only)
         run: |
           cd moneywise-backend
