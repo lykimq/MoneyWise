@@ -1,0 +1,58 @@
+name: Local Test Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-basic:
+    name: Basic Environment Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Supabase API Connection
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔄 Testing Supabase API connectivity..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/" 2>/dev/null)
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ Supabase API is accessible (HTTP $response)"
+          else
+            echo "❌ Supabase API not accessible (HTTP $response)"
+            exit 1
+          fi
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Check Rust Installation
+        run: |
+          rustc --version
+          cargo --version
+          echo "✅ Rust toolchain installed successfully"
+      
+      - name: Verify Project Structure
+        run: |
+          cd moneywise-backend
+          if [ -f "Cargo.toml" ] && [ -d "src" ]; then
+            echo "✅ Rust project structure is valid"
+            echo "📦 Found Cargo.toml and src directory"
+          else
+            echo "❌ Invalid Rust project structure"
+            exit 1
+          fi
+      
+      - name: Build Backend (Check Only)
+        run: |
+          cd moneywise-backend
+          echo "🔍 Checking if project can compile..."
+          cargo check --verbose
+          echo "✅ Project compilation check passed"

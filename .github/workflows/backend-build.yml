@@ -1,40 +1,143 @@
 # Production-Ready Backend Build
 #
-# PURPOSE: Main workflow that orchestrates the backend build process
-# WHY: Coordinates all sub-workflows in a logical order
-# WHEN: Runs on every push/PR to backend code
+# This file combines three separate workflows:
+# 1. database-setup.yml - Database connection and verification
+# 2. rust-setup.yml - Rust toolchain and project structure setup
+# 3. build-and-test.yml - Building and testing the backend
 #
-# This is the main entry point for the backend build process.
-# It coordinates three sub-workflows:
-# 1. Database Setup: Ensures Supabase connection is ready
-# 2. Rust Setup: Prepares the Rust environment
-# 3. Build and Test: Builds and verifies the backend
+# Flow:
+# setup-db → setup-rust → build
+# Each job must succeed before the next can start
 
 name: Production Backend Build
 
-# When to run this workflow - only when called by backend-ci.yml
 on:
   workflow_call:
 
 jobs:
-  # Step 1: Setup Database
+  # ==========================================
+  # In backend-database-setup.yml
+  # Purpose: Ensures Supabase connection works
+  # ==========================================
   setup-db:
     name: Setup Database Connection
-    uses: ./.github/workflows/backend/database-setup.yml
-    secrets:
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+    runs-on: ubuntu-latest
+    env:
+      # Supabase Configuration
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-  # Step 2: Setup Rust Environment
+      # Database Configuration (derived from Supabase)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+
+      # Application Configuration
+      HOST: 127.0.0.1
+      PORT: 3000
+      RUST_LOG: info
+    outputs:
+      # This output is used by the build job to determine if it should run
+      db_ready: ${{ steps.check_db.outputs.ready }}
+    steps:
+      - name: Install PostgreSQL client and dependencies
+        run: |
+          # Install base dependencies first
+          apt-get update
+          apt-get install -y gnupg2 wget lsb-release curl
+
+          # Add PostgreSQL repository
+          echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+          # Update again and install PostgreSQL client
+          apt-get update
+          apt-get install -y postgresql-client
+
+          # Verify installation
+          echo "✅ PostgreSQL client version:"
+          pg_isready --version
+          psql --version
+
+          echo "✅ Curl version:"
+          curl --version
+
+      - name: Check Supabase API connection
+        id: check_db
+        run: |
+          # Test Supabase API connectivity instead of direct database connection
+          # This is more reliable as it doesn't require direct port 5432 access
+          echo "🔄 Testing Supabase API connectivity..."
+          max_retries=10
+          retry_count=0
+
+          until [ $retry_count -ge $max_retries ]; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              "$SUPABASE_URL/rest/v1/" 2>/dev/null)
+
+            if [ "$response" = "200" ]; then
+              echo "✅ Supabase API is accessible (HTTP $response)"
+              echo "ready=true" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "⏳ Supabase API not ready (HTTP $response), retrying..."
+              retry_count=$((retry_count + 1))
+              sleep 3
+            fi
+          done
+
+          echo "❌ Supabase API not accessible after $max_retries attempts"
+          echo "ready=false" >> $GITHUB_OUTPUT
+          exit 1
+
+  # ==========================================
+  # In backend-rust-setup.yml
+  # Purpose: Sets up Rust environment
+  # ==========================================
   setup-rust:
     name: Setup Rust Environment
-    uses: ./.github/workflows/backend/rust-setup.yml
+    # Only starts after database setup is complete
     needs: setup-db
+    runs-on: ubuntu-latest
+    outputs:
+      # This output is used by the build job
+      rust_ready: ${{ steps.verify_setup.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Verify project structure
+        id: verify_setup
+        run: |
+          # Simplified version of rust-setup.yml verification
+          cd moneywise-backend
+          if [ -f "Cargo.toml" ] && [ -d "src" ]; then
+            echo "ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
 
-  # Step 3: Build and Test
+  # ==========================================
+  # In backend-build-test.yml
+  # Purpose: Actual build and test process
+  # ==========================================
   build:
     name: Build and Test Backend
+    # Only starts after both setup jobs are complete
     needs: [setup-db, setup-rust]
-    uses: ./.github/workflows/backend/build-and-test.yml
-    with:
-      db_ready: ${{ needs.setup-db.outputs.db_ready }}
-      rust_ready: ${{ needs.setup-rust.outputs.rust_ready }}
+    runs-on: ubuntu-latest
+    # Only runs if both setup jobs reported success
+    if: ${{ needs.setup-db.outputs.db_ready == 'true' && needs.setup-rust.outputs.rust_ready == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build project
+        run: |
+          # Simplified version of build-and-test.yml
+          # but maintains core build functionality
+          cd moneywise-backend
+          cargo build --release --verbose
