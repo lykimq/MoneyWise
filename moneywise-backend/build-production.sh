@@ -33,13 +33,19 @@ echo ""
 echo "🏗️  Building MoneyWise Backend..."
 
 if [ "$SQLX_OFFLINE" = "true" ]; then
-    # Ensure sqlx-data.json exists and is populated
-    if [ ! -f "sqlx-data.json" ] || [ "$(cat sqlx-data.json | jq '.queries | length')" = "0" ]; then
-        echo "📄 Generating sqlx-data.json..."
-        python3 create-sqlx-data.py || {
-            echo "⚠️  Failed to generate sqlx-data.json, using minimal version"
-            echo '{"db": "PostgreSQL", "queries": []}' > sqlx-data.json
-        }
+    # Ensure .sqlx directory exists with query metadata
+    if [ ! -d ".sqlx" ] || [ -z "$(ls -A .sqlx 2>/dev/null)" ]; then
+        echo "📄 Setting up SQLx offline metadata..."
+        if [ -d "target/sqlx/moneywise-backend" ]; then
+            mkdir -p .sqlx
+            cp target/sqlx/moneywise-backend/* .sqlx/
+            echo "✅ Copied query metadata from target/sqlx/"
+        else
+            echo "⚠️  No query metadata found - creating minimal .sqlx directory"
+            mkdir -p .sqlx
+        fi
+    else
+        echo "✅ Using existing .sqlx directory with $(ls .sqlx | wc -l) query files"
     fi
 fi
 

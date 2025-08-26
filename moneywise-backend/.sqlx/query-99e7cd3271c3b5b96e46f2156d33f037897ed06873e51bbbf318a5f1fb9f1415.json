@@ -1,0 +1,80 @@
+{
+  "query": "\n        INSERT INTO budgets (id, month, year, category_id, planned, currency)\n        VALUES ($1::uuid, $2, $3, $4::uuid, $5, $6)\n        RETURNING id, month, year, category_id, planned, spent, carryover, currency, created_at, updated_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "category_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "planned",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "spent",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "carryover",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "currency",
+        "type_info": "Bpchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int2",
+        "Int4",
+        "Uuid",
+        "Numeric",
+        "Bpchar"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "66ac8ba89e657fa94abe62a27a1f0310c9d82612bd635d47458c86480bf78477"
+}

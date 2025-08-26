@@ -1,0 +1,75 @@
+{
+  "query": "SELECT * FROM budgets WHERE id = $1::uuid",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "month",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "category_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "planned",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "spent",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "carryover",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "currency",
+        "type_info": "Bpchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "550bdd2978d1d9eab7ac9164ace1215428fc63938bdfc1d99efbe00f3100fc79"
+}
