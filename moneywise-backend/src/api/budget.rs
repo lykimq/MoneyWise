@@ -10,7 +10,7 @@ use axum::{
 };
 use chrono::Datelike;
 use serde::Deserialize;
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use rust_decimal::Decimal;
 use uuid::Uuid;
 
@@ -284,20 +284,19 @@ async fn create_budget(
 
     // Use parameterized query to prevent SQL injection
     // The query_as! macro provides compile-time SQL validation
-    let budget = match sqlx::query_as!(
-        Budget,
+    let budget = match sqlx::query_as::<_, Budget>(
         r#"
         INSERT INTO budgets (id, month, year, category_id, planned, currency)
         VALUES ($1::uuid, $2, $3, $4::uuid, $5, $6)
         RETURNING id, month, year, category_id, planned, spent, carryover, currency, created_at, updated_at
         "#,
-        id,
-        month as i16,
-        year,
-        category_id,
-        payload.planned,
-        payload.currency
     )
+    .bind(id)
+    .bind(month as i16)
+    .bind(year)
+    .bind(category_id)
+    .bind(payload.planned)
+    .bind(&payload.currency)
     .fetch_one(&pool)
     .await {
         Ok(row) => row,
@@ -382,11 +381,10 @@ async fn update_budget(
 
     // Fetch current budget state to ensure it exists
     // This provides better error messages and maintains data consistency
-    let mut budget = sqlx::query_as!(
-        Budget,
+    let mut budget = sqlx::query_as::<_, Budget>(
         "SELECT * FROM budgets WHERE id = $1::uuid",
-        budget_id
     )
+    .bind(budget_id)
     .fetch_one(&pool)
     .await
     .map_err(|_| AppError::NotFound("Budget not found".to_string()))?;
@@ -407,18 +405,17 @@ async fn update_budget(
     }
 
     // Update the budget with new values
-    let updated_budget = sqlx::query_as!(
-        Budget,
+    let updated_budget = sqlx::query_as::<_, Budget>(
         r#"
         UPDATE budgets
         SET planned = $1, carryover = $2, updated_at = CURRENT_TIMESTAMP
         WHERE id = $3::uuid
         RETURNING id, month, year, category_id, planned, spent, carryover, currency, created_at, updated_at
         "#,
-        budget.planned,
-        budget.carryover,
-        budget_id
     )
+    .bind(budget.planned)
+    .bind(budget.carryover)
+    .bind(budget_id)
     .fetch_one(&pool)
     .await?;
 
@@ -490,11 +487,10 @@ async fn get_budget_by_id(
         .map_err(|_| AppError::Validation("Invalid budget ID format".to_string()))?;
 
     // Cache miss - fetch from database
-    let budget = sqlx::query_as!(
-        Budget,
+    let budget = sqlx::query_as::<_, Budget>(
         "SELECT * FROM budgets WHERE id = $1::uuid",
-        budget_id
     )
+    .bind(budget_id)
     .fetch_one(&pool)
     .await
     .map_err(|_| AppError::NotFound("Budget not found".to_string()))?;
@@ -535,37 +531,37 @@ async fn get_budget_overview_data(
     year: i32,
     currency: Option<&str>,
 ) -> Result<BudgetOverviewApi> {
-    let result = sqlx::query!(
+    let result = sqlx::query(
         r#"
         SELECT
             COALESCE(SUM(planned), 0) as planned,
             COALESCE(SUM(spent), 0) as spent,
             COALESCE(SUM(carryover), 0) as carryover,
-            TRIM(currency) as "currency!"
+            TRIM(currency) as currency
         FROM budgets
         WHERE month = $1::smallint AND year = $2
         AND ($3::text IS NULL OR currency = $3)
         GROUP BY currency
         LIMIT 1
         "#,
-        month as i16,
-        year,
-        currency
     )
+    .bind(month as i16)
+    .bind(year)
+    .bind(currency)
     .fetch_optional(pool)
     .await?;
 
     if let Some(result) = result {
-        let planned = result.planned.unwrap_or_default();
-        let spent = result.spent.unwrap_or_default();
-        let carryover = result.carryover.unwrap_or_default();
+        let planned: Decimal = result.try_get("planned")?;
+        let spent: Decimal = result.try_get("spent")?;
+        let carryover: Decimal = result.try_get("carryover")?;
         let remaining = &planned - &spent + &carryover;
 
         Ok(BudgetOverviewApi {
             planned,
             spent,
             remaining,
-            currency: result.currency,
+            currency: result.try_get::<String, _>("currency")?.trim().to_string(),
         })
     } else {
         // No data for this month/year: return zeros and default currency (EUR) if not provided
@@ -592,18 +588,18 @@ async fn get_category_budgets(
     year: i32,
     currency: Option<&str>,
 ) -> Result<Vec<CategoryBudgetApi>> {
-    let rows = sqlx::query!(
+    let rows = sqlx::query(
         r#"
         SELECT
             b.id,
             c.name as category_name,
-            cg.name as "group_name?",
+            cg.name as group_name,
             c.color as category_color,
-            cg.color as "group_color?",
+            cg.color as group_color,
             b.planned,
             b.spent,
             b.carryover,
-            TRIM(b.currency) as "currency!"
+            TRIM(b.currency) as currency
         FROM budgets b
         JOIN categories c ON b.category_id = c.id
         LEFT JOIN category_groups cg ON c.group_id = cg.id
@@ -611,19 +607,19 @@ async fn get_category_budgets(
         AND ($3::text IS NULL OR b.currency = $3)
         ORDER BY COALESCE(cg.sort_order, 999), c.name
         "#,
-        month as i16,
-        year,
-        currency
     )
+    .bind(month as i16)
+    .bind(year)
+    .bind(currency)
     .fetch_all(pool)
     .await?;
 
     let mut category_budgets = Vec::new();
 
     for row in rows {
-        let planned = row.planned;
-        let spent = row.spent;
-        let carryover = row.carryover;
+        let planned: Decimal = row.try_get("planned")?;
+        let spent: Decimal = row.try_get("spent")?;
+        let carryover: Decimal = row.try_get("carryover")?;
         let remaining = &planned - &spent + &carryover;
 
         // Percentage of budget used; safe when planned is zero
@@ -634,16 +630,16 @@ async fn get_category_budgets(
         };
 
         category_budgets.push(CategoryBudgetApi {
-            id: row.id.to_string(),
-            category_name: row.category_name,
-            group_name: row.group_name,
-            category_color: row.category_color,
-            group_color: row.group_color,
+            id: row.try_get::<Uuid, _>("id")?.to_string(),
+            category_name: row.try_get("category_name")?,
+            group_name: row.try_get("group_name").ok(),
+            category_color: row.try_get("category_color")?,
+            group_color: row.try_get("group_color").ok(),
             planned,
             spent,
             remaining,
             percentage,
-            currency: row.currency,
+            currency: row.try_get::<String, _>("currency")?.trim().to_string(),
         });
     }
 

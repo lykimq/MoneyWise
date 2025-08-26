@@ -24,6 +24,7 @@ use uuid::Uuid;
 ///
 /// Notes:
 /// - Types match the PostgreSQL schema (e.g., `i16` for `smallint`)
+/// - `currency` is `character(3)` in PostgreSQL - handled by custom Currency wrapper
 /// - Do not expose this type to API consumers directly; prefer `BudgetApi`
 #[derive(Debug, FromRow)]
 pub struct Budget {
@@ -33,8 +34,8 @@ pub struct Budget {
     pub category_id: Uuid,
     pub planned: Decimal,
     pub spent: Decimal,
-    pub carryover: Decimal, // NOT NULL DEFAULT 0 in database
-    pub currency: String,
+    pub carryover: Decimal,        // NOT NULL DEFAULT 0 in database
+    pub currency: String,          // character(3) in PostgreSQL - Bpchar maps to String
     pub created_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
     pub updated_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
 }
