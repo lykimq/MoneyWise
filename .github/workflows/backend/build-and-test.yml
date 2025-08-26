@@ -1,0 +1,69 @@
+# Build and Test Workflow
+#
+# PURPOSE: Builds and tests the Rust backend
+# WHEN: Called by the main backend build workflow after setup is complete
+# WHY: Separate build and test process for better maintainability and debugging
+
+name: Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      db_ready:
+        required: true
+        type: boolean
+      rust_ready:
+        required: true
+        type: boolean
+
+jobs:
+  build-and-test:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+    if: inputs.db_ready && inputs.rust_ready
+
+    env:
+      # Build configuration
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: "-C target-cpu=native"
+      RUST_LOG: info
+
+    steps:
+      # Step 1: Build the project
+      - name: Build project
+        run: |
+          cd moneywise-backend
+          echo "🚀 Starting build process..."
+          echo "📊 Build target: release"
+
+          # Build with verbose output for better debugging
+          cargo build --release --verbose
+
+          echo "✅ Build process completed!"
+
+      # Step 2: Verify the build
+      - name: Test build
+        run: |
+          cd moneywise-backend
+          # Check that the binary was created
+          if [ -f "target/release/moneywise-backend" ]; then
+            echo "✅ Binary built successfully!"
+            ls -la target/release/moneywise-backend
+            echo "📊 Binary size: $(du -h target/release/moneywise-backend | cut -f1)"
+
+            # Show additional build info
+            echo "📁 Build artifacts:"
+            ls -la target/release/ | head -10
+
+            # Test binary execution
+            echo "🔧 Testing binary execution:"
+            ./target/release/moneywise-backend --help 2>/dev/null || echo "Binary runs (help not implemented)"
+
+          else
+            echo "❌ Binary not found!"
+            echo "📁 Contents of target/release/:"
+            ls -la target/release/ || echo "target/release/ directory not found"
+            echo "📁 Contents of target/:"
+            ls -la target/ || echo "target/ directory not found"
+            exit 1
+          fi

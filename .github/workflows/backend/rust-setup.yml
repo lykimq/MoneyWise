@@ -1,0 +1,67 @@
+# Rust Setup Workflow
+#
+# PURPOSE: Sets up Rust toolchain and verifies project structure
+# WHEN: Called by the main backend build workflow
+# WHY: Separate Rust setup for better maintainability and debugging
+
+name: Rust Setup
+
+on:
+  workflow_call:
+    outputs:
+      rust_ready:
+        description: "Whether Rust setup was successful"
+        value: ${{ jobs.setup-rust.outputs.rust_ready }}
+
+jobs:
+  setup-rust:
+    name: Setup Rust Environment
+    runs-on: ubuntu-latest
+
+    outputs:
+      rust_ready: ${{ steps.verify_setup.outputs.ready }}
+
+    env:
+      # Rust build optimization
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: "-C target-cpu=native"
+      RUST_LOG: info
+
+    steps:
+      # Step 1: Install Rust toolchain
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Step 2: Show build environment
+      - name: Show build environment
+        run: |
+          echo "🔧 Build Environment:"
+          echo "RUSTFLAGS: $RUSTFLAGS"
+          echo "Rust version: $(rustc --version)"
+          echo "Cargo version: $(cargo --version)"
+
+      # Step 3: Verify project structure
+      - name: Verify project structure
+        id: verify_setup
+        run: |
+          cd moneywise-backend
+          echo "📁 Project Structure:"
+
+          # Check essential files
+          if [ -f "Cargo.toml" ] && [ -d "src" ] && [ -f "src/main.rs" ]; then
+            echo "✅ Essential files found"
+            echo "ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Missing essential files!"
+            echo "Cargo.toml exists: $([ -f "Cargo.toml" ] && echo "✅" || echo "❌")"
+            echo "src/ directory exists: $([ -d "src" ] && echo "✅" || echo "❌")"
+            echo "main.rs exists: $([ -f "src/main.rs" ] && echo "✅" || echo "❌")"
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "Dependencies in Cargo.toml:"
+          grep -E "^\[dependencies\]|^[a-zA-Z]" Cargo.toml | head -10

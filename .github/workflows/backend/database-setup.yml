@@ -1,0 +1,95 @@
+# Database Setup Workflow
+#
+# PURPOSE: Sets up and verifies the Supabase PostgreSQL database connection
+# WHEN: Called by the main backend build workflow
+# WHY: Separate database concerns for better maintainability and debugging
+
+name: Database Setup
+
+on:
+  workflow_call:
+    outputs:
+      db_ready:
+        description: "Whether database setup was successful"
+        value: ${{ jobs.setup-database.outputs.db_ready }}
+    secrets:
+      POSTGRES_PASSWORD:
+        required: true
+
+jobs:
+  setup-database:
+    name: Setup Supabase Database
+    runs-on: ubuntu-latest
+
+    outputs:
+      db_ready: ${{ steps.check_db.outputs.ready }}
+
+    env:
+      # Supabase database connection details
+      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@db.exibcfqpurfoztnejcts.supabase.co:5432/postgres?sslmode=require
+      POSTGRES_HOST: db.exibcfqpurfoztnejcts.supabase.co
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+
+    steps:
+      # Step 1: Check IP address for debugging Supabase connection
+      - name: Check IP addresses
+        id: ip_check
+        run: |
+          echo "🔍 Current IPv4 address:"
+          curl -4 -s ifconfig.me
+          echo
+
+          echo "🔍 Detailed IP information:"
+          curl -s https://ifconfig.co/json | jq .
+          echo
+
+          echo "🔍 Testing connection to Supabase:"
+          nc -zv db.exibcfqpurfoztnejcts.supabase.co 5432 2>&1 || true
+          echo
+
+      # Step 2: Verify database connection
+      - name: Check database connection
+        id: check_db
+        run: |
+          echo "🔄 Waiting for PostgreSQL to be ready..."
+          max_retries=15  # Maximum number of retries (30 seconds total with 2s sleep)
+          retry_count=0
+
+          until PGSSLMODE=require pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do
+            retry_count=$((retry_count + 1))
+            if [ $retry_count -ge $max_retries ]; then
+              echo "❌ Failed to connect to Supabase PostgreSQL after $max_retries attempts (30 seconds)"
+              echo "Please check:"
+              echo "1. Supabase IP allow list (CIDR blocks)"
+              echo "2. Database password and credentials"
+              echo "3. Supabase database status"
+              echo "ready=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            echo "Waiting for Supabase PostgreSQL... (Attempt $retry_count/$max_retries)"
+            sleep 2
+          done
+
+          echo "✅ Supabase PostgreSQL is ready!"
+          echo "ready=true" >> $GITHUB_OUTPUT
+
+      # Step 3: Test database connection with actual query
+      - name: Test database connection
+        if: steps.check_db.outputs.ready == 'true'
+        run: |
+          echo "🔍 Testing database connection..."
+          if [[ -n "${{ secrets.POSTGRES_PASSWORD }}" ]]; then
+            echo "✅ POSTGRES_PASSWORD secret is available"
+            # Test connection with timeout and error handling
+            PGSSLMODE=require PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB \
+                 -v ON_ERROR_STOP=1 --set=statement_timeout=5000 \
+                 -c "SELECT 1;" && \
+            echo "✅ Database connection successful" || \
+            echo "❌ Database connection failed"
+          else
+            echo "❌ POSTGRES_PASSWORD secret is not set!"
+            exit 1
+          fi

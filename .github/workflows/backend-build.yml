@@ -1,8 +1,14 @@
 # Production-Ready Backend Build
 #
-# PURPOSE: Build and test Rust backend with PostgreSQL database
-# WHY: Real production setup with database integration testing
+# PURPOSE: Main workflow that orchestrates the backend build process
+# WHY: Coordinates all sub-workflows in a logical order
 # WHEN: Runs on every push/PR to backend code
+#
+# This is the main entry point for the backend build process.
+# It coordinates three sub-workflows:
+# 1. Database Setup: Ensures Supabase connection is ready
+# 2. Rust Setup: Prepares the Rust environment
+# 3. Build and Test: Builds and verifies the backend
 
 name: Production Backend Build
 
@@ -11,192 +17,24 @@ on:
   workflow_call:
 
 jobs:
-  build:
-    name: Build Rust Backend with Database
-    runs-on: ubuntu-latest
-
-
-    # Environment variables for the build
-    env:
-      # Database connection for SQLx compile-time verification with Supabase
-      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@db.exibcfqpurfoztnejcts.supabase.co:5432/postgres
-      # Individual components for debugging
+  # Step 1: Setup Database
+  setup-db:
+    name: Setup Database Connection
+    uses: ./.github/workflows/backend/database-setup.yml
+    secrets:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_HOST: db.exibcfqpurfoztnejcts.supabase.co
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-      DATABASE_MAX_CONNECTIONS: 5
-      # Rust build optimization
-      CARGO_INCREMENTAL: 0
-      # Ensure consistent builds
-      RUSTFLAGS: "-C target-cpu=native"
-      # Logging
-      RUST_LOG: info
 
-    steps:
-      # Get the code
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # Step 2: Setup Rust Environment
+  setup-rust:
+    name: Setup Rust Environment
+    uses: ./.github/workflows/backend/rust-setup.yml
+    needs: setup-db
 
-                        # Verify environment variables
-      - name: Verify environment setup
-        run: |
-          echo "🔧 Verifying environment setup..."
-
-          if [[ -n "$DATABASE_URL" ]]; then
-            echo "✅ DATABASE_URL is available at job level (${#DATABASE_URL} chars)"
-            echo "✅ DATABASE_URL starts with: $(echo "$DATABASE_URL" | cut -c1-25)..."
-          else
-            echo "❌ DATABASE_URL is not available at job level!"
-            exit 1
-          fi
-
-          if [[ -n "$POSTGRES_PASSWORD" ]]; then
-            echo "✅ POSTGRES_PASSWORD is available (length: ${#POSTGRES_PASSWORD})"
-          else
-            echo "❌ POSTGRES_PASSWORD is not available!"
-            exit 1
-          fi
-
-      # Show build environment
-      - name: Show build environment
-        run: |
-          echo "🔧 Build Environment:"
-          echo "RUSTFLAGS: $RUSTFLAGS"
-          echo "Rust version: $(rustc --version)"
-          echo "Cargo version: $(cargo --version)"
-          echo "PostgreSQL version: $(psql --version)"
-
-          # Verify DATABASE_URL
-          if [[ -n "$DATABASE_URL" ]]; then
-            echo "✅ DATABASE_URL is properly set"
-            # Simple length check instead of sed masking to avoid corruption
-            echo "DATABASE_URL length: ${#DATABASE_URL} characters"
-            echo "DATABASE_URL starts with: $(echo "$DATABASE_URL" | cut -c1-20)..."
-          else
-            echo "❌ DATABASE_URL is not set!"
-            exit 1
-          fi
-
-      # Install Rust
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      # Wait for PostgreSQL to be ready
-      - name: Wait for PostgreSQL
-        run: |
-          echo "🔄 Waiting for PostgreSQL to be ready..."
-          until pg_isready -h db.exibcfqpurfoztnejcts.supabase.co -p 5432; do
-            echo "Waiting for Supabase PostgreSQL..."
-            sleep 2
-          done
-          echo "✅ Supabase PostgreSQL is ready!"
-
-          # Test database connection
-          echo "🔍 Testing database connection..."
-          if [[ -n "${{ secrets.POSTGRES_PASSWORD }}" ]]; then
-            echo "✅ POSTGRES_PASSWORD secret is available"
-            # Test connection (will fail if password is wrong)
-            PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -c "SELECT 1;" && echo "✅ Database connection successful" || echo "❌ Database connection failed"
-          else
-            echo "❌ POSTGRES_PASSWORD secret is not set!"
-            exit 1
-          fi
-
-                  # Set up database schema
-      - name: Set up database
-        env:
-          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          cd moneywise-backend
-          echo "🗄️ Setting up database schema..."
-
-          # Create the trigger function first
-          psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -c "
-          CREATE OR REPLACE FUNCTION public.update_updated_at_column()
-          RETURNS TRIGGER AS \$\$
-          BEGIN
-              NEW.updated_at = CURRENT_TIMESTAMP;
-              RETURN NEW;
-          END;
-          \$\$ language 'plpgsql';"
-
-          # Run the migration
-          psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -f migrations/20241201000000_initial_schema.sql
-
-          echo "✅ Database setup completed!"
-
-      # Verify project structure
-      - name: Verify project structure
-        run: |
-          cd moneywise-backend
-          echo "📁 Project Structure:"
-          echo "Cargo.toml exists: $([ -f "Cargo.toml" ] && echo "✅" || echo "❌")"
-          echo "src/ directory exists: $([ -d "src" ] && echo "✅" || echo "❌")"
-          echo "main.rs exists: $([ -f "src/main.rs" ] && echo "✅" || echo "❌")"
-          echo "Dependencies in Cargo.toml:"
-          grep -E "^\[dependencies\]|^[a-zA-Z]" Cargo.toml | head -10
-
-      # Verify environment before build
-      - name: Verify build environment
-        run: |
-          cd moneywise-backend
-          echo "🔍 Verifying build environment..."
-
-          # Check if DATABASE_URL is set and valid
-          if [[ -z "$DATABASE_URL" ]]; then
-            echo "❌ ERROR: DATABASE_URL is not set!"
-            echo "Available environment variables:"
-            env | grep -E "(DATABASE|POSTGRES)" || echo "No database-related environment variables found"
-            exit 1
-          fi
-
-          echo "✅ DATABASE_URL is set (${#DATABASE_URL} chars): $(echo "$DATABASE_URL" | cut -c1-25)..."
-
-          # Test SQLx can connect
-          echo "🔍 Testing SQLx connection..."
-          cargo check --quiet 2>&1 | head -20 || true
-
-      # Build the project
-      - name: Build project
-        run: |
-          cd moneywise-backend
-          echo "🚀 Starting build process..."
-          echo "📊 Build target: release"
-          echo "🔧 DATABASE_URL length: ${#DATABASE_URL} characters"
-
-          # Build with verbose output for better debugging
-          cargo build --release --verbose
-
-          echo "✅ Build process completed!"
-
-      # Test that it works
-      - name: Test build
-        run: |
-          cd moneywise-backend
-          # Check that the binary was created
-          if [ -f "target/release/moneywise-backend" ]; then
-            echo "✅ Binary built successfully!"
-            ls -la target/release/moneywise-backend
-            echo "📊 Binary size: $(du -h target/release/moneywise-backend | cut -f1)"
-
-            # Show additional build info
-            echo "📁 Build artifacts:"
-            ls -la target/release/ | head -10
-
-            # Test that the binary is executable
-            echo "🔧 Testing binary execution:"
-            ./target/release/moneywise-backend --help 2>/dev/null || echo "Binary runs (help not implemented)"
-
-          else
-            echo "❌ Binary not found!"
-            echo "📁 Contents of target/release/:"
-            ls -la target/release/ || echo "target/release/ directory not found"
-            echo "📁 Contents of target/:"
-            ls -la target/ || echo "target/ directory not found"
-            exit 1
-          fi
+  # Step 3: Build and Test
+  build:
+    name: Build and Test Backend
+    needs: [setup-db, setup-rust]
+    uses: ./.github/workflows/backend/build-and-test.yml
+    with:
+      db_ready: ${{ needs.setup-db.outputs.db_ready }}
+      rust_ready: ${{ needs.setup-rust.outputs.rust_ready }}
