@@ -29,6 +29,12 @@ else
     echo "🔄 Falling back to SQLx offline mode..."
     echo "ℹ️  This is expected in CI environments with network restrictions."
 
+    # Ensure sqlx-data.json exists for offline mode
+    if [ ! -f "sqlx-data.json" ]; then
+        echo '{"db": "PostgreSQL", "queries": []}' > sqlx-data.json
+        echo "📄 Created minimal sqlx-data.json for offline mode"
+    fi
+
     # Use offline mode
     export SQLX_OFFLINE=true
     cargo build --release --verbose

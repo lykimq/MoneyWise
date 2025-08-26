@@ -188,7 +188,9 @@ jobs:
           fi
           echo "=== End Debug ==="
 
-      - name: Production-Ready Build with Smart SQLx Mode
+      - name: Production-Ready Build
+        env:
+          CI: true  # Tells the script we're in CI environment
         run: |
           cd moneywise-backend
-          ./build-with-fallback.sh
+          ./build-production.sh
