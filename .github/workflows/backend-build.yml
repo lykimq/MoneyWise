@@ -1,13 +1,15 @@
-# Production-Ready Backend Build
+# MoneyWise Backend Production Build Workflow
 #
-# This file combines three separate workflows:
-# 1. database-setup.yml - Database connection and verification
-# 2. rust-setup.yml - Rust toolchain and project structure setup
-# 3. build-and-test.yml - Building and testing the backend
+# This workflow implements a robust, multi-stage build process for the Rust backend:
+# 1. Database connectivity validation (Supabase API health check)
+# 2. Rust environment setup and project structure verification
+# 3. Backend compilation with intelligent fallback strategies
 #
-# Flow:
-# setup-db → setup-rust → build
-# Each job must succeed before the next can start
+# Key Features:
+# - Sequential dependency chain: setup-db → setup-rust → build
+# - Comprehensive error handling with retry logic
+# - Fallback build strategies for different database states
+# - Output-based job coordination for reliable execution
 
 name: Production Backend Build
 
@@ -27,8 +29,9 @@ on:
 
 jobs:
   # ==========================================
-  # In backend-database-setup.yml
-  # Purpose: Ensures Supabase connection works
+  # Database Connectivity Validation
+  # Purpose: Ensures Supabase infrastructure is accessible before proceeding
+  # Why: Prevents build failures due to network/database issues
   # ==========================================
   setup-db:
     name: Setup Database Connection
@@ -50,7 +53,7 @@ jobs:
       PORT: 3000
       RUST_LOG: info
     outputs:
-      # This output is used by the build job to determine if it should run
+      # This output coordinates with other jobs to ensure proper sequencing
       db_ready: ${{ steps.check_db.outputs.ready }}
     steps:
       - name: Debug Database Environment
@@ -124,8 +127,9 @@ jobs:
           exit 1
 
   # ==========================================
-  # In backend-rust-setup.yml
-  # Purpose: Sets up Rust environment
+  # Rust Environment Setup
+  # Purpose: Prepares Rust toolchain and validates project structure
+  # Why: Ensures build environment is ready before compilation
   # ==========================================
   setup-rust:
     name: Setup Rust Environment
@@ -133,7 +137,7 @@ jobs:
     needs: setup-db
     runs-on: ubuntu-latest
     outputs:
-      # This output is used by the build job
+      # This output coordinates with the build job
       rust_ready: ${{ steps.verify_setup.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
@@ -152,8 +156,9 @@ jobs:
           fi
 
   # ==========================================
-  # In backend-build-test.yml
-  # Purpose: Actual build and test process
+  # Backend Compilation and Testing
+  # Purpose: Compiles the Rust backend with intelligent fallback strategies
+  # Why: Handles different database states gracefully while ensuring build success
   # ==========================================
   build:
     name: Build and Test Backend
