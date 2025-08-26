@@ -188,11 +188,7 @@ jobs:
           fi
           echo "=== End Debug ==="
 
-      - name: Build project
+      - name: Production-Ready Build with Smart SQLx Mode
         run: |
-          # Simplified version of build-and-test.yml
-          # but maintains core build functionality
           cd moneywise-backend
-          echo "🚀 Starting build with environment variables..."
-          echo "DATABASE_URL available: $([ -n "$DATABASE_URL" ] && echo "YES" || echo "NO")"
-          cargo build --release --verbose
+          ./build-with-fallback.sh
