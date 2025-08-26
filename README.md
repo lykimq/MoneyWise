@@ -84,7 +84,6 @@ MoneyWise/
 ├── 🦀 moneywise-backend/       # Rust backend API
 ├── 🗄️ scripts/                 # Setup and utility scripts
 ├── 📚 docs/                    # Documentation
-└── 🧪 tests/                   # End-to-end testing
 ```
 
 ### **Database Strategy**
