@@ -79,10 +79,12 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 
 ```
 MoneyWise/
+├── 🔄 .github/workflows        # CI/CD pipelines and GitHub Actions
 ├── 📱 moneywise-app/           # React Native frontend
 ├── 🦀 moneywise-backend/       # Rust backend API
 ├── 🗄️ scripts/                 # Setup and utility scripts
 ├── 📚 docs/                    # Documentation
+└── 🧪 tests/                   # End-to-end testing
 ```
 
 ### **Database Strategy**
