@@ -15,33 +15,17 @@ jobs:
     name: Build Rust Backend with Database
     runs-on: ubuntu-latest
 
-    # PostgreSQL service for database integration
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: postgres
-          POSTGRES_DB: MoneyWise
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --hostname=postgres
-        ports:
-          - 5432:5432
 
     # Environment variables for the build
     env:
-      # Database connection for SQLx compile-time verification
-      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/MoneyWise
+      # Database connection for SQLx compile-time verification with Supabase
+      DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@db.exibcfqpurfoztnejcts.supabase.co:5432/postgres
       # Individual components for debugging
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: db.exibcfqpurfoztnejcts.supabase.co
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
-      POSTGRES_DB: MoneyWise
+      POSTGRES_DB: postgres
       DATABASE_MAX_CONNECTIONS: 5
       # Rust build optimization
       CARGO_INCREMENTAL: 0
@@ -106,18 +90,18 @@ jobs:
       - name: Wait for PostgreSQL
         run: |
           echo "🔄 Waiting for PostgreSQL to be ready..."
-          until pg_isready -h postgres -p 5432; do
-            echo "Waiting for PostgreSQL..."
+          until pg_isready -h db.exibcfqpurfoztnejcts.supabase.co -p 5432; do
+            echo "Waiting for Supabase PostgreSQL..."
             sleep 2
           done
-          echo "✅ PostgreSQL is ready!"
+          echo "✅ Supabase PostgreSQL is ready!"
 
           # Test database connection
           echo "🔍 Testing database connection..."
           if [[ -n "${{ secrets.POSTGRES_PASSWORD }}" ]]; then
             echo "✅ POSTGRES_PASSWORD secret is available"
             # Test connection (will fail if password is wrong)
-            PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" psql -h postgres -U postgres -d MoneyWise -c "SELECT 1;" && echo "✅ Database connection successful" || echo "❌ Database connection failed"
+            PGPASSWORD="${{ secrets.POSTGRES_PASSWORD }}" psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -c "SELECT 1;" && echo "✅ Database connection successful" || echo "❌ Database connection failed"
           else
             echo "❌ POSTGRES_PASSWORD secret is not set!"
             exit 1
@@ -132,7 +116,7 @@ jobs:
           echo "🗄️ Setting up database schema..."
 
           # Create the trigger function first
-          psql -h postgres -U postgres -d MoneyWise -c "
+          psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -c "
           CREATE OR REPLACE FUNCTION public.update_updated_at_column()
           RETURNS TRIGGER AS \$\$
           BEGIN
@@ -142,7 +126,7 @@ jobs:
           \$\$ language 'plpgsql';"
 
           # Run the migration
-          psql -h postgres -U postgres -d MoneyWise -f migrations/20241201000000_initial_schema.sql
+          psql -h db.exibcfqpurfoztnejcts.supabase.co -U postgres -d postgres -f migrations/20241201000000_initial_schema.sql
 
           echo "✅ Database setup completed!"
 
