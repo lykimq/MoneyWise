@@ -202,7 +202,8 @@ jobs:
             # Remove SQLx query macros temporarily by using environment variable
             echo "🔄 Building with SQLx compile-time checks disabled..."
 
-            # This approach bypasses SQLx compile-time validation
+            # Create a simple .env file for SQLx 0.7 offline mode
+            echo "DATABASE_URL=postgresql://dummy:dummy@localhost/dummy" > .env
             SQLX_OFFLINE=true cargo build --release --verbose || {
               echo "❌ Both build attempts failed. Showing error log:"
               tail -20 /tmp/build.log || true

@@ -11,7 +11,7 @@ tower = "0.4"
 tower-http = { version = "0.4", features = ["cors"] }
 
 # Database
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "decimal", "offline"] }
+sqlx = { version = "0.6.2", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "decimal", "macros", "offline"] }
 postgres = "0.19"
 
 # Redis for caching
@@ -45,3 +45,6 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # Configuration
 config = "0.14"
+
+# Pin ring to avoid symbol issues with SQLx 0.6
+ring = "0.16"
