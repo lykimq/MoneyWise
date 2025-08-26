@@ -139,8 +139,20 @@ jobs:
     runs-on: ubuntu-latest
     # Only runs if both setup jobs reported success
     if: ${{ needs.setup-db.outputs.db_ready == 'true' && needs.setup-rust.outputs.rust_ready == 'true' }}
+    env:
+      # Database Configuration (required by SQLx for compile-time query checking)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      # Application Configuration
+      HOST: 127.0.0.1
+      PORT: 3000
+      RUST_LOG: info
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       - name: Build project
         run: |
           # Simplified version of build-and-test.yml
