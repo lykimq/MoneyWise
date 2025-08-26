@@ -69,9 +69,28 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 ### **Backend**
 - **Rust** - High-performance, memory-safe backend
 - **Axum** - Modern, fast web framework
-- **PostgreSQL** - Robust, scalable database
+- **PostgreSQL** - Robust, scalable database (Supabase + Local)
 - **Redis** - Lightning-fast caching layer
 - **SQLx** - Async, compile-time checked SQL
+
+---
+
+## 🏗️ Project Architecture
+
+```
+MoneyWise/
+├── 📱 moneywise-app/           # React Native frontend
+├── 🦀 moneywise-backend/       # Rust backend API
+├── 🗄️ scripts/                 # Setup and utility scripts
+├── 📚 docs/                    # Documentation
+└── 🧪 tests/                   # End-to-end testing
+```
+
+### **Database Strategy**
+- **Production**: Supabase (hosted, managed, scalable)
+- **Development**: Local PostgreSQL (offline development)
+- **Hybrid Setup**: Automatic environment detection
+- **Migrations**: Compatible with both environments
 
 ---
 
@@ -90,6 +109,7 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 | **Multi-Currency** | ✅ Native support | ❌ Limited options |
 | **No Signup** | ✅ Start immediately | ❌ Account required |
 | **Open Source** | ✅ Transparent & free | ❌ Proprietary |
+| **Hybrid Database** | ✅ Supabase + Local | ❌ Single environment |
 
 ---
 
@@ -100,6 +120,9 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 - ✅ **Project Setup** - React Native + Expo + Rust backend
 - ✅ **Navigation** - Bottom tab navigation with 5 main screens
 - ✅ **Basic UI** - Component library and design system
+- ✅ **Backend API** - Budget management endpoints with caching
+- ✅ **Database Schema** - PostgreSQL with migrations and sample data
+- ✅ **Hybrid Setup** - Supabase production + Local development
 - 🔄 **Core Features** - Transaction management, budgets, goals
 - 📋 **Testing** - Comprehensive test suite
 - 🎨 **Polish** - Animations, accessibility, performance
@@ -129,15 +152,35 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 3. **Backend Setup**
    ```bash
    cd moneywise-backend
-   cargo build
-   cargo run
+   # See README.md in the backend directory for detailed setup instructions
+   # Supports both Supabase (production) and local PostgreSQL (development)
    ```
 
-4. **Database Setup**
-   ```bash
-   # PostgreSQL + Redis required
-   # See setup guide for detailed instructions
-   ```
+---
+
+## 📋 Roadmap
+
+### **Q1 2025** - Core MVP
+- [x] Project setup and architecture
+- [x] Backend API with budget management
+- [x] Database schema and migrations
+- [x] Hybrid database setup (Supabase + Local)
+- [ ] Transaction management
+- [ ] Basic budget tracking
+- [ ] Savings goals
+- [ ] Multi-language support
+
+### **Q2 2025** - Enhanced Features
+- [ ] Advanced analytics and reports
+- [ ] Recurring transactions
+- [ ] Export/import functionality
+- [ ] Cloud sync (optional)
+
+### **Q3 2025** - Advanced Features
+- [ ] Bank account integration
+- [ ] Investment tracking
+- [ ] Debt management
+- [ ] Financial insights AI
 
 ---
 
@@ -160,28 +203,6 @@ We welcome contributions! Here's how you can help:
 
 ---
 
-## 📋 Roadmap
-
-### **Q1 2025** - Core MVP
-- [ ] Transaction management
-- [ ] Basic budget tracking
-- [ ] Savings goals
-- [ ] Multi-language support
-
-### **Q2 2025** - Enhanced Features
-- [ ] Advanced analytics and reports
-- [ ] Recurring transactions
-- [ ] Export/import functionality
-- [ ] Cloud sync (optional)
-
-### **Q3 2025** - Advanced Features
-- [ ] Bank account integration
-- [ ] Investment tracking
-- [ ] Debt management
-- [ ] Financial insights AI
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -193,6 +214,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React Native community** - For the amazing mobile framework
 - **Expo team** - For simplifying React Native development
 - **Rust community** - For the performant backend language
+- **Supabase team** - For the excellent database hosting platform
 - **Contributors** - Everyone who helps make MoneyWise better
 
 ---
