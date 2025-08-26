@@ -42,27 +42,15 @@ jobs:
       # This output is used by the build job to determine if it should run
       db_ready: ${{ steps.check_db.outputs.ready }}
     steps:
-      - name: Install PostgreSQL client and dependencies
+      - name: Verify dependencies
         run: |
-          # Install base dependencies first
-          apt-get update
-          apt-get install -y gnupg2 wget lsb-release curl
-
-          # Add PostgreSQL repository
-          echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-
-          # Update again and install PostgreSQL client
-          apt-get update
-          apt-get install -y postgresql-client
-
-          # Verify installation
-          echo "✅ PostgreSQL client version:"
-          pg_isready --version
-          psql --version
-
+          # Verify that curl is available (it should be pre-installed on ubuntu-latest)
           echo "✅ Curl version:"
           curl --version
+
+          echo "✅ System information:"
+          echo "OS: $(lsb_release -d | cut -f2)"
+          echo "Architecture: $(uname -m)"
 
       - name: Check Supabase API connection
         id: check_db
