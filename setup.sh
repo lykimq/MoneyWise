@@ -1,61 +1,49 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Root Setup Script
-# =============================================================================
-# This script orchestrates the complete setup of the MoneyWise project.
-# It handles: project verification, backend setup, and frontend setup.
-#
-# Why this approach?
-# - Single command setup from project root improves user experience
-# - Orchestration separates concerns between root and backend scripts
-# - Root script focuses on project-level setup, backend script handles details
-# - Works with the new modular database structure
-# =============================================================================
+# Sets up the complete project: verifies structure, runs backend setup, installs frontend
 
-set -e  # Exit immediately if any command fails
+# Load core utilities
+ROOT_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_LOADER="$ROOT_SCRIPT_DIR/scripts/core/module-loader.sh"
 
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$SCRIPT_DIR/scripts/core/setup-utils.sh"
-
-if [ ! -f "$UTILS_SCRIPT" ]; then
-    echo "❌ Error: Shared utilities script not found at $UTILS_SCRIPT"
-    echo "Please ensure the scripts/core/setup-utils.sh file exists"
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
     exit 1
 fi
 
-# Source the utilities script to get all shared functions
-source "$UTILS_SCRIPT"
+source "$MODULE_LOADER"
+
+# Load additional utilities
+SETUP_UTILS="$ROOT_SCRIPT_DIR/scripts/core/setup-utils.sh"
+CHECK_UTILS="$ROOT_SCRIPT_DIR/scripts/core/check-utils.sh"
+PATH_UTILS="$ROOT_SCRIPT_DIR/scripts/core/path-utils.sh"
+
+source "$SETUP_UTILS"
+source "$CHECK_UTILS"
+source "$PATH_UTILS"
 
 echo "🚀 MoneyWise Full Project Setup"
 echo "==============================="
 echo
 
-# =============================================================================
-# PROJECT STRUCTURE VERIFICATION
-# =============================================================================
+# Verify project structure
 verify_project_structure || exit 1
 
-# =============================================================================
-# PREREQUISITES CHECK
-# =============================================================================
+# Check prerequisites
 check_all_prerequisites || exit 1
 
 echo
 
-# =============================================================================
-# BACKEND SETUP ORCHESTRATION
-# =============================================================================
+# Setup backend
 print_status "Setting up backend..."
 
 # Use safe directory change to prevent issues
 original_dir=$(safe_cd "moneywise-backend") || exit 1
 
 # Run the backend setup script
-if file_exists "setup.sh"; then
+if check_file_exists "setup.sh" "Backend setup script" true; then
     print_status "Running backend setup script..."
 
     # Make the script executable
@@ -64,9 +52,6 @@ if file_exists "setup.sh"; then
     # Execute the backend setup script
     "$(pwd)/setup.sh"
 else
-    print_error "Backend setup script not found"
-    print_warning "Expected: moneywise-backend/setup.sh"
-    print_warning "This suggests the project structure is incomplete"
     restore_cd "$original_dir"
     exit 1
 fi
@@ -76,9 +61,7 @@ restore_cd "$original_dir"
 
 echo
 
-# =============================================================================
-# FRONTEND SETUP
-# =============================================================================
+# Setup frontend
 print_status "Setting up frontend..."
 
 # Use safe directory change for frontend setup
@@ -86,23 +69,22 @@ original_dir=$(safe_cd "moneywise-app") || exit 1
 
 # Install dependencies
 print_status "Installing frontend dependencies..."
-npm install || {
+if npm install; then
+    print_success "Frontend dependencies installed"
+else
     print_error "Failed to install frontend dependencies"
     print_warning "This may be due to network issues or npm configuration problems"
     print_warning "Check your internet connection and npm registry settings"
     restore_cd "$original_dir"
     exit 1
-}
-print_success "Frontend dependencies installed"
+fi
 
 # Return to root directory
 restore_cd "$original_dir"
 
 echo
 
-# =============================================================================
-# FINAL SUMMARY AND NEXT STEPS
-# =============================================================================
+# Final summary
 print_success "🎉 MoneyWise setup complete!"
 echo
 echo "🚀 What's Running:"
