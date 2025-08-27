@@ -1,4 +1,4 @@
-# ��️ MoneyWise Scripts
+# 🛠️ MoneyWise Scripts
 
 Utility scripts for managing and testing your MoneyWise project.
 
@@ -24,22 +24,26 @@ scripts/
 ```bash
 ./scripts/testing/run-all-tests.sh
 ```
+
 ## 🔒 Safety
 
-All scripts are read-only and safe:
-- No environment changes
-- No data modifications
-- No service changes
-- Temporary test files only
+**Testing scripts are read-only and safe:**
+- No environment changes during testing
+- No data modifications in test runs
+- No service changes from test execution
+- Creates temporary test files only (automatically cleaned up)
+
+**Note:** Setup and database scripts may modify your environment - review them before running.
 
 ## 🔧 Usage
 
-**Daily**: Run `quick-check.sh` for status
-**Before changes**: Run relevant tests
-**Setup**: Use `setup.sh` for initial configuration
+**Daily**: Run `quick-check.sh` for project status
+**Before changes**: Run relevant tests to ensure stability
+**Setup**: Use `setup.sh` for initial configuration (review first)
 
 ## 🚨 Troubleshooting
 
 - **Permission denied**: `chmod +x scripts/*.sh scripts/*/*.sh`
-- **Missing deps**: Install PostgreSQL client, Rust, SQLx CLI
+- **Missing dependencies**: Install PostgreSQL client, Rust, SQLx CLI
 - **Database issues**: Check `.env` file and service status
+- **Icon display**: Ensure your terminal supports Unicode emojis
