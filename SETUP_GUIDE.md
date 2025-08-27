@@ -92,6 +92,18 @@ sqlx migrate run
 cargo run
 ```
 
+### Database Operations
+```bash
+# Run migrations
+make migrate
+
+# Build production database script
+make build-db
+
+# View available commands
+make help
+```
+
 ### Frontend
 ```bash
 cd moneywise-app
@@ -163,6 +175,11 @@ MoneyWise/
 ├── moneywise-backend/          # Rust API server
 │   ├── setup.sh               # Backend setup
 │   ├── migrations/            # Database schema
+│   ├── database/              # 🆕 Modular database structure
+│   │   ├── schema/            # Schema definitions
+│   │   ├── migrations/        # Development migrations
+│   │   ├── deploy/            # Production scripts
+│   │   └── build-deploy.sh    # Build script
 │   └── src/                   # Source code
 └── moneywise-app/             # React Native app
     ├── src/                   # App source
@@ -178,12 +195,19 @@ MoneyWise/
 - PostgreSQL with real sample data
 - Redis caching (optional)
 - Comprehensive error handling
+- Modular database structure with auto-generated production scripts
 
 **Frontend:**
 - Budget overview with insights
 - Category-wise tracking
 - Time period selection
 - AI-generated recommendations
+
+**Database Features:**
+- Modular schema design for easy maintenance
+- Auto-generated production deployment scripts
+- Support for both Supabase and local PostgreSQL
+- Comprehensive sample data for testing
 
 ---
 
@@ -193,5 +217,30 @@ MoneyWise/
 2. **Test the API** - Use curl or Postman on the endpoints
 3. **Check the code** - Review the architecture in individual READMEs
 4. **Run tests** - Ensure everything works as expected
+5. **Database operations** - Use `make build-db` to generate production scripts
+
+## 🔧 Available Make Commands
+
+The backend now includes simplified Make commands:
+
+```bash
+cd moneywise-backend
+
+# Setup commands
+make setup              # Auto-detect environment and setup
+make setup-local        # Setup for local PostgreSQL
+make setup-supabase     # Setup for Supabase
+
+# Database commands
+make migrate            # Run database migrations
+make build-db           # Build production database script
+
+# Development commands
+make build              # Build the project
+make run                # Run the server
+make test               # Run tests
+make clean              # Clean build artifacts
+make help               # Show all commands
+```
 
 The setup is designed to get you productive immediately. All technical complexity is abstracted away, so you can focus on building features rather than fighting with configuration.

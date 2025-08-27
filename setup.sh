@@ -10,16 +10,13 @@
 # - Single command setup from project root improves user experience
 # - Orchestration separates concerns between root and backend scripts
 # - Root script focuses on project-level setup, backend script handles details
-# - Modular design allows backend script to be run independently if needed
+# - Works with the new modular database structure
 # =============================================================================
 
-set -e  # Exit immediately if any command fails (fail-fast approach)
+set -e  # Exit immediately if any command fails
 
 # =============================================================================
 # SOURCE SHARED UTILITIES
-# =============================================================================
-# Why source utilities? Eliminates code duplication and centralizes maintenance.
-# The utilities script provides all common functions and prerequisite checking.
 # =============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UTILS_SCRIPT="$SCRIPT_DIR/scripts/setup-utils.sh"
@@ -40,18 +37,10 @@ echo
 # =============================================================================
 # PROJECT STRUCTURE VERIFICATION
 # =============================================================================
-# Why verify project structure first? Ensures we're in the correct directory.
-# This prevents running the script from the wrong location and provides
-# clear error messages about expected project structure.
-# =============================================================================
 verify_project_structure || exit 1
 
 # =============================================================================
 # PREREQUISITES CHECK
-# =============================================================================
-# Why check prerequisites first? Fail early if essential tools are missing.
-# This prevents wasting time on setup steps that will inevitably fail.
-# We check the most critical tools needed for both backend and frontend.
 # =============================================================================
 check_all_prerequisites || exit 1
 
@@ -60,30 +49,20 @@ echo
 # =============================================================================
 # BACKEND SETUP ORCHESTRATION
 # =============================================================================
-# Why orchestrate backend setup? The root script delegates detailed backend
-# configuration to a specialized script, maintaining separation of concerns.
-# This allows the backend script to be run independently if needed.
-# =============================================================================
 print_status "Setting up backend..."
 
 # Use safe directory change to prevent issues
 original_dir=$(safe_cd "moneywise-backend") || exit 1
 
 # Run the backend setup script
-# Why check if setup.sh exists? Ensures the backend script is present before
-# attempting to run it, providing clear error messages if missing.
 if file_exists "setup.sh"; then
     print_status "Running backend setup script..."
 
     # Make the script executable
-    # Why chmod +x? Ensures the script has execute permissions.
-    # This prevents permission errors when trying to run the script.
     chmod +x setup.sh
 
     # Execute the backend setup script
-    # Why use full path? Prevents recursive calls to the root setup.sh
-    # This ensures we're calling the correct backend setup script.
-    "$(pwd)/moneywise-backend/setup.sh"
+    "$(pwd)/setup.sh"
 else
     print_error "Backend setup script not found"
     print_warning "Expected: moneywise-backend/setup.sh"
@@ -93,8 +72,6 @@ else
 fi
 
 # Return to root directory
-# Why return to root? The root script needs to continue with frontend setup.
-# restore_cd ensures we're back in the project root for the next steps.
 restore_cd "$original_dir"
 
 echo
@@ -102,18 +79,12 @@ echo
 # =============================================================================
 # FRONTEND SETUP
 # =============================================================================
-# Why setup frontend after backend? Backend provides the API that frontend
-# depends on, so ensuring backend is ready first prevents connection issues.
-# Frontend setup is simpler - just dependency installation.
-# =============================================================================
 print_status "Setting up frontend..."
 
 # Use safe directory change for frontend setup
 original_dir=$(safe_cd "moneywise-app") || exit 1
 
 # Install dependencies
-# Why npm install? Installs all required packages defined in package.json.
-# This ensures the React Native app has all necessary dependencies to run.
 print_status "Installing frontend dependencies..."
 npm install || {
     print_error "Failed to install frontend dependencies"
@@ -125,8 +96,6 @@ npm install || {
 print_success "Frontend dependencies installed"
 
 # Return to root directory
-# Why return to root? The root script needs to be in the project root
-# to provide the final summary and next steps.
 restore_cd "$original_dir"
 
 echo
@@ -134,11 +103,6 @@ echo
 # =============================================================================
 # FINAL SUMMARY AND NEXT STEPS
 # =============================================================================
-# Why provide a comprehensive summary? Users need clear guidance on what
-# was accomplished and what to do next. This reduces confusion and
-# improves the overall setup experience.
-# =============================================================================
-# Final Summary
 print_success "🎉 MoneyWise setup complete!"
 echo
 echo "🚀 What's Running:"
@@ -154,5 +118,10 @@ echo "🔧 Project Structure:"
 echo "- Backend: Rust API with PostgreSQL + Redis"
 echo "- Frontend: React Native with Expo"
 echo "- Database: Sample budget data loaded and ready"
+echo
+echo "🗄️  Database Features:"
+echo "- Modular schema structure in database/schema/"
+echo "- Auto-generated production scripts with build-deploy.sh"
+echo "- Support for both Supabase and local PostgreSQL"
 echo
 print_success "You're all set! The MoneyWise app is ready to use."
