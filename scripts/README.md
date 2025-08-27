@@ -24,40 +24,6 @@ scripts/
 ```bash
 ./scripts/testing/run-all-tests.sh
 ```
-
-## 📋 Scripts
-
-### 🔧 Core (`core/`)
-Shared functionality for all scripts:
-- `output-utils.sh` - Output formatting and colors
-- `setup-utils.sh` - Setup orchestration
-- `path-utils.sh` - Path operations
-- `command-utils.sh` - Command checking
-- `env-utils.sh` - Environment management
-- `check-utils.sh` - Status tracking
-- `test-utils.sh` - Test execution
-- `service-utils.sh` - Service management
-- `module-loader.sh` - Module loading
-
-### 🗄️ Database (`database/`)
-Database operations:
-- `database-utils.sh` - Core database functions
-- `db-operations.sh` - Common operations
-- `schema-manager.sh` - Schema management
-
-### 🧪 Testing (`testing/`)
-Validation scripts:
-- `run-all-tests.sh` - Complete test suite
-- `test-database-connection.sh` - Database tests
-- `test-setup-scripts.sh` - Setup validation
-
-### ⚙️ Setup (`setup/`)
-Environment setup:
-- `prereq-checker.sh` - System prerequisites
-- `service-manager.sh` - Service management
-- `env-manager.sh` - Environment config
-- `get-supabase-credentials.sh` - Supabase setup
-
 ## 🔒 Safety
 
 All scripts are read-only and safe:
