@@ -185,9 +185,9 @@ else
     echo "🔧 Recommended actions:"
     echo "   1. Fix any missing files or directories"
     echo "   2. Install missing dependencies"
-    echo "   3. Run full test suite: ./scripts/run-all-tests.sh"
+    echo "   3. Run full test suite: ./scripts/testing/run-all-tests.sh"
 fi
 
 echo
 echo "🔒 Your current environment remains unchanged"
-echo "💡 Run './scripts/run-all-tests.sh' for detailed testing"
+echo "💡 Run './scripts/testing/run-all-tests.sh' for detailed testing"
