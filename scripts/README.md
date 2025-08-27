@@ -37,9 +37,9 @@ scripts/
 
 ## 🔧 Usage
 
-**Daily**: Run `quick-check.sh` for project status
-**Before changes**: Run relevant tests to ensure stability
-**Setup**: Use `setup.sh` for initial configuration (review first)
+- **Daily**: Run `quick-check.sh` for project status
+- **Before changes**: Run relevant tests to ensure stability
+- **Setup**: Use `setup.sh` for initial configuration (review first)
 
 ## 🚨 Troubleshooting
 
