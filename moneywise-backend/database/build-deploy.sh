@@ -5,24 +5,33 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Load core utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_UTILS="$SCRIPT_DIR/../../scripts/core/output-utils.sh"
 
-# Print status function
-print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
+# Load output utilities
+if [ -f "$OUTPUT_UTILS" ]; then
+    source "$OUTPUT_UTILS"
+else
+    # Fallback colors if output utilities not available
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    NC='\033[0m' # No Color
 
-print_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
+    # Fallback print functions
+    print_status() {
+        echo -e "${GREEN}[INFO]${NC} $1"
+    }
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+    print_warning() {
+        echo -e "${YELLOW}[WARN]${NC} $1"
+    }
+
+    print_error() {
+        echo -e "${RED}[ERROR]${NC} $1"
+    }
+fi
 
 # Configuration
 SCHEMA_DIR="schema"
