@@ -1,11 +1,31 @@
+# Main CI/CD Pipeline - Path-Optimized
+#
+# PURPOSE: Coordinate the main build pipeline for MoneyWise
+# WHY: Only run when relevant code changes to reduce CI costs and improve feedback speed
+# WHEN: Runs only when backend or frontend code changes, not on documentation or config changes
+
 name: MoneyWise CI/CD Pipeline
 
+# OPTIMIZED TRIGGERS: Only run when relevant code changes
+# This follows production best practices by reducing unnecessary CI runs
 on:
   push:
     branches: [ main ]
+    paths:
+      # Backend changes trigger the pipeline
+      - 'moneywise-backend/**'
+      # Frontend changes trigger the pipeline
+      - 'moneywise-app/**'
+      # CI/CD configuration changes should also trigger (to test the pipeline itself)
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+    paths:
+      # Same path restrictions for PRs
+      - 'moneywise-backend/**'
+      - 'moneywise-app/**'
+      - '.github/workflows/**'
+  workflow_dispatch:  # Allows manual triggering for testing or emergency builds
 
 jobs:
   build-backend:
