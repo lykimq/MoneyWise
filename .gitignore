@@ -1,9 +1,12 @@
-# Environment files - NEVER commit these
+a# Environment files - NEVER commit these
 .env
 .env.local
 .env.production
 .env.staging
 .secrets
+
+# Expo files - Auto-generated, don't commit
+.expo/
 
 # Logs
 *.log
