@@ -16,9 +16,6 @@ fi
 
 source "$MODULE_LOADER"
 
-# Note: Service management functions removed as they are not used anywhere in the codebase
-# Functions removed: detect_service_manager, manage_service, wait_for_service, check_service_status, get_service_start_command
-
 # Auto-initialization when sourced
 if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
     print_success "Service utilities initialized successfully"
