@@ -10,9 +10,9 @@ Validation and testing of setup components.
 
 ## 🔧 Usage
 
-**Validation**: Run to check setup status
-**Before changes**: Test before modifying scripts
-**Deployment**: Verify before deploying
+- **Validation**: Run to check setup status
+- **Before changes**: Test before modifying scripts
+- **Deployment**: Verify before deploying
 
 ## 📋 Features
 

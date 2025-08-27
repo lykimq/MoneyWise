@@ -11,9 +11,9 @@ Environment setup, service management, and prerequisites.
 
 ## 🔧 Usage
 
-**Initial setup**: Run to configure environment
-**Service management**: Start/stop PostgreSQL and Redis
-**Environment**: Manage .env files and configuration
+- **Initial setup**: Run to configure environment
+- **Service management**: Start/stop PostgreSQL and Redis
+- **Environment**: Manage .env files and configuration
 
 ## 📋 Features
 

@@ -10,8 +10,8 @@ Database operations, schema management, and connectivity.
 
 ## 🔧 Usage
 
-**Standalone**: Run directly for database operations
-**Setup**: Sourced by setup scripts for database setup
+- **Standalone**: Run directly for database operations
+- **Setup**: Sourced by setup scripts for database setup
 
 ## 📋 Features
 
