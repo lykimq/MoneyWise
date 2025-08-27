@@ -49,19 +49,34 @@ That's it! The setup script handles everything automatically.
 - ✅ **Tests** API endpoints for verification
 
 ### **Modular Setup Utilities** (`scripts/`)
-- ✅ **Output Utilities** (`output-utils.sh`) - Colors, formatting, user experience
-- ✅ **Prerequisites Checker** (`prereq-checker.sh`) - Tool verification and validation
-- ✅ **Service Manager** (`service-manager.sh`) - PostgreSQL, Redis service management
-- ✅ **Database Utilities** (`database-utils.sh`) - **Main orchestrator** for database operations
-- ✅ **Environment Manager** (`env-manager.sh`) - **NEW!** .env file creation and management
-- ✅ **Database Operations** (`db-operations.sh`) - **NEW!** Core database operations
-- ✅ **Schema Manager** (`schema-manager.sh`) - **NEW!** Database schema verification
-- ✅ **Main Orchestrator** (`setup-utils.sh`) - Coordinates all modules and provides unified interface
+- ✅ **Core Utilities** (`core/`) - Shared functionality and orchestration
+  - `setup-utils.sh` - Main orchestrator that coordinates all modules
+  - `output-utils.sh` - Colors, formatting, and user experience
+- ✅ **Setup Management** (`setup/`) - Environment and service setup
+  - `prereq-checker.sh` - Tool verification and validation
+  - `service-manager.sh` - PostgreSQL, Redis service management
+  - `env-manager.sh` - .env file creation and management
+  - `get-supabase-credentials.sh` - Supabase credentials retrieval
+- ✅ **Database Operations** (`database/`) - Database management and operations
+  - `database-utils.sh` - Main orchestrator for database operations
+  - `db-operations.sh` - Core database operations
+  - `schema-manager.sh` - Database schema verification
+- ✅ **Testing & Validation** (`testing/`) - Setup verification and testing
+  - `run-all-tests.sh` - Comprehensive test suite
+  - `test-database-connection.sh` - Database connectivity tests
+  - `test-setup-scripts.sh` - Setup script validation
+- ✅ **Quick Check** (`quick-check.sh`) - Fast status overview (main script)
 
 **Sample Data Included:**
 - 5 budget categories (Housing, Utilities, Transportation, Food, Entertainment)
 - Real budget data for December 2024 & August 2025
 - USD currency with realistic spending patterns
+
+**Scripts Organization Benefits:**
+- **Logical Grouping**: Scripts organized by function for easier maintenance
+- **Clear Purpose**: Each subdirectory has a specific responsibility
+- **Easy Navigation**: Quickly find the right script for your needs
+- **Scalable Structure**: Simple to add new scripts to appropriate categories
 
 ---
 
@@ -137,6 +152,11 @@ cd moneywise-backend && cargo test
 
 # Frontend tests
 cd moneywise-app && npm test
+
+# Setup validation (NEW!)
+./scripts/quick-check.sh                    # Quick status check
+./scripts/testing/run-all-tests.sh          # Comprehensive validation
+./scripts/testing/test-setup-scripts.sh     # Setup script validation
 ```
 
 ---
@@ -163,15 +183,24 @@ sqlx migrate run
 ```
 MoneyWise/
 ├── setup.sh                    # 🆕 Root-level setup script
-├── scripts/                    # 🆕 Modular setup utilities
-│   ├── setup-utils.sh         # Main orchestrator
-│   ├── output-utils.sh        # Colors & formatting
-│   ├── prereq-checker.sh      # Tool verification
-│   ├── service-manager.sh     # Service management
-│   ├── database-utils.sh      # 🆕 Database orchestrator
-│   ├── env-manager.sh         # 🆕 Environment management
-│   ├── db-operations.sh       # 🆕 Database operations
-│   └── schema-manager.sh      # 🆕 Schema management
+├── scripts/                    # 🆕 Modular setup utilities (NEW ORGANIZATION!)
+│   ├── core/                  # Core utility modules
+│   │   ├── setup-utils.sh     # Main orchestrator
+│   │   └── output-utils.sh    # Colors & formatting
+│   ├── setup/                  # Setup and environment management
+│   │   ├── prereq-checker.sh  # Tool verification
+│   │   ├── service-manager.sh # Service management
+│   │   ├── env-manager.sh     # Environment management
+│   │   └── get-supabase-credentials.sh # Credentials retrieval
+│   ├── database/               # Database-related scripts
+│   │   ├── database-utils.sh  # Database orchestrator
+│   │   ├── db-operations.sh   # Database operations
+│   │   └── schema-manager.sh  # Schema management
+│   ├── testing/                # Testing and validation scripts
+│   │   ├── run-all-tests.sh   # Comprehensive test suite
+│   │   ├── test-database-connection.sh # Database connectivity tests
+│   │   └── test-setup-scripts.sh # Setup script validation
+│   └── quick-check.sh          # Quick status check (main script)
 ├── moneywise-backend/          # Rust API server
 │   ├── setup.sh               # Backend setup
 │   ├── migrations/            # Database schema
@@ -185,6 +214,13 @@ MoneyWise/
     ├── src/                   # App source
     └── package.json           # Dependencies
 ```
+
+### **Scripts Organization Benefits**
+- **`core/`** - Shared utilities used by all other scripts
+- **`setup/`** - Environment setup and service management
+- **`database/`** - Database operations and schema management
+- **`testing/`** - Validation and testing scripts
+- **`quick-check.sh`** - Main script for daily status checks
 
 ---
 

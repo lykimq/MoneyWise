@@ -19,11 +19,11 @@ set -e  # Exit immediately if any command fails
 # SOURCE SHARED UTILITIES
 # =============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$SCRIPT_DIR/scripts/setup-utils.sh"
+UTILS_SCRIPT="$SCRIPT_DIR/scripts/core/setup-utils.sh"
 
 if [ ! -f "$UTILS_SCRIPT" ]; then
     echo "❌ Error: Shared utilities script not found at $UTILS_SCRIPT"
-    echo "Please ensure the scripts/setup-utils.sh file exists"
+    echo "Please ensure the scripts/core/setup-utils.sh file exists"
     exit 1
 fi
 
