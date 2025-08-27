@@ -23,9 +23,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Core modules
 OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
-PREREQ_CHECKER="$SCRIPT_DIR/prereq-checker.sh"
-SERVICE_MANAGER="$SCRIPT_DIR/service-manager.sh"
-DATABASE_UTILS="$SCRIPT_DIR/database-utils.sh"
+PREREQ_CHECKER="$SCRIPT_DIR/../setup/prereq-checker.sh"
+SERVICE_MANAGER="$SCRIPT_DIR/../setup/service-manager.sh"
+DATABASE_UTILS="$SCRIPT_DIR/../database/database-utils.sh"
 
 # =============================================================================
 # MODULE LOADING FUNCTIONS
@@ -41,7 +41,7 @@ load_module() {
 
     if [ ! -f "$module_path" ]; then
         echo "❌ Error: $module_name module not found at $module_path"
-        echo "Please ensure all setup modules are present in the scripts/ directory"
+        echo "Please ensure all setup modules are present in the scripts/core/, scripts/setup/, and scripts/database/ directories"
         return 1
     fi
 

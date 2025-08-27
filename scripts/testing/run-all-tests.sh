@@ -203,7 +203,7 @@ REQUIRED_STRUCTURE=(
     "moneywise-app/"
     "moneywise-app/package.json"
     "scripts/"
-    "scripts/setup-utils.sh"
+    "scripts/core/setup-utils.sh"
 )
 
 for item in "${REQUIRED_STRUCTURE[@]}"; do

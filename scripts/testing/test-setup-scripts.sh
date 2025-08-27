@@ -19,8 +19,8 @@ set -e  # Exit immediately if any command fails
 # SOURCE SHARED UTILITIES
 # =============================================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$SCRIPT_DIR/setup-utils.sh"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
+UTILS_SCRIPT="$SCRIPT_DIR/../core/setup-utils.sh"
+OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
 
 # Source output utilities for consistent messaging
 if [ -f "$OUTPUT_UTILS" ]; then
@@ -53,7 +53,7 @@ print_status "Created temporary test directory: $TEST_DIR"
 # =============================================================================
 print_status "Test 1: Root setup script syntax validation..."
 
-if bash -n "$SCRIPT_DIR/../setup.sh"; then
+if bash -n "$SCRIPT_DIR/../../setup.sh"; then
     print_success "Root setup script syntax is valid"
 else
     print_error "Root setup script has syntax errors"
@@ -65,7 +65,7 @@ fi
 # =============================================================================
 print_status "Test 2: Backend setup script syntax validation..."
 
-if bash -n "$SCRIPT_DIR/../moneywise-backend/setup.sh"; then
+if bash -n "$SCRIPT_DIR/../../moneywise-backend/setup.sh"; then
     print_success "Backend setup script syntax is valid"
 else
     print_error "Backend setup script has syntax errors"
@@ -78,11 +78,11 @@ fi
 print_status "Test 3: Utility scripts syntax validation..."
 
 UTILITY_SCRIPTS=(
-    "setup-utils.sh"
-    "prereq-checker.sh"
-    "service-manager.sh"
-    "database-utils.sh"
-    "output-utils.sh"
+    "$SCRIPT_DIR/../core/setup-utils.sh"
+    "$SCRIPT_DIR/../setup/prereq-checker.sh"
+    "$SCRIPT_DIR/../setup/service-manager.sh"
+    "$SCRIPT_DIR/../database/database-utils.sh"
+    "$SCRIPT_DIR/../core/output-utils.sh"
 )
 
 for script in "${UTILITY_SCRIPTS[@]}"; do
@@ -121,10 +121,10 @@ print_status "Test 5: File structure validation..."
 
 # Check if required files exist
 REQUIRED_FILES=(
-    "$SCRIPT_DIR/../setup.sh"
-    "$SCRIPT_DIR/../moneywise-backend/setup.sh"
-    "$SCRIPT_DIR/../moneywise-backend/Cargo.toml"
-    "$SCRIPT_DIR/../moneywise-app/package.json"
+    "$SCRIPT_DIR/../../setup.sh"
+    "$SCRIPT_DIR/../../moneywise-backend/setup.sh"
+    "$SCRIPT_DIR/../../moneywise-backend/Cargo.toml"
+    "$SCRIPT_DIR/../../moneywise-app/package.json"
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
@@ -142,9 +142,9 @@ done
 print_status "Test 6: Dry-run environment setup..."
 
 # Copy backend setup script to test directory
-cp "$SCRIPT_DIR/../moneywise-backend/setup.sh" "$TEST_DIR/"
-cp -r "$SCRIPT_DIR/../moneywise-backend/database" "$TEST_DIR/" 2>/dev/null || true
-cp -r "$SCRIPT_DIR/../moneywise-backend/src" "$TEST_DIR/" 2>/dev/null || true
+cp "$SCRIPT_DIR/../../moneywise-backend/setup.sh" "$TEST_DIR/"
+cp -r "$SCRIPT_DIR/../../moneywise-backend/database" "$TEST_DIR/" 2>/dev/null || true
+cp -r "$SCRIPT_DIR/../../moneywise-backend/src" "$TEST_DIR/" 2>/dev/null || true
 
 # Create a minimal test environment
 cd "$TEST_DIR"

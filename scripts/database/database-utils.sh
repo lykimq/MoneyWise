@@ -40,7 +40,7 @@ load_module() {
 
     if [ ! -f "$module_path" ]; then
         echo "❌ Error: $module_name module not found at $module_path"
-        echo "Please ensure all database modules are present in the scripts/ directory"
+        echo "Please ensure all database modules are present in the scripts/database/ directory"
         return 1
     fi
 
