@@ -1,42 +1,38 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Backend Setup Script
-# =============================================================================
-# This script sets up the MoneyWise backend service with the new database structure.
-# It works with both Supabase (production) and local PostgreSQL (development).
-#
-# Why this approach?
-# - Simple and clear setup process
-# - Works with the new modular database structure
-# - Supports both Supabase and local development
-# - Includes database migration and verification
-# =============================================================================
+# Sets up backend service with database structure for both Supabase and local PostgreSQL
 
-set -e  # Exit immediately if any command fails
-
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
+# Load core utilities
 BACKEND_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$BACKEND_SCRIPT_DIR/../scripts/core/setup-utils.sh"
+MODULE_LOADER="$BACKEND_SCRIPT_DIR/../scripts/core/module-loader.sh"
 
-if [ ! -f "$UTILS_SCRIPT" ]; then
-    echo "❌ Error: Shared utilities script not found at $UTILS_SCRIPT"
-    echo "Please ensure the scripts/core/setup-utils.sh file exists"
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
     exit 1
 fi
 
-# Source the utilities script to get all shared functions
-source "$UTILS_SCRIPT"
+source "$MODULE_LOADER"
+
+# Load additional utilities
+SETUP_UTILS="$BACKEND_SCRIPT_DIR/../scripts/core/setup-utils.sh"
+CHECK_UTILS="$BACKEND_SCRIPT_DIR/../scripts/core/check-utils.sh"
+SERVICE_UTILS="$BACKEND_SCRIPT_DIR/../scripts/core/service-utils.sh"
+ENV_UTILS="$BACKEND_SCRIPT_DIR/../scripts/core/env-utils.sh"
+COMMAND_UTILS="$BACKEND_SCRIPT_DIR/../scripts/core/command-utils.sh"
+
+source "$SETUP_UTILS"
+source "$CHECK_UTILS"
+source "$SERVICE_UTILS"
+source "$ENV_UTILS"
+source "$COMMAND_UTILS"
 
 echo "🚀 MoneyWise Backend Setup"
 echo "========================="
 echo
 
-# =============================================================================
-# PREREQUISITES VERIFICATION
-# =============================================================================
+# Check prerequisites
 if ! is_prereqs_checked; then
     print_warning "Prerequisites not verified by root script"
     print_status "Running prerequisite check for standalone execution..."
@@ -45,60 +41,53 @@ else
     print_success "Prerequisites already verified by root script"
 fi
 
-# =============================================================================
-# VERIFY BACKEND PROJECT STRUCTURE
-# =============================================================================
-if [ ! -f "$BACKEND_SCRIPT_DIR/Cargo.toml" ]; then
+# Verify backend structure
+if ! check_file_exists "$BACKEND_SCRIPT_DIR/Cargo.toml" "Cargo.toml" true; then
     print_error "Please run this script from the moneywise-backend directory"
-    print_warning "Cargo.toml not found - this indicates we're not in a Rust project"
+    print_warning "This indicates we're not in a Rust project"
     exit 1
 fi
 
 print_success "Backend project structure verified"
 
-# =============================================================================
-# ENVIRONMENT SETUP
-# =============================================================================
+# Setup environment
 print_status "Setting up environment..."
 
-# Check if .env file exists
-if [ ! -f "$BACKEND_SCRIPT_DIR/.env" ]; then
-    print_warning "No .env file found"
+# Create environment file if it doesn't exist
+if ! check_file_exists "$BACKEND_SCRIPT_DIR/.env" "Environment file" false; then
     print_status "Creating environment file from template..."
 
-    if [ -f "$BACKEND_SCRIPT_DIR/env.example" ]; then
-        cp "$BACKEND_SCRIPT_DIR/env.example" "$BACKEND_SCRIPT_DIR/.env"
+    if check_file_exists "$BACKEND_SCRIPT_DIR/env.example" "Environment template" true; then
+        create_default_env "$BACKEND_SCRIPT_DIR/.env" "$BACKEND_SCRIPT_DIR/env.example"
         print_warning "⚠️  IMPORTANT: Please edit .env file with your database credentials"
         print_warning "   - For Supabase: Update DATABASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY"
         print_warning "   - For local: Update DATABASE_URL to point to local PostgreSQL"
         print_warning "   - Then run this script again"
         exit 1
     else
-        print_error "No env.example template found"
         exit 1
     fi
 fi
 
 # Load environment variables
-source "$BACKEND_SCRIPT_DIR/.env"
+load_env_file "$BACKEND_SCRIPT_DIR/.env" || exit 1
 
 # Detect database environment
+DATABASE_URL=$(extract_env_value "$BACKEND_SCRIPT_DIR/.env" "DATABASE_URL")
 if [[ "$DATABASE_URL" == *"supabase.com"* ]] || [[ "$DATABASE_URL" == *"supabase.co"* ]]; then
     DATABASE_TYPE="supabase"
-    print_success "✅ Detected Supabase database environment"
+    print_success "Detected Supabase database environment"
 elif [[ "$DATABASE_URL" == *"localhost"* ]] || [[ "$DATABASE_URL" == *"127.0.0.1"* ]]; then
     DATABASE_TYPE="local"
-    print_success "✅ Detected local database environment"
+    print_success "Detected local database environment"
 else
-    print_warning "⚠️  Unknown database environment - assuming Supabase"
+    print_warning "Unknown database environment - assuming Supabase"
     DATABASE_TYPE="supabase"
 fi
 
 echo
 
-# =============================================================================
-# LOCAL SERVICE MANAGEMENT
-# =============================================================================
+# Local service management
 if [ "$DATABASE_TYPE" = "local" ]; then
     print_status "Starting required services for local development..."
 
@@ -114,9 +103,7 @@ else
     echo
 fi
 
-# =============================================================================
-# DATABASE SETUP
-# =============================================================================
+# Setup database
 if [ "$DATABASE_TYPE" = "local" ]; then
     print_status "Setting up local database environment..."
 
@@ -139,31 +126,30 @@ fi
 
 echo
 
-# =============================================================================
-# SQLX CLI INSTALLATION
-# =============================================================================
+# Install SQLx CLI
 print_status "Setting up SQLx CLI..."
-if ! command -v sqlx &> /dev/null; then
+
+if ! command_exists "sqlx"; then
     print_status "Installing SQLx CLI (this may take a few minutes)..."
 
     # Install SQLx CLI with PostgreSQL features only
-    cargo install sqlx-cli --no-default-features --features postgres || {
+    if cargo install sqlx-cli --no-default-features --features postgres; then
+        print_success "SQLx CLI installed"
+    else
         print_error "Failed to install SQLx CLI"
         print_warning "This may be due to network issues or Rust toolchain problems"
         exit 1
-    }
-    print_success "SQLx CLI installed"
+    fi
 else
     print_success "SQLx CLI already installed"
 fi
 
 echo
 
-# =============================================================================
-# DATABASE MIGRATIONS
-# =============================================================================
+# Run migrations
 print_status "Running database migrations..."
-sqlx migrate run || {
+
+if ! sqlx migrate run; then
     print_error "Failed to run migrations"
     print_warning "Please check:"
     print_warning "1. DATABASE_URL in .env is correct"
@@ -176,12 +162,11 @@ sqlx migrate run || {
     fi
     print_warning "4. Migration files are present in migrations/ directory"
     exit 1
-}
+fi
+
 print_success "Database migrations completed"
 
-# =============================================================================
-# SCHEMA VERIFICATION
-# =============================================================================
+# Verify schema
 print_status "Verifying database schema..."
 
 # Use shared database utilities for schema verification
@@ -192,16 +177,16 @@ fi
 
 echo
 
-# =============================================================================
-# PROJECT BUILD
-# =============================================================================
+# Build project
 print_status "Building the project..."
-cargo build || {
+
+if ! cargo build; then
     print_error "Failed to build the project"
     print_warning "This may indicate code compilation errors"
     print_warning "Check the error messages above for specific issues"
     exit 1
-}
+fi
+
 print_success "Project built successfully"
 
 echo
@@ -212,9 +197,7 @@ echo "API endpoints will be at: http://localhost:3000/api/*"
 echo
 print_status "Starting the server..."
 
-# =============================================================================
-# SERVER STARTUP AND TESTING
-# =============================================================================
+# Start server
 # Start the server in the background for testing
 cargo run &
 SERVER_PID=$!
@@ -223,23 +206,21 @@ SERVER_PID=$!
 print_status "Waiting for server to start..."
 sleep 5
 
-# =============================================================================
-# API ENDPOINT TESTING
-# =============================================================================
+# Test API endpoints
 print_status "Testing API endpoints..."
 
 # Test overview endpoint
 if curl -s "http://localhost:3000/api/budgets/overview" > /dev/null 2>&1; then
-    print_success "✅ Overview endpoint working"
+    print_success "Overview endpoint working"
 else
-    print_warning "⚠️ Overview endpoint not responding"
+    print_warning "Overview endpoint not responding"
 fi
 
 # Test main budgets endpoint
 if curl -s "http://localhost:3000/api/budgets" > /dev/null 2>&1; then
-    print_success "✅ Budgets endpoint working"
+    print_success "Budgets endpoint working"
 else
-    print_warning "⚠️ Budgets endpoint not responding"
+    print_warning "Budgets endpoint not responding"
 fi
 
 echo
