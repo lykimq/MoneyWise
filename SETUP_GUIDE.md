@@ -153,7 +153,7 @@ cd moneywise-backend && cargo test
 # Frontend tests
 cd moneywise-app && npm test
 
-# Setup validation (NEW!)
+# Setup validation
 ./scripts/quick-check.sh                    # Quick status check
 ./scripts/testing/run-all-tests.sh          # Comprehensive validation
 ./scripts/testing/test-setup-scripts.sh     # Setup script validation
@@ -183,7 +183,7 @@ sqlx migrate run
 ```
 MoneyWise/
 ├── setup.sh                    # 🆕 Root-level setup script
-├── scripts/                    # 🆕 Modular setup utilities (NEW ORGANIZATION!)
+├── scripts/                    # 🆕 Modular setup utilities
 │   ├── core/                  # Core utility modules
 │   │   ├── setup-utils.sh     # Main orchestrator
 │   │   └── output-utils.sh    # Colors & formatting
