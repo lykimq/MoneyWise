@@ -30,12 +30,15 @@ Foundation utilities that provide common functionality across all MoneyWise scri
 - `print_error()` - Error messages with ❌
 - `print_warning()` - Warning messages with ⚠️
 - `print_info()` - General information display
+- `print_section_header()` - Section headers with formatting
+- `print_subsection_header()` - Subsection headers
+- `print_progress()` - Progress indicators
+- `print_separator()` - Visual separators
 
 **Features**:
 - **Unicode Support**: Emoji and special characters for visual clarity
 - **Consistent Formatting**: Uniform message appearance across scripts
 - **Color Support**: Terminal color codes when available
-- **Logging Integration**: Can redirect output to log files
 
 **Example Usage**:
 ```bash
@@ -68,51 +71,32 @@ print_error "Failed to connect to database"
 **Core Functions**:
 - `load_env_file()` - Load and parse .env files
 - `extract_env_value()` - Extract specific environment variables
-- `validate_env_file()` - Check required variables are set
-- `create_env_template()` - Generate .env file templates
+- `create_default_env()` - Generate .env file templates
 
 **Features**:
 - **File Loading**: Automatic .env file discovery and loading
 - **Variable Extraction**: Safe extraction of configuration values
-- **Validation**: Required variable checking and reporting
 - **Template Generation**: Environment-specific configuration templates
 
 **Usage**: Used by setup and configuration scripts for environment management.
 
-### `service-utils.sh` - **Service Lifecycle Management**
-**Purpose**: Manages system services (PostgreSQL, Redis) with cross-platform support.
+### `service-utils.sh` - **Service Management Foundation**
+**Purpose**: Provides service management infrastructure (currently minimal implementation).
 
-**Service Operations**:
-- **Status Checking**: Verify service running state
-- **Start/Stop**: Service lifecycle management
-- **Health Monitoring**: Service connectivity validation
-- **Cross-Platform**: Linux, macOS, and Windows support
+**Status**: Basic service utility loading - specific service functions are implemented in setup scripts.
 
-**Key Functions**:
-- `check_service_status()` - Get service running state
-- `start_service()` - Start specified service
-- `stop_service()` - Stop specified service
-- `restart_service()` - Restart service gracefully
-
-**Supported Services**:
-- PostgreSQL database service
-- Redis caching service
-- Extensible for additional services
+**Usage**: Sourced by setup scripts for service management foundation.
 
 ### `command-utils.sh` - **Command & Tool Validation**
 **Purpose**: Verifies required system commands and tools are available and properly configured.
 
 **Validation Functions**:
 - `command_exists()` - Check if command is available
-- `validate_command_version()` - Verify minimum version requirements
-- `check_required_commands()` - Validate multiple commands at once
-- `suggest_installation()` - Provide installation guidance
 
 **Common Checks**:
 - **Development Tools**: Git, Rust, Cargo, SQLx CLI
 - **Database Tools**: PostgreSQL client (psql), Redis client
 - **System Tools**: curl, wget, tar, unzip
-- **Service Tools**: systemctl, brew, launchctl
 
 **Usage**: Used by prerequisite checkers and setup scripts.
 
@@ -121,15 +105,13 @@ print_error "Failed to connect to database"
 
 **Path Functions**:
 - `get_script_dir()` - Get absolute path of script directory
-- `get_project_root()` - Find MoneyWise project root
-- `normalize_path()` - Convert relative to absolute paths
-- `validate_directory()` - Check directory existence and permissions
+- `safe_cd()` - Safe directory change with restoration
+- `restore_cd()` - Restore previous directory
 
 **Features**:
 - **Cross-Platform**: Works on Linux, macOS, and Windows
 - **Path Resolution**: Automatic relative to absolute path conversion
-- **Validation**: Directory existence and permission checking
-- **Project Discovery**: Automatic MoneyWise project root detection
+- **Safe Navigation**: Directory change with automatic restoration
 
 **Usage**: Used by all scripts for reliable path handling.
 
@@ -137,16 +119,23 @@ print_error "Failed to connect to database"
 **Purpose**: Provides utilities for checking system health, service status, and overall project state.
 
 **Health Checks**:
-- **System Status**: OS, memory, disk space validation
-- **Service Health**: Database, Redis, application services
-- **Network Connectivity**: Internet and service connectivity
-- **Project Integrity**: File structure and configuration validation
+- **File Validation**: Check file existence and permissions
+- **Directory Validation**: Check directory existence and permissions
+- **Command Validation**: Verify required tools are available
+- **Environment Validation**: Check environment variable configuration
 
 **Key Functions**:
-- `check_system_health()` - Overall system status
-- `check_service_health()` - Service-specific health validation
-- `check_network_connectivity()` - Network and service connectivity
-- `check_project_integrity()` - MoneyWise project validation
+- `check_file_exists()` - Validate file existence with status tracking
+- `check_dir_exists()` - Validate directory existence with status tracking
+- `check_command_exists()` - Validate command availability with status tracking
+- `check_env_var()` - Validate environment variable configuration
+- `print_status_summary()` - Display summary of all checks
+- `run_checks()` - Execute multiple validation checks
+
+**Status Tracking**:
+- **Counters**: Track good, warning, and error counts
+- **Incremental**: Update counts as checks are performed
+- **Summary**: Provide comprehensive status overview
 
 **Usage**: Used by health check scripts and monitoring tools.
 
@@ -155,15 +144,20 @@ print_error "Failed to connect to database"
 
 **Testing Functions**:
 - `run_test()` - Execute individual tests with reporting
-- `run_test_suite()` - Execute multiple tests with summary
-- `generate_test_report()` - Create detailed test reports
-- `validate_test_results()` - Check test output and results
+- `run_test_section()` - Execute multiple tests with summary
+- `print_test_summary()` - Create detailed test reports
+- `reset_test_counters()` - Reset test statistics
+
+**Database Testing**:
+- `test_database_connection()` - Test database connectivity
+- `get_database_tables()` - Retrieve database table information
+- `count_table_rows()` - Count rows in database tables
 
 **Features**:
 - **Test Execution**: Standardized test running and reporting
 - **Result Validation**: Automatic pass/fail determination
 - **Performance Tracking**: Test execution time measurement
-- **Report Generation**: Detailed test result documentation
+- **Database Integration**: Built-in database testing utilities
 
 **Usage**: Used by testing scripts for consistent test execution.
 
@@ -197,16 +191,18 @@ else
 fi
 ```
 
-### **Service Management Pattern**
+### **Health Check Pattern**
 ```bash
-# Source service utilities
-source "$SCRIPT_DIR/../core/service-utils.sh"
+# Source check utilities
+source "$SCRIPT_DIR/../core/check-utils.sh"
 
-# Check and manage services
-if ! check_service_status "postgresql"; then
-    print_warning "PostgreSQL not running, starting..."
-    start_service "postgresql"
-fi
+# Run validation checks
+check_file_exists "./config.env" "Configuration file"
+check_command_exists "psql" "PostgreSQL client"
+check_env_var "DATABASE_URL" "Database connection string"
+
+# Display summary
+print_status_summary
 ```
 
 ## 🔗 Dependencies
@@ -233,7 +229,7 @@ test-utils.sh        ← Depends on output-utils.sh
 ### **Script Development**
 1. **Consistent Output**: Use output-utils.sh for uniform messaging
 2. **Path Handling**: Use path-utils.sh for reliable file operations
-3. **Service Management**: Use service-utils.sh for service operations
+3. **Health Monitoring**: Use check-utils.sh for system validation
 4. **Environment**: Use env-utils.sh for configuration management
 
 ### **Integration**
@@ -241,12 +237,6 @@ test-utils.sh        ← Depends on output-utils.sh
 2. **Command Validation**: Use command-utils.sh for prerequisite checking
 3. **Health Monitoring**: Use check-utils.sh for system validation
 4. **Testing**: Use test-utils.sh for test execution
-
-### **Cross-Platform Support**
-1. **Service Detection**: Automatic service manager detection
-2. **Path Resolution**: Cross-platform path handling
-3. **Command Validation**: Platform-specific command checking
-4. **Service Management**: Platform-appropriate service operations
 
 ## ⚠️ Important Notes
 
@@ -286,7 +276,7 @@ print_status "This will work"
 - **Function not found**: Ensure utility is sourced before use
 - **Path errors**: Use path-utils.sh for reliable path handling
 - **Output formatting**: Source output-utils.sh for consistent display
-- **Service errors**: Use service-utils.sh for service operations
+- **Health checks**: Use check-utils.sh for system validation
 
 ### **Debug Mode**
 ```bash

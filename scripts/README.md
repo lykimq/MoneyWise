@@ -6,11 +6,11 @@ Utility scripts for managing and testing your MoneyWise project.
 
 ```
 scripts/
-├── core/           # Core utilities (output, setup, path, etc.)
-├── database/       # Database operations and schema
-├── testing/        # Testing and validation
+├── core/           # Foundation utilities (output, module loading, etc.)
+├── database/       # Database operations and schema management
+├── testing/        # Testing framework and validation
 ├── setup/          # Environment and service setup
-└── quick-check.sh  # Fast status check
+└── quick-check.sh  # Fast project status check
 ```
 
 ## 🚀 Quick Start
@@ -24,6 +24,13 @@ scripts/
 ```bash
 ./scripts/testing/run-all-tests.sh
 ```
+
+## 🔧 What Each Folder Provides
+
+- **`core/`** - Foundation utilities used by all other scripts
+- **`database/`** - Schema management, validation, and migration tools
+- **`testing/`** - Script validation and system health checks
+- **`setup/`** - Environment configuration and service management
 
 ## 🔒 Safety
 
@@ -39,7 +46,7 @@ scripts/
 
 - **Daily**: Run `quick-check.sh` for project status
 - **Before changes**: Run relevant tests to ensure stability
-- **Setup**: Use `setup.sh` for initial configuration (review first)
+- **Setup**: Use setup scripts for initial configuration (review first)
 
 ## 🚨 Troubleshooting
 
@@ -47,3 +54,11 @@ scripts/
 - **Missing dependencies**: Install PostgreSQL client, Rust, SQLx CLI
 - **Database issues**: Check `.env` file and service status
 - **Icon display**: Ensure your terminal supports Unicode emojis
+
+## 📚 Detailed Documentation
+
+For comprehensive information about each script folder:
+- **Core utilities**: See `scripts/core/README.md`
+- **Database scripts**: See `scripts/database/README.md`
+- **Testing scripts**: See `scripts/testing/README.md`
+- **Setup scripts**: See `scripts/setup/README.md`

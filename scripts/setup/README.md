@@ -8,12 +8,10 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 **Purpose**: Verifies all required tools, services, and dependencies are available and properly configured.
 
 **What it checks**:
-- **System Tools**: Git, curl, wget, tar, unzip
-- **Development Tools**: Rust, Cargo, SQLx CLI
+- **Development Tools**: Rust, Cargo, Node.js, npm
 - **Database Tools**: PostgreSQL client (psql), Redis client
+- **System Tools**: Git, curl
 - **System Services**: PostgreSQL, Redis service status
-- **Network**: Internet connectivity for package downloads
-- **Permissions**: File and directory access rights
 
 **Usage**:
 ```bash
@@ -24,48 +22,30 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 ./prereq-checker.sh --check-tools
 ./prereq-checker.sh --check-database
 ./prereq-checker.sh --check-services
-
-# Fix missing prerequisites (interactive)
-./prereq-checker.sh --fix-missing
 ```
 
 **Output**: Clear pass/fail indicators with actionable recommendations for missing components.
 
 ### `service-manager.sh` - **Service Lifecycle Management**
-**Purpose**: Manages development services (PostgreSQL, Redis) with start, stop, restart, and status operations.
+**Purpose**: Manages development services (PostgreSQL, Redis) with start operations.
 
 **Supported Services**:
 - **PostgreSQL**: Database service management
 - **Redis**: Caching service management
-- **Custom Services**: Extensible for additional services
 
 **Usage**:
 ```bash
-# Service status
-./service-manager.sh status
-
 # Start services
 ./service-manager.sh start
 ./service-manager.sh start postgresql
 ./service-manager.sh start redis
-
-# Stop services
-./service-manager.sh stop
-./service-manager.sh stop postgresql
-
-# Restart services
-./service-manager.sh restart
-./service-manager.sh restart postgresql
-
-# Service information
-./service-manager.sh info postgresql
 ```
 
 **Features**:
 - Cross-platform service detection
 - Automatic dependency resolution
 - Service health monitoring
-- Graceful shutdown handling
+- Graceful error handling
 
 ### `env-manager.sh` - **Environment Configuration Manager**
 **Purpose**: Manages .env files, environment variables, and configuration across different environments.
@@ -75,7 +55,6 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 - **Configuration Validation**: Verify required variables are set
 - **Environment Switching**: Manage multiple environment configurations
 - **Secure Handling**: Protect sensitive credentials and API keys
-- **Template Management**: Use environment-specific templates
 
 **Usage**:
 ```bash
@@ -166,12 +145,10 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 ```bash
 # Daily development workflow
 ./service-manager.sh start    # Start services
-./service-manager.sh status   # Check status
-./service-manager.sh stop     # Stop services
 
 # Troubleshooting
-./service-manager.sh restart postgresql
-./service-manager.sh info redis
+./service-manager.sh start postgresql
+./service-manager.sh start redis
 ```
 
 ## 📋 Features
@@ -180,7 +157,6 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 - **Linux**: Systemd, init.d, and service management
 - **macOS**: Launchd and Homebrew services
 - **Windows**: WSL and Windows services (via WSL)
-- **Docker**: Container-based service detection
 
 ### **Environment Management**
 - **Template System**: Environment-specific configuration templates
@@ -191,8 +167,8 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 ### **Service Integration**
 - **Health Checks**: Service status and connectivity validation
 - **Dependency Management**: Automatic service startup order
-- **Monitoring**: Service performance and resource usage
-- **Logging**: Comprehensive service operation logging
+- **Error Handling**: Graceful failure with user guidance
+- **Cross-Platform**: Platform-appropriate service management
 
 ### **Prerequisites Validation**
 - **Tool Detection**: Automatic tool availability checking
@@ -205,14 +181,14 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 **Required**:
 - `../core/module-loader.sh` - Core utility loading
 - `../core/output-utils.sh` - Output formatting
-- `../core/service-utils.sh` - Service management utilities
+- `../core/service-utils.sh` - Service management foundation
 - `../core/env-utils.sh` - Environment utilities
 
 **External Dependencies**:
 - **PostgreSQL**: Database service
 - **Redis**: Caching service
 - **Supabase CLI**: Cloud service integration
-- **System tools**: Git, curl, wget, etc.
+- **System tools**: Git, curl, etc.
 
 ## 🚀 Use Cases
 
@@ -220,7 +196,7 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 1. **New Developer Onboarding**: Complete environment setup
 2. **Project Initialization**: First-time project setup
 3. **Environment Changes**: Switching between configurations
-4. **Service Management**: Starting/stopping development services
+4. **Service Management**: Starting development services
 
 ### **Production Deployment**
 1. **Environment Configuration**: Production environment setup
@@ -243,7 +219,7 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 - ✅ Configuration listing
 
 ### **Modifying Operations** (Use with Care)
-- ⚠️ Service start/stop/restart
+- ⚠️ Service start operations
 - ⚠️ Environment file creation/modification
 - ⚠️ Configuration updates
 - ⚠️ Credential management
@@ -265,11 +241,10 @@ Environment setup, service management, and prerequisites for MoneyWise developme
 ```bash
 # Enable debug output
 DEBUG=1 ./prereq-checker.sh
-DEBUG=1 ./service-manager.sh status
+DEBUG=1 ./service-manager.sh start
 
 # Verbose operations
 ./env-manager.sh --verbose
-./service-manager.sh --verbose
 ```
 
 ### **Recovery Procedures**
@@ -289,7 +264,7 @@ DEBUG=1 ./service-manager.sh status
 **Services**:
 - ✅ PostgreSQL running and accepting connections
 - ✅ Redis running and responding to commands
-- ✅ Services starting/stopping cleanly
+- ✅ Services starting cleanly
 - ✅ Health checks passing
 
 **Environment**:
