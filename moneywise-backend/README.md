@@ -48,6 +48,19 @@ make setup
 
 ## 🗄️ Database Setup
 
+### Database Structure
+The MoneyWise backend uses a modular database architecture:
+
+```
+database/
+├── schema/          # Modular schema definitions
+├── migrations/      # Version-controlled migrations
+├── deploy/          # Production deployment scripts
+└── build-deploy.sh  # Build script for deployment files
+```
+
+**📚 For detailed database documentation, see [database/README.md](database/README.md)**
+
 ### Supabase (Production)
 1. **Get your connection string** from Supabase Dashboard → Settings → Database
 2. **Format**: `postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres`
@@ -71,6 +84,19 @@ make setup
    ```bash
    DATABASE_URL=postgresql://postgres:password@localhost:5432/moneywise
    ```
+
+### Database Deployment
+```bash
+# Build production deployment script
+cd database
+./build-deploy.sh
+
+# Deploy to Supabase (copy contents of deploy/supabase.sql to SQL Editor)
+# Or use migrations for local development
+make migrate-local
+
+# Note: Migration files are manually maintained, deployment scripts are auto-generated
+```
 
 ## 🔧 Available Commands
 

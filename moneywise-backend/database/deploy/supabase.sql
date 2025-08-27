@@ -1,6 +1,22 @@
--- MoneyWise Initial Schema for Supabase and Local Development
--- This migration creates the complete database schema with UUID types, proper constraints, and sample data
--- Compatible with both Supabase hosted and local PostgreSQL environments
+-- MoneyWise Database Schema for Supabase Production Deployment
+-- ⚠️  AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY  ⚠️
+-- This file combines all schema components for one-time deployment to Supabase
+-- Generated from modular schema files in database/schema/
+-- Generated on: mer. 27 août 2025 10:41:01 CEST
+--
+-- To modify the schema:
+-- 1. Edit files in ../schema/ directory
+-- 2. Run this build script to regenerate this file
+-- 3. Or edit ../migrations/ for development changes
+--
+-- ==============================================================================
+-- TABLE CREATION
+-- ==============================================================================
+
+
+-- ==============================================================================
+-- TABLE CREATION
+-- ==============================================================================
 
 -- Enable UUID extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -72,6 +88,10 @@ CREATE TABLE IF NOT EXISTS public.budgets (
     CONSTRAINT budgets_currency_check CHECK (length(currency) = 3)
 );
 
+-- ==============================================================================
+-- INDEXES FOR PERFORMANCE
+-- ==============================================================================
+
 -- Step 4: Create indexes for performance
 -- Categories indexes
 CREATE INDEX IF NOT EXISTS idx_categories_default
@@ -96,6 +116,10 @@ CREATE INDEX IF NOT EXISTS idx_budgets_year_category
 CREATE INDEX IF NOT EXISTS idx_budgets_year_month
     ON public.budgets USING btree (year ASC NULLS LAST, month ASC NULLS LAST);
 
+-- ==============================================================================
+-- TRIGGERS FOR AUTOMATIC updated_at COLUMNS
+-- ==============================================================================
+
 -- Step 5: Create triggers for updated_at columns
 -- Category groups trigger
 CREATE OR REPLACE TRIGGER trg_category_groups_updated
@@ -115,6 +139,10 @@ CREATE OR REPLACE TRIGGER trg_budgets_updated
     FOR EACH ROW
     EXECUTE FUNCTION public.update_updated_at_column();
 
+-- ==============================================================================
+-- SAMPLE DATA INSERTION
+-- ==============================================================================
+
 -- Step 6: Insert sample data (same as supabase_schema.sql)
 -- Insert Category Groups
 INSERT INTO public.category_groups (id, name, sort_order, color, icon, created_at, updated_at) VALUES
@@ -127,16 +155,16 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Insert Categories
 INSERT INTO public.categories (id, name, group_id, type, icon, color, is_default, created_at, updated_at) VALUES
-('a2902212-8b33-4303-b581-b7cb8ab885a0', 'Rent', 'f63d38ad-b5c8-4443-82ec-04c590651a05', 'expense', '🏠', '#FF5733', true, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('6ef0d632-6d7e-473a-946e-843672bac8bf', 'Utilities', '1f69ae1e-f29e-4ebc-b2b6-e0ab10497a07', 'expense', '💡', '#33FF57', true, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('8b4a9232-4c62-4b99-a986-73e163069c92', 'Gas', 'c7c27f26-1598-43df-9eff-4927597c22f3', 'expense', '⛽', '#3357FF', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('c0df596e-072b-4111-a6fe-0f232e00fb7e', 'Public Transport', 'c7c27f26-1598-43df-9eff-4927597c22f3', 'expense', '🚌', '#3357FF', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('3d48ca20-13a5-40ba-8f6d-a68054739293', 'Groceries', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'expense', '🛒', '#FF33A8', true, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('0927dd03-ee9a-4aa5-a417-7c7519511944', 'Dining Out', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'expense', '🍽️', '#FF33A8', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('c2ebb22d-0118-4b49-b39c-d51740785386', 'Clothing', 'ddb307ef-709e-46eb-bfb7-60cfac4c00be', 'expense', '👗', '#F3FF33', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('a70c7480-9b3d-40af-832e-7802e8a05dbf', 'Electronics', 'ddb307ef-709e-46eb-bfb7-60cfac4c00be', 'expense', '💻', '#F3FF33', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('018c7ef0-b264-4c05-b7e2-0b1353382a86', 'Emergency Fund', 'f63d38ad-b5c8-4443-82ec-04c590651a05', 'income', '🚑', '#FF5733', false, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02'),
-('c0b3f0a7-8e9d-4c6b-a2f1-5b8e7a9c0d3e', 'Salary', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'income', '💰', '#FF33A8', true, '2025-08-11 14:57:59.491458+02', '2025-08-11 14:57:59.491458+02')
+('a2902212-8b33-4303-b581-b7cb8ab885a0', 'Rent', 'f63d38ad-b5c8-4443-82ec-04c590651a05', 'expense', '🏠', '#FF5733', true, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('6ef0d632-6d7e-473a-946e-843672bac8bf', 'Utilities', '1f69ae1e-f29e-4ebc-b2b6-e0ab10497a07', 'expense', '💡', '#33FF57', true, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('8b4a9232-4c62-4b99-a986-73e163069c92', 'Gas', 'c7c27f26-1598-43df-9eff-4927597c22f3', 'expense', '⛽', '#3357FF', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('c0df596e-072b-4111-a6fe-0f232e00fb7e', 'Public Transport', 'c7c27f26-1598-43df-9eff-4927597c22f3', 'expense', '🚌', '#3357FF', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('3d48ca20-13a5-40ba-8f6d-a68054739293', 'Groceries', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'expense', '🛒', '#FF33A8', true, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('0927dd03-ee9a-4aa5-a417-7c7519511944', 'Dining Out', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'expense', '🍽️', '#FF33A8', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('c2ebb22d-0118-4b49-b39c-d51740785386', 'Clothing', 'ddb307ef-709e-46eb-bfb7-60cfac4c00be', 'expense', '👗', '#F3FF33', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('a70c7480-9b3d-40af-832e-7802e8a05dbf', 'Electronics', 'ddb307ef-709e-46eb-bfb7-60cfac4c00be', 'expense', '💻', '#F3FF33', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('018c7ef0-b264-4c05-b7e2-0b1353382a86', 'Emergency Fund', 'f63d38ad-b5c8-4443-82ec-04c590651a05', 'income', '🚑', '#FF5733', false, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
+('c0b3f0a7-8e9d-4c6b-a2f1-5b8e7a9c0d3e', 'Salary', '3a18b054-566e-4502-8fcd-b81405bf59fb', 'income', '💰', '#FF33A8', true, '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02')
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert Budget Data (December 2024 and August 2025)
@@ -166,14 +194,17 @@ INSERT INTO public.budgets (id, month, year, category_id, planned, spent, carryo
 ('a0b1c2d3-e4f5-46ab-7c8d-9e0f1a2b3c4d', 8, 2025, 'c0b3f0a7-8e9d-4c6b-a2f1-5b8e7a9c0d3e', 5200.00, 5400.00, 0.00, 'USD', '2025-08-11 14:58:17.710055+02', '2025-08-11 14:58:17.710055+02')
 ON CONFLICT (id) DO NOTHING;
 
--- Step 7: Add table comments for documentation
-COMMENT ON TABLE public.category_groups IS 'Budget category groups for organizing categories';
-COMMENT ON TABLE public.categories IS 'Budget categories for expense and income tracking';
-COMMENT ON TABLE public.budgets IS 'Monthly budget allocations and spending tracking';
+-- ==============================================================================
+-- VERIFICATION QUERIES (Optional - you can run these to verify the data)
+-- ==============================================================================
 
-COMMENT ON COLUMN public.budgets.month IS 'Month as integer (1-12, where 1=January, 12=December)';
-COMMENT ON COLUMN public.budgets.year IS 'Year as integer (e.g., 2024)';
-COMMENT ON COLUMN public.budgets.currency IS 'ISO 4217 currency code (3 characters, e.g., EUR, USD)';
-COMMENT ON COLUMN public.budgets.planned IS 'Planned/budgeted amount for this category and period';
-COMMENT ON COLUMN public.budgets.spent IS 'Actual amount spent in this category and period';
-COMMENT ON COLUMN public.budgets.carryover IS 'Amount carried over from previous period';
+-- Uncomment these to verify your data after import:
+-- SELECT 'Category Groups' as table_name, count(*) as row_count FROM category_groups
+-- UNION ALL
+-- SELECT 'Categories' as table_name, count(*) as row_count FROM categories
+-- UNION ALL
+-- SELECT 'Budgets' as table_name, count(*) as row_count FROM budgets;
+
+-- SELECT * FROM category_groups ORDER BY sort_order;
+-- SELECT * FROM categories ORDER BY name;
+-- SELECT * FROM budgets ORDER BY year, month, category_id;

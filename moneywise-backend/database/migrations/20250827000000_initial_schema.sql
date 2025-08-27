@@ -1,11 +1,21 @@
--- MoneyWise Database Schema for Supabase
--- This file contains the complete database schema and sample data
--- Ready to import into Supabase SQL Editor
+-- MoneyWise Initial Schema Migration
+-- 📝  MANUALLY MAINTAINED FILE - CAN BE EDITED FOR DEVELOPMENT  📝
+-- This migration creates the complete database schema with UUID types, proper constraints, and sample data
+-- Compatible with both Supabase hosted and local PostgreSQL environments
+--
+-- Note: This migration combines all schema components. For modular development, see ../schema/ directory.
+-- For production deployment, use ../deploy/supabase.sql (auto-generated)
+--
+-- Development workflow:
+-- 1. Make changes to ../schema/ files
+-- 2. Update this migration file manually
+-- 3. Test locally
+-- 4. Run ../build-deploy.sh to update production scripts
 
--- Enable UUID extension (Supabase has this by default, but ensure it's available)
+-- Enable UUID extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create the trigger function for updated_at columns
+-- Create the trigger function for updated_at columns if it doesn't exist
 -- This function automatically updates the updated_at column when a row is modified
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -15,11 +25,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- ==============================================================================
--- TABLE CREATION
--- ==============================================================================
-
--- Step 1: Category Groups Table
+-- Step 1: Create category_groups table
 -- Organizes categories into logical groups (Housing, Transportation, etc.)
 CREATE TABLE IF NOT EXISTS public.category_groups (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -32,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.category_groups (
     CONSTRAINT category_groups_pkey PRIMARY KEY (id)
 );
 
--- Step 2: Categories Table
+-- Step 2: Create categories table
 -- Individual budget categories (Rent, Groceries, Gas, etc.)
 CREATE TABLE IF NOT EXISTS public.categories (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -52,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
     CONSTRAINT categories_type_check CHECK (type = ANY (ARRAY['expense'::text, 'income'::text]))
 );
 
--- Step 3: Budgets Table
+-- Step 3: Create budgets table
 -- Monthly budget allocations and spending tracking
 CREATE TABLE IF NOT EXISTS public.budgets (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -76,10 +82,7 @@ CREATE TABLE IF NOT EXISTS public.budgets (
     CONSTRAINT budgets_currency_check CHECK (length(currency) = 3)
 );
 
--- ==============================================================================
--- INDEXES FOR PERFORMANCE
--- ==============================================================================
-
+-- Step 4: Create indexes for performance
 -- Categories indexes
 CREATE INDEX IF NOT EXISTS idx_categories_default
     ON public.categories USING btree (is_default ASC NULLS LAST);
@@ -103,10 +106,7 @@ CREATE INDEX IF NOT EXISTS idx_budgets_year_category
 CREATE INDEX IF NOT EXISTS idx_budgets_year_month
     ON public.budgets USING btree (year ASC NULLS LAST, month ASC NULLS LAST);
 
--- ==============================================================================
--- TRIGGERS FOR AUTOMATIC updated_at COLUMNS
--- ==============================================================================
-
+-- Step 5: Create triggers for updated_at columns
 -- Category groups trigger
 CREATE OR REPLACE TRIGGER trg_category_groups_updated
     BEFORE UPDATE ON public.category_groups
@@ -125,10 +125,7 @@ CREATE OR REPLACE TRIGGER trg_budgets_updated
     FOR EACH ROW
     EXECUTE FUNCTION public.update_updated_at_column();
 
--- ==============================================================================
--- SAMPLE DATA INSERTION
--- ==============================================================================
-
+-- Step 6: Insert sample data (same as supabase_schema.sql)
 -- Insert Category Groups
 INSERT INTO public.category_groups (id, name, sort_order, color, icon, created_at, updated_at) VALUES
 ('f63d38ad-b5c8-4443-82ec-04c590651a05', 'Housing', 1, '#FF5733', '🏠', '2025-08-11 14:57:46.736296+02', '2025-08-11 14:57:46.736296+02'),
@@ -179,10 +176,7 @@ INSERT INTO public.budgets (id, month, year, category_id, planned, spent, carryo
 ('a0b1c2d3-e4f5-46ab-7c8d-9e0f1a2b3c4d', 8, 2025, 'c0b3f0a7-8e9d-4c6b-a2f1-5b8e7a9c0d3e', 5200.00, 5400.00, 0.00, 'USD', '2025-08-11 14:58:17.710055+02', '2025-08-11 14:58:17.710055+02')
 ON CONFLICT (id) DO NOTHING;
 
--- ==============================================================================
--- TABLE COMMENTS FOR DOCUMENTATION
--- ==============================================================================
-
+-- Step 7: Add table comments for documentation
 COMMENT ON TABLE public.category_groups IS 'Budget category groups for organizing categories';
 COMMENT ON TABLE public.categories IS 'Budget categories for expense and income tracking';
 COMMENT ON TABLE public.budgets IS 'Monthly budget allocations and spending tracking';
@@ -193,18 +187,3 @@ COMMENT ON COLUMN public.budgets.currency IS 'ISO 4217 currency code (3 characte
 COMMENT ON COLUMN public.budgets.planned IS 'Planned/budgeted amount for this category and period';
 COMMENT ON COLUMN public.budgets.spent IS 'Actual amount spent in this category and period';
 COMMENT ON COLUMN public.budgets.carryover IS 'Amount carried over from previous period';
-
--- ==============================================================================
--- VERIFICATION QUERIES (Optional - you can run these to verify the data)
--- ==============================================================================
-
--- Uncomment these to verify your data after import:
--- SELECT 'Category Groups' as table_name, count(*) as row_count FROM category_groups
--- UNION ALL
--- SELECT 'Categories' as table_name, count(*) as row_count FROM categories
--- UNION ALL
--- SELECT 'Budgets' as table_name, count(*) as row_count FROM budgets;
-
--- SELECT * FROM category_groups ORDER BY sort_order;
--- SELECT * FROM categories ORDER BY name;
--- SELECT * FROM budgets ORDER BY year, month, category_id;
