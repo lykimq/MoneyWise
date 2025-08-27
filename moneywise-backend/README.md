@@ -71,12 +71,6 @@ database/
    SUPABASE_ANON_KEY=your_anon_key
    ```
 
-**💡 Pro Tip**: Use the helper script for easy setup:
-```bash
-# From the project root directory
-./scripts/get-supabase-credentials.sh
-```
-
 ### Local PostgreSQL
 1. **Install PostgreSQL** (if not already installed)
 2. **Create database**: `createdb moneywise`
@@ -88,14 +82,11 @@ database/
 ### Database Deployment
 ```bash
 # Build production deployment script
-cd database
-./build-deploy.sh
+make build-db
 
 # Deploy to Supabase (copy contents of deploy/supabase.sql to SQL Editor)
 # Or use migrations for local development
-make migrate-local
-
-# Note: Migration files are manually maintained, deployment scripts are auto-generated
+make migrate
 ```
 
 ## 🔧 Available Commands
@@ -108,10 +99,9 @@ make setup
 make setup-supabase    # Supabase production
 make setup-local       # Local development
 
-# Database migrations
-make migrate           # Auto-detects environment
-make migrate-supabase  # Supabase only
-make migrate-local     # Local only
+# Database operations
+make migrate           # Run database migrations
+make build-db          # Build production database script
 
 # Development
 make build             # Build project
@@ -247,9 +237,9 @@ This backend emphasizes:
 - Check credentials in `DATABASE_URL`
 
 **Migration Errors:**
-- Run `make migrate` to auto-detect environment
-- Use `make migrate-supabase` or `make migrate-local` for specific environments
+- Run `make migrate` to run migrations
 - Verify database connection before running migrations
+- Check that migration files are present in migrations/ directory
 
 ### Getting Help
 

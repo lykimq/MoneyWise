@@ -3,27 +3,20 @@
 # =============================================================================
 # MoneyWise Backend Setup Script
 # =============================================================================
-# This script automates the complete setup of the MoneyWise backend service.
-# It automatically detects if you're using Supabase or local database and adapts accordingly.
+# This script sets up the MoneyWise backend service with the new database structure.
+# It works with both Supabase (production) and local PostgreSQL (development).
 #
 # Why this approach?
-# - Automated setup reduces human error and setup time
-# - Environment detection prevents conflicts between local and Supabase
-# - Service management handles different OS environments (Linux/macOS)
-# - Database verification ensures data integrity
-# - API testing validates the complete setup
-#
-# Note: Prerequisites are checked by the root script, so this script
-# focuses on backend-specific setup tasks.
+# - Simple and clear setup process
+# - Works with the new modular database structure
+# - Supports both Supabase and local development
+# - Includes database migration and verification
 # =============================================================================
 
-set -e  # Exit immediately if any command fails (fail-fast approach)
+set -e  # Exit immediately if any command fails
 
 # =============================================================================
 # SOURCE SHARED UTILITIES
-# =============================================================================
-# Why source utilities? Eliminates code duplication and centralizes maintenance.
-# The utilities script provides all common functions and service management.
 # =============================================================================
 BACKEND_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UTILS_SCRIPT="$BACKEND_SCRIPT_DIR/../scripts/setup-utils.sh"
@@ -44,9 +37,6 @@ echo
 # =============================================================================
 # PREREQUISITES VERIFICATION
 # =============================================================================
-# Why check if prerequisites were already verified? Prevents redundant checking
-# when called from the root script, improving efficiency and user experience.
-# =============================================================================
 if ! is_prereqs_checked; then
     print_warning "Prerequisites not verified by root script"
     print_status "Running prerequisite check for standalone execution..."
@@ -58,9 +48,6 @@ fi
 # =============================================================================
 # VERIFY BACKEND PROJECT STRUCTURE
 # =============================================================================
-# Why check Cargo.toml? Ensures we're in a Rust project directory.
-# This prevents running the script from the wrong location.
-# =============================================================================
 if [ ! -f "$BACKEND_SCRIPT_DIR/Cargo.toml" ]; then
     print_error "Please run this script from the moneywise-backend directory"
     print_warning "Cargo.toml not found - this indicates we're not in a Rust project"
@@ -70,12 +57,9 @@ fi
 print_success "Backend project structure verified"
 
 # =============================================================================
-# ENVIRONMENT DETECTION AND SETUP
+# ENVIRONMENT SETUP
 # =============================================================================
-# Why detect environment? Different setup paths for Supabase vs local development
-# This ensures the right configuration is applied for each environment.
-# =============================================================================
-print_status "Detecting database environment..."
+print_status "Setting up environment..."
 
 # Check if .env file exists
 if [ ! -f "$BACKEND_SCRIPT_DIR/.env" ]; then
@@ -98,7 +82,7 @@ fi
 # Load environment variables
 source "$BACKEND_SCRIPT_DIR/.env"
 
-# Detect if using Supabase or local database
+# Detect database environment
 if [[ "$DATABASE_URL" == *"supabase.com"* ]] || [[ "$DATABASE_URL" == *"supabase.co"* ]]; then
     DATABASE_TYPE="supabase"
     print_success "✅ Detected Supabase database environment"
@@ -113,10 +97,7 @@ fi
 echo
 
 # =============================================================================
-# SERVICE MANAGEMENT (Local Development Only)
-# =============================================================================
-# Why only start services locally? Supabase handles database services remotely.
-# Local services are only needed for local development.
+# LOCAL SERVICE MANAGEMENT
 # =============================================================================
 if [ "$DATABASE_TYPE" = "local" ]; then
     print_status "Starting required services for local development..."
@@ -134,10 +115,7 @@ else
 fi
 
 # =============================================================================
-# DATABASE ENVIRONMENT SETUP
-# =============================================================================
-# Why use database utilities? Provides consistent database operations.
-# This includes environment file creation, database setup, and verification.
+# DATABASE SETUP
 # =============================================================================
 if [ "$DATABASE_TYPE" = "local" ]; then
     print_status "Setting up local database environment..."
@@ -164,17 +142,11 @@ echo
 # =============================================================================
 # SQLX CLI INSTALLATION
 # =============================================================================
-# Why install SQLx CLI? It's required to run database migrations.
-# SQLx is the Rust SQL toolkit that handles database operations.
-# =============================================================================
 print_status "Setting up SQLx CLI..."
 if ! command -v sqlx &> /dev/null; then
     print_status "Installing SQLx CLI (this may take a few minutes)..."
 
     # Install SQLx CLI with PostgreSQL features only
-    # Why --no-default-features --features postgres?
-    # - Reduces installation time by excluding unnecessary database drivers
-    # - Ensures compatibility with our PostgreSQL setup
     cargo install sqlx-cli --no-default-features --features postgres || {
         print_error "Failed to install SQLx CLI"
         print_warning "This may be due to network issues or Rust toolchain problems"
@@ -189,9 +161,6 @@ echo
 
 # =============================================================================
 # DATABASE MIGRATIONS
-# =============================================================================
-# Why run migrations? They create the database schema and load initial data.
-# Migrations ensure the database structure matches the application requirements.
 # =============================================================================
 print_status "Running database migrations..."
 sqlx migrate run || {
@@ -213,9 +182,6 @@ print_success "Database migrations completed"
 # =============================================================================
 # SCHEMA VERIFICATION
 # =============================================================================
-# Why verify schema? Ensures migrations actually created the expected structure.
-# This catches issues early rather than when the application tries to run.
-# =============================================================================
 print_status "Verifying database schema..."
 
 # Use shared database utilities for schema verification
@@ -228,9 +194,6 @@ echo
 
 # =============================================================================
 # PROJECT BUILD
-# =============================================================================
-# Why build the project? Ensures the code compiles without errors.
-# Catches compilation issues before trying to run the application.
 # =============================================================================
 print_status "Building the project..."
 cargo build || {
@@ -252,32 +215,20 @@ print_status "Starting the server..."
 # =============================================================================
 # SERVER STARTUP AND TESTING
 # =============================================================================
-# Why start server in background? Allows us to test it while keeping it running.
-# Background process with PID tracking enables proper cleanup.
-# =============================================================================
 # Start the server in the background for testing
-# Why background? We want to test the server while keeping it running.
-# The & operator runs the command in the background.
 cargo run &
-SERVER_PID=$!  # Store the process ID for later management
+SERVER_PID=$!
 
 # Wait for server to start
-# Why wait? Servers need time to bind to ports and initialize.
-# 5 seconds is usually sufficient for a Rust web server.
 print_status "Waiting for server to start..."
 sleep 5
 
 # =============================================================================
 # API ENDPOINT TESTING
 # =============================================================================
-# Why test endpoints? Verifies the complete setup works end-to-end.
-# API testing ensures the server is responding correctly.
-# =============================================================================
 print_status "Testing API endpoints..."
 
 # Test overview endpoint
-# Why curl? It's a standard tool for testing HTTP endpoints.
-# Silent mode (-s) reduces output noise during testing.
 if curl -s "http://localhost:3000/api/budgets/overview" > /dev/null 2>&1; then
     print_success "✅ Overview endpoint working"
 else
@@ -303,7 +254,6 @@ echo "Sample Budget Data:"
 echo "- 5 category groups: Housing, Utilities, Transportation, Food, Entertainment"
 echo "- 10 categories: Rent, Utilities, Gas, Groceries, Dining Out, etc."
 echo "- Budget data for December 2024 & August 2025 (USD currency)"
-echo "- Real data exported from production database"
 echo
 echo "Next Steps:"
 echo "1. Keep this terminal open (server is running)"
@@ -312,13 +262,5 @@ echo "3. Test the React Native app with the budget data"
 echo
 print_warning "Press Ctrl+C to stop the server"
 
-# =============================================================================
-# SERVER MANAGEMENT
-# =============================================================================
-# Why wait for PID? Ensures the script doesn't exit while the server is running.
-# wait command blocks until the background process completes.
-# =============================================================================
-# Keep the server running in the foreground
-# Why wait? Prevents the script from exiting while the server is running.
-# The wait command blocks until the background process (SERVER_PID) completes.
+# Keep the server running
 wait $SERVER_PID
