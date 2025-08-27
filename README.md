@@ -1,12 +1,10 @@
 # 💰 MoneyWise
 
-<!-- CI/CD Test: This comment was added to test the GitHub Actions workflows -->
-
 > **Smart money management for everyone** - A beautiful, privacy-focused personal finance app that works offline.
 
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue.svg)](https://reactnative.dev/)
 [![Framework](https://img.shields.io/badge/framework-React%20Native%20%2B%20Expo-61dafb.svg)](https://expo.dev/)
-[![Language](https://img.shields.io/badge/language-Rust-orange.svg)](https://rust-lang.org/)
+[![Language](https://img.shields.io/badge/language-Rust%20%7C%20OCaml%20%7C%20TypeScript-orange.svg)](https://github.com/lykimq/MoneyWise#-built-with)
 [![License](https://img.shields.io/badge/license-Non--Commercial-green.svg)](LICENSE)
 
 ---
@@ -73,6 +71,13 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 - **Redis** - Lightning-fast caching layer
 - **SQLx** - Async, compile-time checked SQL
 
+### **Development Tools**
+- **OCaml** - Type-safe, high-performance development tools
+- **Dune** - Modern build system
+- **Cmdliner** - Professional CLI framework
+- **Hybrid Architecture** - OCaml for complex operations, shell scripts for simple tasks
+- **Professional Workflow** - Makefile integration and gradual migration strategy
+
 ---
 
 ## 🏗️ Project Architecture
@@ -83,14 +88,16 @@ MoneyWise/
 ├── 📱 moneywise-app/           # React Native frontend
 ├── 🦀 moneywise-backend/       # Rust backend API
 ├── 🗄️ scripts/                 # Setup and utility scripts
+├── 🧰 tools/                   # Development tools and utilities
+│   ├── 🐫 ocaml/              # OCaml-based project management tools
+│   └── 🔀 moneywise-hybrid.sh # Hybrid wrapper for OCaml + shell operations
 ├── 📚 docs/                    # Documentation
 ```
 
 ### **Database Strategy**
 - **Production**: Supabase (hosted, managed, scalable)
 - **Development**: Local PostgreSQL (offline development)
-- **Hybrid Setup**: Automatic environment detection
-- **Migrations**: Compatible with both environments
+- **Hybrid**: Automatic environment detection and migration compatibility
 
 ---
 
@@ -109,7 +116,7 @@ MoneyWise/
 | **Multi-Currency** | ✅ Native support | ❌ Limited options |
 | **No Signup** | ✅ Start immediately | ❌ Account required |
 | **Open Source** | ✅ Transparent & free | ❌ Proprietary |
-| **Hybrid Database** | ✅ Supabase + Local | ❌ Single environment |
+| **Development Tools** | ✅ OCaml + Shell hybrid | ❌ Single approach |
 
 ---
 
@@ -122,7 +129,7 @@ MoneyWise/
 - ✅ **Basic UI Framework** - Component library and design system
 - ✅ **Backend API** - Budget management endpoints with Redis caching
 - ✅ **Database Schema** - PostgreSQL with migrations and sample data
-- ✅ **Hybrid Setup** - Supabase production + Local development
+- ✅ **Development Tools** - OCaml-based project management tools
 - 🔄 **Core Features** - Transaction management, budgets, goals (UI ready, backend in progress)
 - 📋 **Testing** - Comprehensive test suite setup
 - 🎨 **Polish** - Animations, accessibility, performance optimization
@@ -153,7 +160,15 @@ MoneyWise/
    ```bash
    cd moneywise-backend
    # See README.md in the backend directory for detailed setup instructions
-   # Supports both Supabase (production) and local PostgreSQL (development)
+   ```
+
+4. **Development Tools Setup** (Optional)
+   ```bash
+   cd tools/ocaml
+   make dev-setup    # Setup development environment
+   make build        # Build tools
+   make test         # Run tests
+   ./tools/moneywise-hybrid.sh help  # Show available commands
    ```
 
 ---
@@ -164,8 +179,8 @@ MoneyWise/
 - [x] Project setup and architecture
 - [x] Backend API with budget management
 - [x] Database schema and migrations
-- [x] Hybrid database setup (Supabase + Local)
 - [x] Basic UI framework and navigation
+- [x] Development tools and architecture
 - [ ] Transaction management (backend + frontend integration)
 - [ ] Budget tracking (frontend integration)
 - [ ] Savings goals (frontend integration)
@@ -194,6 +209,7 @@ We welcome contributions! Here's how you can help:
 - 🔧 **Fix issues** - Pick up a good first issue
 - 📚 **Improve docs** - Help make MoneyWise easier to use
 - 🌍 **Add languages** - Help with translations
+- 🐫 **OCaml Development** - Help improve development tools
 
 **Getting Started with Contributing:**
 1. Fork the repository
@@ -215,6 +231,7 @@ This project is licensed under the Non-Commercial License - see the [LICENSE](LI
 - **React Native community** - For the amazing mobile framework
 - **Expo team** - For simplifying React Native development
 - **Rust community** - For the performant backend language
+- **OCaml community** - For the type-safe development tools
 - **Supabase team** - For the excellent database hosting platform
 - **Contributors** - Everyone who helps make MoneyWise better
 
@@ -224,6 +241,7 @@ This project is licensed under the Non-Commercial License - see the [LICENSE](LI
 
 - **GitHub Issues** - [Report bugs & request features](https://github.com/lykimq/MoneyWise/issues)
 - **Documentation** - [Setup & usage guides](https://github.com/lykimq/MoneyWise/tree/main/docs)
+- **Development Tools** - [OCaml tools & architecture](https://github.com/lykimq/MoneyWise/tree/main/tools)
 
 ---
 
