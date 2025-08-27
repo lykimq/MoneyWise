@@ -1,23 +1,12 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Complete Test Suite Runner
-# =============================================================================
-# This script runs all tests safely without affecting your current setup.
-# It executes: setup script tests, database tests, and provides a summary.
-#
-# Why this approach?
-# - Comprehensive testing without environment changes
-# - Safe validation of all components
-# - Clear reporting of results
-# - No impact on existing setup
-# =============================================================================
+# Runs all tests safely without affecting your current setup
+# Executes: setup script tests, database tests, and provides a summary
 
 # set -e  # Commented out to allow tests to continue even if some fail
 
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
+# Source shared utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
 
@@ -37,9 +26,7 @@ echo "================================"
 echo "Running all tests safely without affecting your current setup"
 echo
 
-# =============================================================================
-# TEST EXECUTION
-# =============================================================================
+# Test execution with result tracking
 TESTS_PASSED=0
 TESTS_FAILED=0
 TESTS_SKIPPED=0
@@ -82,9 +69,7 @@ run_test() {
     echo
 }
 
-# =============================================================================
-# TEST 1: SETUP SCRIPTS VALIDATION
-# =============================================================================
+# Phase 1: Setup Scripts Validation
 print_status "Phase 1: Setup Scripts Validation"
 echo "======================================="
 
@@ -93,9 +78,7 @@ run_test \
     "$SCRIPT_DIR/test-setup-scripts.sh" \
     "Validates syntax, dependencies, and structure of all setup scripts"
 
-# =============================================================================
-# TEST 2: DATABASE CONNECTION TEST
-# =============================================================================
+# Phase 2: Database Connection Test
 print_status "Phase 2: Database Connection Test"
 echo "========================================"
 
@@ -104,9 +87,7 @@ run_test \
     "$SCRIPT_DIR/test-database-connection.sh" \
     "Tests database connectivity and schema without making changes"
 
-# =============================================================================
-# TEST 3: BACKEND BUILD TEST (SAFE)
-# =============================================================================
+# Phase 3: Backend Build Test (Safe)
 print_status "Phase 3: Backend Build Test (Safe)"
 echo "=========================================="
 
@@ -142,9 +123,7 @@ fi
 cd ..
 echo
 
-# =============================================================================
-# TEST 4: FRONTEND DEPENDENCIES TEST
-# =============================================================================
+# Phase 4: Frontend Dependencies Test
 print_status "Phase 4: Frontend Dependencies Test"
 echo "=========================================="
 
@@ -185,9 +164,7 @@ fi
 cd ..
 echo
 
-# =============================================================================
-# TEST 5: PROJECT STRUCTURE VALIDATION
-# =============================================================================
+# Phase 5: Project Structure Validation
 print_status "Phase 5: Project Structure Validation"
 echo "==========================================="
 
@@ -217,9 +194,7 @@ done
 
 echo
 
-# =============================================================================
-# FINAL RESULTS AND SUMMARY
-# =============================================================================
+# Final results and summary
 print_status "Test Suite Complete!"
 echo "======================="
 echo

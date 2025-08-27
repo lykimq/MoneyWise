@@ -1,23 +1,13 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Database Connection Test
-# =============================================================================
-# This script safely tests database connectivity without affecting your data.
-# It validates: connection, schema, and basic operations in read-only mode.
-#
-# Why this approach?
-# - Safe validation without data changes
-# - Connection testing only
-# - Schema verification in read-only mode
-# - No migrations or data modifications
-# =============================================================================
+# Safely tests database connectivity without affecting your data
+# Validates: connection, schema, and basic operations in read-only mode
+# Safe validation without data changes - connection testing only
 
 set -e  # Exit immediately if any command fails
 
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
+# Source shared utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
 
@@ -37,9 +27,7 @@ echo "====================================="
 echo "This will test your database connection WITHOUT making any changes"
 echo
 
-# =============================================================================
-# ENVIRONMENT DETECTION
-# =============================================================================
+# Environment detection for database configuration
 print_status "Detecting database environment..."
 
 # Check if we're in the backend directory or need to navigate
@@ -76,9 +64,7 @@ else
     print_warning "Using manually provided DATABASE_URL"
 fi
 
-# =============================================================================
-# DATABASE TYPE DETECTION
-# =============================================================================
+# Database type detection for environment-specific handling
 print_status "Detecting database type..."
 
 if [[ "$DATABASE_URL" == *"supabase.com"* ]] || [[ "$DATABASE_URL" == *"supabase.co"* ]]; then
@@ -94,9 +80,7 @@ fi
 
 echo
 
-# =============================================================================
-# CONNECTION TEST
-# =============================================================================
+# Connection test for database validation
 print_status "Testing database connection..."
 
 # Test basic connectivity
@@ -136,9 +120,7 @@ else
     print_warning "psql not available, skipping direct connection test"
 fi
 
-# =============================================================================
-# SCHEMA VERIFICATION (READ-ONLY)
-# =============================================================================
+# Schema verification in read-only mode
 print_status "Verifying database schema (read-only mode)..."
 
 # Test if we can query the database schema
@@ -192,9 +174,7 @@ else
     print_warning "psql not available, skipping schema verification"
 fi
 
-# =============================================================================
-# DATA VERIFICATION (READ-ONLY)
-# =============================================================================
+# Data verification in read-only mode
 print_status "Verifying sample data (read-only mode)..."
 
 if command -v psql &> /dev/null; then
@@ -239,9 +219,7 @@ else
     print_warning "psql not available, skipping data verification"
 fi
 
-# =============================================================================
-# SQLX CLI TEST (IF AVAILABLE)
-# =============================================================================
+# SQLx CLI test if available
 print_status "Testing SQLx CLI availability..."
 
 if command -v sqlx &> /dev/null; then
@@ -259,9 +237,7 @@ else
     print_status "Install with: cargo install sqlx-cli --no-default-features --features postgres"
 fi
 
-# =============================================================================
-# LOCAL DATABASE TEST (OPTIONAL)
-# =============================================================================
+# Local database test for common configurations
 print_status "Testing local database connectivity (optional)..."
 
 # Test common local database configurations
@@ -305,9 +281,7 @@ fi
 
 echo
 
-# =============================================================================
-# FINAL SUMMARY
-# =============================================================================
+# Final summary of test results
 echo
 echo "📊 DATABASE TEST RESULTS SUMMARY"
 echo "================================"

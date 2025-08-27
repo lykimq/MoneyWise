@@ -1,26 +1,16 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Service Manager
-# =============================================================================
-# This module handles system service management for MoneyWise.
-# It manages: PostgreSQL, Redis, and other required services.
-#
-# Why this approach?
-# - Centralized service management across different OS environments
-# - Automatic service startup and health checking
-# - Cross-platform compatibility (Linux, macOS, etc.)
-# - Consistent error handling and user guidance
-# =============================================================================
+# Handles system service management for MoneyWise
+# Manages: PostgreSQL, Redis, and other required services
+# Provides cross-platform compatibility (Linux, macOS, etc.)
 
-# =============================================================================
-# SOURCE OUTPUT UTILITIES
-# =============================================================================
-# Why source output utilities? Provides consistent formatting and user experience.
-# This module depends on the output utilities for all user communication.
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
+# Source output utilities for consistent formatting
+# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
+if [ -z "$OUTPUT_UTILS" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
+fi
 
 if [ ! -f "$OUTPUT_UTILS" ]; then
     echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
@@ -29,12 +19,8 @@ fi
 
 source "$OUTPUT_UTILS"
 
-# =============================================================================
-# SERVICE DETECTION FUNCTIONS
-# =============================================================================
-# Why service detection? Different systems use different service managers.
-# This allows us to provide the right commands for each environment.
-# =============================================================================
+# Service detection functions for different service managers
+# Different systems use different service managers (systemd, brew, launchctl, etc.)
 
 # Detect the service manager available on the system
 detect_service_manager() {
@@ -51,12 +37,8 @@ detect_service_manager() {
     fi
 }
 
-# =============================================================================
-# POSTGRESQL SERVICE MANAGEMENT
-# =============================================================================
-# Why PostgreSQL management? It's the primary database for MoneyWise.
-# Users often forget to start services, so we automate this process.
-# =============================================================================
+# PostgreSQL service management
+# Primary database for MoneyWise - automates service startup
 
 # Start PostgreSQL service
 start_postgresql() {
@@ -147,12 +129,8 @@ start_postgresql() {
     return 1
 }
 
-# =============================================================================
-# REDIS SERVICE MANAGEMENT
-# =============================================================================
-# Why Redis management? It provides caching and session storage.
-# Redis is optional but improves performance significantly.
-# =============================================================================
+# Redis service management for caching and session storage
+# Redis is optional but improves performance significantly
 
 # Start Redis service
 start_redis() {

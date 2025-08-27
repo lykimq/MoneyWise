@@ -1,21 +1,11 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Quick Setup Check
-# =============================================================================
-# This script provides a fast overview of your MoneyWise setup status.
-# It checks: scripts, database, backend, and frontend without running full tests.
-#
-# Why this approach?
-# - Fast status check (under 30 seconds)
-# - No temporary files or complex operations
-# - Clear status indicators
-# - Safe to run anytime
-# =============================================================================
+# Provides a fast overview of your MoneyWise setup status
+# Checks: scripts, database, backend, and frontend without running full tests
+# Fast status check (under 30 seconds) - safe to run anytime
 
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
+# Source shared utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
 
@@ -35,9 +25,7 @@ echo "=============================="
 echo "Fast status overview of your MoneyWise project"
 echo
 
-# =============================================================================
-# QUICK CHECKS
-# =============================================================================
+# Quick checks with status tracking
 STATUS_GOOD=0
 STATUS_WARN=0
 STATUS_ERROR=0
@@ -154,9 +142,7 @@ for dir in "${REQUIRED_DIRS[@]}"; do
     fi
 done
 
-# =============================================================================
-# STATUS SUMMARY
-# =============================================================================
+# Status summary and recommendations
 echo
 echo "📊 Quick Check Summary"
 echo "====================="

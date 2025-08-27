@@ -1,25 +1,15 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Environment Manager
-# =============================================================================
-# This module handles environment file operations for MoneyWise.
-# It manages: .env file creation, loading, and configuration.
-#
-# Why this approach?
-# - Focused responsibility for environment management
-# - Reusable across different parts of the setup system
-# - Easy to maintain and extend environment functionality
-# =============================================================================
+# Handles environment file operations for MoneyWise
+# Manages: .env file creation, loading, and configuration
 
-# =============================================================================
-# SOURCE OUTPUT UTILITIES
-# =============================================================================
-# Why source output utilities? Provides consistent formatting and user experience.
-# This module depends on the output utilities for all user communication.
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
+# Source output utilities for consistent formatting
+# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
+if [ -z "$OUTPUT_UTILS" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
+fi
 
 if [ ! -f "$OUTPUT_UTILS" ]; then
     echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
@@ -28,12 +18,8 @@ fi
 
 source "$OUTPUT_UTILS"
 
-# =============================================================================
-# ENVIRONMENT FILE OPERATIONS
-# =============================================================================
-# Why environment file operations? Provides working defaults and user customization.
-# This ensures the database connection works out of the box.
-# =============================================================================
+# Environment file operations for working defaults and user customization
+# Ensures the database connection works out of the box
 
 # Create default environment file
 create_default_env() {

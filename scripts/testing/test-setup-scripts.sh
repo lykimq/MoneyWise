@@ -1,23 +1,13 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Setup Scripts Test Suite
-# =============================================================================
-# This script safely tests the setup scripts without affecting your current setup.
-# It validates: script syntax, dependencies, file structure, and dry-run operations.
-#
-# Why this approach?
-# - Safe validation without environment changes
-# - Syntax and dependency checking
-# - File structure verification
-# - Dry-run testing where possible
-# =============================================================================
+# Safely tests the setup scripts without affecting your current setup
+# Validates: script syntax, dependencies, file structure, and dry-run operations
+# Safe validation without environment changes - syntax and dependency checking
 
 set -e  # Exit immediately if any command fails
 
-# =============================================================================
-# SOURCE SHARED UTILITIES
-# =============================================================================
+# Source shared utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UTILS_SCRIPT="$SCRIPT_DIR/../core/setup-utils.sh"
 OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
@@ -38,9 +28,7 @@ echo "====================================="
 echo "This will test your setup scripts WITHOUT affecting your current environment"
 echo
 
-# =============================================================================
-# TEST CONFIGURATION
-# =============================================================================
+# Test configuration and temporary environment setup
 # Create a temporary test environment
 TEST_DIR="/tmp/moneywise-test-$$"
 mkdir -p "$TEST_DIR"
@@ -48,9 +36,7 @@ trap "rm -rf '$TEST_DIR'" EXIT
 
 print_status "Created temporary test directory: $TEST_DIR"
 
-# =============================================================================
-# TEST 1: ROOT SETUP SCRIPT SYNTAX CHECK
-# =============================================================================
+# Test 1: Root setup script syntax validation
 print_status "Test 1: Root setup script syntax validation..."
 
 if bash -n "$SCRIPT_DIR/../../setup.sh"; then
@@ -60,9 +46,7 @@ else
     exit 1
 fi
 
-# =============================================================================
-# TEST 2: BACKEND SETUP SCRIPT SYNTAX CHECK
-# =============================================================================
+# Test 2: Backend setup script syntax validation
 print_status "Test 2: Backend setup script syntax validation..."
 
 if bash -n "$SCRIPT_DIR/../../moneywise-backend/setup.sh"; then
@@ -72,9 +56,7 @@ else
     exit 1
 fi
 
-# =============================================================================
-# TEST 3: UTILITY SCRIPTS SYNTAX CHECK
-# =============================================================================
+# Test 3: Utility scripts syntax validation
 print_status "Test 3: Utility scripts syntax validation..."
 
 UTILITY_SCRIPTS=(
@@ -98,9 +80,7 @@ for script in "${UTILITY_SCRIPTS[@]}"; do
     fi
 done
 
-# =============================================================================
-# TEST 4: DEPENDENCY VALIDATION
-# =============================================================================
+# Test 4: Dependency validation
 print_status "Test 4: Dependency validation..."
 
 # Check if required commands are available
@@ -114,9 +94,7 @@ for cmd in "${REQUIRED_COMMANDS[@]}"; do
     fi
 done
 
-# =============================================================================
-# TEST 5: FILE STRUCTURE VALIDATION
-# =============================================================================
+# Test 5: File structure validation
 print_status "Test 5: File structure validation..."
 
 # Check if required files exist
@@ -136,9 +114,7 @@ for file in "${REQUIRED_FILES[@]}"; do
     fi
 done
 
-# =============================================================================
-# TEST 6: DRY-RUN ENVIRONMENT SETUP
-# =============================================================================
+# Test 6: Dry-run environment setup
 print_status "Test 6: Dry-run environment setup..."
 
 # Copy backend setup script to test directory
@@ -158,9 +134,7 @@ EOF
 
 print_success "Test environment created successfully"
 
-# =============================================================================
-# TEST 7: SCRIPT LOGIC VALIDATION (DRY RUN)
-# =============================================================================
+# Test 7: Script logic validation (dry run)
 print_status "Test 7: Script logic validation (dry run)..."
 
 # Test the setup script with dry-run mode
@@ -207,9 +181,7 @@ else
     exit 1
 fi
 
-# =============================================================================
-# TEST 8: ERROR HANDLING VALIDATION
-# =============================================================================
+# Test 8: Error handling validation
 print_status "Test 8: Error handling validation..."
 
 # Test error handling by creating a script with intentional errors
@@ -235,9 +207,7 @@ else
     print_warning "Error handling may not be working as expected"
 fi
 
-# =============================================================================
-# TEST 9: UTILITY FUNCTIONS VALIDATION
-# =============================================================================
+# Test 9: Utility functions validation
 print_status "Test 9: Utility functions validation..."
 
 # Test basic utility functions
@@ -247,9 +217,7 @@ else
     print_error "file_exists function failed"
 fi
 
-# =============================================================================
-# TEST 10: INTEGRATION TEST (SAFE)
-# =============================================================================
+# Test 10: Integration test (safe mode)
 print_status "Test 10: Integration test (safe mode)..."
 
 # Test the actual setup script in a controlled way
@@ -304,9 +272,7 @@ else
     exit 1
 fi
 
-# =============================================================================
-# FINAL SUMMARY
-# =============================================================================
+# Final summary of test results
 echo
 print_success "🎉 All tests completed successfully!"
 echo

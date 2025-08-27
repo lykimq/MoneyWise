@@ -1,25 +1,15 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Database Operations
-# =============================================================================
-# This module handles core database operations for MoneyWise.
-# It manages: database creation, connection testing, and basic operations.
-#
-# Why this approach?
-# - Focused responsibility for database operations
-# - Reusable across different parts of the setup system
-# - Easy to maintain and extend database functionality
-# =============================================================================
+# Handles core database operations for MoneyWise
+# Manages: database creation, connection testing, and basic operations
 
-# =============================================================================
-# SOURCE OUTPUT UTILITIES
-# =============================================================================
-# Why source output utilities? Provides consistent formatting and user experience.
-# This module depends on the output utilities for all user communication.
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
+# Source output utilities for consistent formatting
+# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
+if [ -z "$OUTPUT_UTILS" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
+fi
 
 if [ ! -f "$OUTPUT_UTILS" ]; then
     echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
@@ -28,12 +18,8 @@ fi
 
 source "$OUTPUT_UTILS"
 
-# =============================================================================
-# DATABASE OPERATIONS
-# =============================================================================
-# Why database operations? Handles the core database setup tasks.
-# This includes creation, verification, and basic operations.
-# =============================================================================
+# Database operations for core database setup tasks
+# Includes creation, verification, and basic operations
 
 # Check if database exists
 database_exists() {
@@ -57,9 +43,8 @@ create_database() {
         return 0
     fi
 
-    # Create the database
-    # Why use createdb? It's the PostgreSQL utility for creating databases.
-    # It handles permissions and basic setup automatically.
+    # Create the database using PostgreSQL utility
+    # createdb handles permissions and basic setup automatically
     if createdb "$database_name" 2>/dev/null; then
         print_success "Database '$database_name' created successfully"
         return 0

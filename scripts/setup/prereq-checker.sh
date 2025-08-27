@@ -1,26 +1,15 @@
 #!/bin/bash
 
-# =============================================================================
 # MoneyWise Prerequisites Checker
-# =============================================================================
-# This module handles verification of all required tools and dependencies.
-# It checks: Rust, Node.js, PostgreSQL, Redis, and other prerequisites.
-#
-# Why this approach?
-# - Centralized prerequisite checking for consistency
-# - Easy to add new prerequisites or modify existing checks
-# - Provides clear error messages and installation guidance
-# - Can be used independently or as part of larger setup processes
-# =============================================================================
+# Verifies all required tools and dependencies
+# Checks: Rust, Node.js, PostgreSQL, Redis, and other prerequisites
 
-# =============================================================================
-# SOURCE OUTPUT UTILITIES
-# =============================================================================
-# Why source output utilities? Provides consistent formatting and user experience.
-# This module depends on the output utilities for all user communication.
-# =============================================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
+# Source output utilities for consistent formatting
+# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
+if [ -z "$OUTPUT_UTILS" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
+fi
 
 if [ ! -f "$OUTPUT_UTILS" ]; then
     echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
@@ -29,12 +18,8 @@ fi
 
 source "$OUTPUT_UTILS"
 
-# =============================================================================
-# PREREQUISITE CHECKING FUNCTIONS
-# =============================================================================
-# Why separate functions? Allows selective prerequisite checking.
-# Scripts can choose which prerequisites to verify based on their needs.
-# =============================================================================
+# Prerequisite checking functions for selective verification
+# Scripts can choose which prerequisites to verify based on their needs
 
 # Check if prerequisites have already been verified
 # This prevents redundant checking when called from root script
@@ -47,12 +32,8 @@ mark_prereqs_checked() {
     export MONEYWISE_PREREQS_CHECKED=true
 }
 
-# =============================================================================
-# INDIVIDUAL PREREQUISITE CHECKS
-# =============================================================================
-# Why individual checks? Allows granular control and specific error messages.
-# Each check provides tailored guidance for the specific tool.
-# =============================================================================
+# Individual prerequisite checks for granular control and specific error messages
+# Each check provides tailored guidance for the specific tool
 
 # Check Rust/Cargo installation
 check_rust() {
@@ -183,12 +164,8 @@ check_curl() {
     return 0
 }
 
-# =============================================================================
-# COMPREHENSIVE PREREQUISITE CHECKING
-# =============================================================================
-# Why comprehensive checking? Ensures all required tools are available.
+# Comprehensive prerequisite checking
 # This function can be called once from the root script.
-# =============================================================================
 check_all_prerequisites() {
     print_section_header "Prerequisites Verification"
 
