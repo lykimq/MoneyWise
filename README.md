@@ -7,7 +7,7 @@
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-blue.svg)](https://reactnative.dev/)
 [![Framework](https://img.shields.io/badge/framework-React%20Native%20%2B%20Expo-61dafb.svg)](https://expo.dev/)
 [![Language](https://img.shields.io/badge/language-Rust-orange.svg)](https://rust-lang.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Non--Commercial-green.svg)](LICENSE)
 
 ---
 
@@ -113,19 +113,19 @@ MoneyWise/
 
 ---
 
-## 🚧 Current Status
+## 📋 Current Status
 
-**MVP Development Phase** - Core features are being actively developed:
+**Foundation Complete - Core Features in Development** - The app has a solid architecture and basic UI framework:
 
 - ✅ **Project Setup** - React Native + Expo + Rust backend
 - ✅ **Navigation** - Bottom tab navigation with 5 main screens
-- ✅ **Basic UI** - Component library and design system
-- ✅ **Backend API** - Budget management endpoints with caching
+- ✅ **Basic UI Framework** - Component library and design system
+- ✅ **Backend API** - Budget management endpoints with Redis caching
 - ✅ **Database Schema** - PostgreSQL with migrations and sample data
 - ✅ **Hybrid Setup** - Supabase production + Local development
-- 🔄 **Core Features** - Transaction management, budgets, goals
-- 📋 **Testing** - Comprehensive test suite
-- 🎨 **Polish** - Animations, accessibility, performance
+- 🔄 **Core Features** - Transaction management, budgets, goals (UI ready, backend in progress)
+- 📋 **Testing** - Comprehensive test suite setup
+- 🎨 **Polish** - Animations, accessibility, performance optimization
 
 ---
 
@@ -138,7 +138,7 @@ MoneyWise/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/moneywise.git
+   git clone https://github.com/lykimq/MoneyWise.git
    cd moneywise
    ```
 
@@ -160,23 +160,24 @@ MoneyWise/
 
 ## 📋 Roadmap
 
-### **Q1 2025** - Core MVP
+### **Q3 2025** - Core Features Completion
 - [x] Project setup and architecture
 - [x] Backend API with budget management
 - [x] Database schema and migrations
 - [x] Hybrid database setup (Supabase + Local)
-- [ ] Transaction management
-- [ ] Basic budget tracking
-- [ ] Savings goals
+- [x] Basic UI framework and navigation
+- [ ] Transaction management (backend + frontend integration)
+- [ ] Budget tracking (frontend integration)
+- [ ] Savings goals (frontend integration)
 - [ ] Multi-language support
 
-### **Q2 2025** - Enhanced Features
+### **Q4 2025** - Enhanced Features
 - [ ] Advanced analytics and reports
 - [ ] Recurring transactions
 - [ ] Export/import functionality
 - [ ] Cloud sync (optional)
 
-### **Q3 2025** - Advanced Features
+### **Q1 2026** - Advanced Features
 - [ ] Bank account integration
 - [ ] Investment tracking
 - [ ] Debt management
@@ -205,7 +206,7 @@ We welcome contributions! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Non-Commercial License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
