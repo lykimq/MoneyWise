@@ -5,23 +5,28 @@
 # Validates: script syntax, dependencies, file structure, and dry-run operations
 # Safe validation without environment changes - syntax and dependency checking
 
-set -e  # Exit immediately if any command fails
-
-# Source shared utilities
+# Load core utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UTILS_SCRIPT="$SCRIPT_DIR/../core/setup-utils.sh"
-OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
+MODULE_LOADER="$SCRIPT_DIR/../core/module-loader.sh"
 
-# Source output utilities for consistent messaging
-if [ -f "$OUTPUT_UTILS" ]; then
-    source "$OUTPUT_UTILS"
-else
-    # Fallback functions if output-utils.sh is not available
-    print_status() { echo "▶ $1"; }
-    print_success() { echo "✅ $1"; }
-    print_warning() { echo "⚠️  $1"; }
-    print_error() { echo "❌ $1"; }
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
+    exit 1
 fi
+
+source "$MODULE_LOADER"
+
+# Load additional utilities
+TEST_UTILS="$SCRIPT_DIR/../core/test-utils.sh"
+CHECK_UTILS="$SCRIPT_DIR/../core/check-utils.sh"
+COMMAND_UTILS="$SCRIPT_DIR/../core/command-utils.sh"
+PATH_UTILS="$SCRIPT_DIR/../core/path-utils.sh"
+
+source "$TEST_UTILS"
+source "$CHECK_UTILS"
+source "$COMMAND_UTILS"
+source "$PATH_UTILS"
 
 echo "🧪 MoneyWise Setup Scripts Test Suite"
 echo "====================================="
@@ -41,8 +46,10 @@ print_status "Test 1: Root setup script syntax validation..."
 
 if bash -n "$SCRIPT_DIR/../../setup.sh"; then
     print_success "Root setup script syntax is valid"
+    increment_good
 else
     print_error "Root setup script has syntax errors"
+    increment_error
     exit 1
 fi
 
@@ -51,8 +58,10 @@ print_status "Test 2: Backend setup script syntax validation..."
 
 if bash -n "$SCRIPT_DIR/../../moneywise-backend/setup.sh"; then
     print_success "Backend setup script syntax is valid"
+    increment_good
 else
     print_error "Backend setup script has syntax errors"
+    increment_error
     exit 1
 fi
 
@@ -68,15 +77,18 @@ UTILITY_SCRIPTS=(
 )
 
 for script in "${UTILITY_SCRIPTS[@]}"; do
-    if [ -f "$script" ]; then
+    if check_file_exists "$script" "$(basename "$script")" false; then
         if bash -n "$script"; then
-            print_success "$script syntax is valid"
+            print_success "$(basename "$script") syntax is valid"
+            increment_good
         else
-            print_error "$script has syntax errors"
+            print_error "$(basename "$script") has syntax errors"
+            increment_error
             exit 1
         fi
     else
-        print_warning "$script not found (skipping)"
+        print_warning "$(basename "$script") not found (skipping)"
+        increment_warn
     fi
 done
 
@@ -87,11 +99,7 @@ print_status "Test 4: Dependency validation..."
 REQUIRED_COMMANDS=("bash" "cargo" "sqlx" "psql" "redis-cli")
 
 for cmd in "${REQUIRED_COMMANDS[@]}"; do
-    if command -v "$cmd" &> /dev/null; then
-        print_success "$cmd is available"
-    else
-        print_warning "$cmd is not available (may be needed for full setup)"
-    fi
+    check_command_exists "$cmd" "$cmd" false
 done
 
 # Test 5: File structure validation
@@ -106,12 +114,7 @@ REQUIRED_FILES=(
 )
 
 for file in "${REQUIRED_FILES[@]}"; do
-    if [ -f "$file" ]; then
-        print_success "$file exists"
-    else
-        print_error "$file is missing"
-        exit 1
-    fi
+    check_file_exists "$file" "$(basename "$file")" true
 done
 
 # Test 6: Dry-run environment setup
@@ -133,12 +136,12 @@ SUPABASE_ANON_KEY=test_key
 EOF
 
 print_success "Test environment created successfully"
+increment_good
 
 # Test 7: Script logic validation (dry run)
 print_status "Test 7: Script logic validation (dry run)..."
 
-# Test the setup script with dry-run mode
-# We'll create a modified version that doesn't execute actual operations
+# Create a dry-run test script
 cat > test-setup-dry-run.sh << 'EOF'
 #!/bin/bash
 # This is a dry-run version of the setup script for testing
@@ -176,15 +179,17 @@ chmod +x test-setup-dry-run.sh
 
 if ./test-setup-dry-run.sh; then
     print_success "Script logic validation passed"
+    increment_good
 else
     print_error "Script logic validation failed"
+    increment_error
     exit 1
 fi
 
 # Test 8: Error handling validation
 print_status "Test 8: Error handling validation..."
 
-# Test error handling by creating a script with intentional errors
+# Create error handling test script
 cat > test-error-handling.sh << 'EOF'
 #!/bin/bash
 # Test script to validate error handling
@@ -203,27 +208,29 @@ chmod +x test-error-handling.sh
 # This should fail as expected
 if ! ./test-error-handling.sh 2>/dev/null; then
     print_success "Error handling works correctly (script failed as expected)"
+    increment_good
 else
     print_warning "Error handling may not be working as expected"
+    increment_warn
 fi
 
 # Test 9: Utility functions validation
 print_status "Test 9: Utility functions validation..."
 
-# Test basic utility functions
-if [ -f "setup.sh" ]; then
-    print_success "file_exists function works"
+if check_file_exists "setup.sh" "setup.sh" true; then
+    print_success "File checking functions work"
+    increment_good
 else
-    print_error "file_exists function failed"
+    print_error "File checking functions failed"
+    increment_error
 fi
 
 # Test 10: Integration test (safe mode)
 print_status "Test 10: Integration test (safe mode)..."
 
-# Test the actual setup script in a controlled way
 cd "$TEST_DIR"
 
-# Create a test version that only validates without executing
+# Create integration test script
 cat > integration-test.sh << 'EOF'
 #!/bin/bash
 # Integration test that validates the setup process without execution
@@ -267,24 +274,16 @@ chmod +x integration-test.sh
 
 if ./integration-test.sh; then
     print_success "Integration test passed"
+    increment_good
 else
     print_error "Integration test failed"
+    increment_error
     exit 1
 fi
 
-# Final summary of test results
-echo
-print_success "🎉 All tests completed successfully!"
-echo
-echo "📋 Test Summary:"
-echo "✅ Script syntax validation"
-echo "✅ Dependency checking"
-echo "✅ File structure validation"
-echo "✅ Environment setup simulation"
-echo "✅ Logic validation (dry run)"
-echo "✅ Error handling validation"
-echo "✅ Utility functions validation"
-echo "✅ Integration test"
+# Print final summary
+print_test_summary "Test Results" true
+
 echo
 echo "🔒 Your current setup remains completely unchanged"
 echo "🚀 The setup scripts are ready for use when you need them"

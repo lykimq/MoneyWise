@@ -1,15 +1,23 @@
-# Setup Scripts
+# ⚙️ Setup Scripts
 
-Scripts for environment setup, service management, and prerequisites.
+Environment setup, service management, and prerequisites.
 
-## Files
+## 📁 Files
 
-- **prereq-checker.sh** - Validates system prerequisites and dependencies
-- **service-manager.sh** - Manages system services and processes
-- **env-manager.sh** - Environment variable and configuration management
-- **get-supabase-credentials.sh** - Retrieves Supabase credentials
+- `prereq-checker.sh` - System prerequisites
+- `service-manager.sh` - Service management
+- `env-manager.sh` - Environment config
+- `get-supabase-credentials.sh` - Supabase setup
 
-## Usage
+## 🔧 Usage
 
-These scripts handle the initial setup and environment configuration.
-Some are standalone, others are sourced by the main setup process.
+**Initial setup**: Run to configure environment
+**Service management**: Start/stop PostgreSQL and Redis
+**Environment**: Manage .env files and configuration
+
+## 📋 Features
+
+- Cross-platform service detection
+- Environment file management
+- Prerequisite validation
+- Supabase integration

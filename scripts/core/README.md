@@ -1,13 +1,24 @@
-# Core Utilities
+# 🔧 Core Utilities
 
-Core utility modules that provide shared functionality across all scripts.
+Shared functionality for all MoneyWise scripts.
 
-## Files
+## 📁 Files
 
-- **output-utils.sh** - Consistent output formatting, colors, and user experience
-- **setup-utils.sh** - Main setup orchestration and module management
+- `output-utils.sh` - Output formatting and colors
+- `setup-utils.sh` - Setup orchestration
+- `path-utils.sh` - Path operations
+- `command-utils.sh` - Command checking
+- `env-utils.sh` - Environment management
+- `check-utils.sh` - Status tracking
+- `test-utils.sh` - Test execution
+- `service-utils.sh` - Service management
+- `module-loader.sh` - Module loading
 
-## Usage
+## 🔧 Usage
 
-These modules are sourced by other scripts to provide common functionality.
-Do not run them directly.
+These are utility modules sourced by other scripts. Do not run directly.
+
+## 📋 Dependencies
+
+- `output-utils.sh` - Used by all other utilities
+- `module-loader.sh` - Provides consistent module loading

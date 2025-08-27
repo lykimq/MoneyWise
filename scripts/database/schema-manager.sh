@@ -4,52 +4,18 @@
 # Handles database schema operations for MoneyWise
 # Manages: schema verification, migration support, and schema validation
 
-# Source output utilities for consistent formatting
-# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
-if [ -z "$OUTPUT_UTILS" ]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
-fi
+# Load core utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_LOADER="$SCRIPT_DIR/../core/module-loader.sh"
 
-if [ ! -f "$OUTPUT_UTILS" ]; then
-    echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
     exit 1
 fi
 
-source "$OUTPUT_UTILS"
+source "$MODULE_LOADER"
 
 # Schema verification to ensure database is working correctly
 # Catches issues early rather than when the application tries to run
-
-# Verify database schema
-verify_database_schema() {
-    local database_url="$1"
-
-    print_status "Verifying database schema..."
-
-    if [ -z "$database_url" ]; then
-        print_error "No database URL provided"
-        return 1
-    fi
-
-    # Check if the budgets table has UUID columns (indicates proper schema creation)
-    local budget_table_check=$(psql "$database_url" -c "SELECT column_name, data_type FROM information_schema.columns WHERE table_name='budgets' AND column_name='id';" -t 2>/dev/null | grep -c "uuid" || echo "0")
-
-    if [ "$budget_table_check" -gt 0 ]; then
-        print_success "UUID schema verified successfully"
-
-        # Check if sample data was inserted
-        local sample_data_check=$(psql "$database_url" -c "SELECT COUNT(*) FROM budgets;" -t 2>/dev/null | tr -d ' ' || echo "0")
-        if [ "$sample_data_check" -gt 0 ]; then
-            print_success "Sample budget data found ($sample_data_check entries)"
-        else
-            print_warning "No sample data found - this may be expected"
-        fi
-
-        return 0
-    else
-        print_error "Schema verification failed - UUID columns not found"
-        print_warning "This suggests the migration didn't complete properly"
-        return 1
-    fi
-}
+# Note: verify_database_schema function is defined in setup-utils.sh to avoid duplication

@@ -1,14 +1,29 @@
-# Testing Scripts
+# 🧪 Testing Scripts
 
-Scripts for testing and validating the MoneyWise setup and components.
+Validation and testing of setup components.
 
-## Files
+## 📁 Files
 
-- **run-all-tests.sh** - Comprehensive test suite for all components
-- **test-database-connection.sh** - Database connectivity and schema validation
-- **test-setup-scripts.sh** - Setup script syntax and structure validation
+- `run-all-tests.sh` - Complete test suite
+- `test-database-connection.sh` - Database tests
+- `test-setup-scripts.sh` - Setup validation
 
-## Usage
+## 🔧 Usage
 
-Run these scripts to validate your setup before making changes or deploying.
-All tests are safe and read-only.
+**Validation**: Run to check setup status
+**Before changes**: Test before modifying scripts
+**Deployment**: Verify before deploying
+
+## 📋 Features
+
+- Syntax validation
+- Module loading tests
+- Database connectivity
+- Cross-script dependencies
+
+## 🔒 Safety
+
+All tests are read-only and safe:
+- No environment changes
+- No data modifications
+- Temporary files only

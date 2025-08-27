@@ -1,14 +1,21 @@
-# Database Utilities
+# 🗄️ Database Scripts
 
-Database-related scripts for managing connections, operations, and schema.
+Database operations, schema management, and connectivity.
 
-## Files
+## 📁 Files
 
-- **database-utils.sh** - Core database functionality and connection management
-- **db-operations.sh** - Common database operations and utilities
-- **schema-manager.sh** - Database schema management and validation
+- `database-utils.sh` - Core database functions
+- `db-operations.sh` - Common operations
+- `schema-manager.sh` - Schema management
 
-## Usage
+## 🔧 Usage
 
-These scripts handle database connectivity, schema operations, and database utilities.
-Some are standalone, others are sourced by setup scripts.
+**Standalone**: Run directly for database operations
+**Setup**: Sourced by setup scripts for database setup
+
+## 📋 Features
+
+- Database connection testing
+- Schema validation
+- Sample data loading
+- Production script generation

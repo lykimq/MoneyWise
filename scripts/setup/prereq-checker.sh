@@ -4,25 +4,23 @@
 # Verifies all required tools and dependencies
 # Checks: Rust, Node.js, PostgreSQL, Redis, and other prerequisites
 
-# Source output utilities for consistent formatting
-# Use the path provided by setup-utils.sh if available, otherwise fall back to local path
-if [ -z "$OUTPUT_UTILS" ]; then
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    OUTPUT_UTILS="$SCRIPT_DIR/../core/output-utils.sh"
-fi
+# Load core utilities
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_LOADER="$SCRIPT_DIR/../core/module-loader.sh"
 
-if [ ! -f "$OUTPUT_UTILS" ]; then
-    echo "❌ Error: Output utilities not found at $OUTPUT_UTILS"
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
     exit 1
 fi
 
-source "$OUTPUT_UTILS"
+source "$MODULE_LOADER"
 
-# Prerequisite checking functions for selective verification
-# Scripts can choose which prerequisites to verify based on their needs
+# Load command utilities
+COMMAND_UTILS="$SCRIPT_DIR/../core/command-utils.sh"
+source "$COMMAND_UTILS"
 
 # Check if prerequisites have already been verified
-# This prevents redundant checking when called from root script
 is_prereqs_checked() {
     [ "$MONEYWISE_PREREQS_CHECKED" = "true" ]
 }
@@ -32,14 +30,11 @@ mark_prereqs_checked() {
     export MONEYWISE_PREREQS_CHECKED=true
 }
 
-# Individual prerequisite checks for granular control and specific error messages
-# Each check provides tailored guidance for the specific tool
-
 # Check Rust/Cargo installation
 check_rust() {
     print_status "Checking Rust/Cargo installation..."
 
-    if ! command -v cargo &> /dev/null; then
+    if ! command_exists "cargo"; then
         print_error "Rust/Cargo not found"
         print_warning "Cargo is required to build and run Rust applications"
         print_info "Install from: https://rustup.rs/"
@@ -47,8 +42,8 @@ check_rust() {
         return 1
     fi
 
-    # Check Rust version
-    local rust_version=$(cargo --version 2>/dev/null | cut -d' ' -f2 || echo "unknown")
+    local rust_version
+    rust_version=$(extract_version "cargo" "--version" "[0-9]+\.[0-9]+\.[0-9]+")
     print_success "Rust/Cargo found (version: $rust_version)"
     return 0
 }
@@ -57,20 +52,19 @@ check_rust() {
 check_nodejs() {
     print_status "Checking Node.js installation..."
 
-    if ! command -v node &> /dev/null; then
+    if ! command_exists "node"; then
         print_error "Node.js not found"
         print_warning "Node.js is required for the React Native frontend"
         print_info "Install from: https://nodejs.org/"
-        print_info "Or use package manager: sudo apt install nodejs npm (Ubuntu/Debian)"
+        print_info "$(get_install_command nodejs)"
         return 1
     fi
 
-    # Check Node.js version
-    local node_version=$(node --version 2>/dev/null || echo "unknown")
-    local npm_version=$(npm --version 2>/dev/null || echo "unknown")
+    local node_version npm_version
+    node_version=$(extract_version "node" "--version" "v?([0-9]+\.[0-9]+\.[0-9]+)")
+    npm_version=$(extract_version "npm" "--version")
 
-    # Verify minimum version requirement
-    if [[ "$node_version" =~ v([0-9]+)\. ]]; then
+    if [[ "$node_version" =~ ^v?([0-9]+)\. ]]; then
         local major_version="${BASH_REMATCH[1]}"
         if [ "$major_version" -lt 18 ]; then
             print_warning "Node.js version $node_version detected"
@@ -87,18 +81,17 @@ check_nodejs() {
 check_postgresql() {
     print_status "Checking PostgreSQL installation..."
 
-    if ! command -v psql &> /dev/null; then
+    if ! command_exists "psql"; then
         print_error "PostgreSQL not found"
         print_warning "PostgreSQL is the primary database for the MoneyWise application"
         print_info "Install from: https://postgresql.org/download/"
-        print_info "Or use package manager: sudo apt install postgresql postgresql-contrib (Ubuntu/Debian)"
+        print_info "$(get_install_command postgresql)"
         return 1
     fi
 
-    # Check PostgreSQL version
-    local pg_version=$(psql --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    local pg_version
+    pg_version=$(extract_version "psql" "--version" "[0-9]+\.[0-9]+")
 
-    # Verify minimum version requirement
     if [[ "$pg_version" =~ ^([0-9]+)\. ]]; then
         local major_version="${BASH_REMATCH[1]}"
         if [ "$major_version" -lt 12 ]; then
@@ -116,16 +109,16 @@ check_postgresql() {
 check_redis() {
     print_status "Checking Redis installation..."
 
-    if ! command -v redis-cli &> /dev/null; then
+    if ! command_exists "redis-cli"; then
         print_warning "Redis not found (optional)"
         print_info "Redis provides caching and session storage for better performance"
         print_info "Install from: https://redis.io/download/"
-        print_info "Or use package manager: sudo apt install redis-server (Ubuntu/Debian)"
+        print_info "$(get_install_command redis-server)"
         return 0  # Not a failure, just informational
     fi
 
-    # Check Redis version
-    local redis_version=$(redis-cli --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+    local redis_version
+    redis_version=$(extract_version "redis-cli" "--version")
     print_success "Redis found (version: $redis_version)"
     return 0
 }
@@ -134,16 +127,16 @@ check_redis() {
 check_git() {
     print_status "Checking Git installation..."
 
-    if ! command -v git &> /dev/null; then
+    if ! command_exists "git"; then
         print_error "Git not found"
         print_warning "Git is required for version control and dependency management"
         print_info "Install from: https://git-scm.com/"
-        print_info "Or use package manager: sudo apt install git (Ubuntu/Debian)"
+        print_info "$(get_install_command git)"
         return 1
     fi
 
-    # Check Git version
-    local git_version=$(git --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+    local git_version
+    git_version=$(extract_version "git" "--version")
     print_success "Git found (version: $git_version)"
     return 0
 }
@@ -152,11 +145,11 @@ check_git() {
 check_curl() {
     print_status "Checking curl installation..."
 
-    if ! command -v curl &> /dev/null; then
+    if ! command_exists "curl"; then
         print_error "curl not found"
         print_warning "curl is required for API testing and downloads"
         print_info "Install from: https://curl.se/"
-        print_info "Or use package manager: sudo apt install curl (Ubuntu/Debian)"
+        print_info "$(get_install_command curl)"
         return 1
     fi
 
@@ -165,7 +158,6 @@ check_curl() {
 }
 
 # Comprehensive prerequisite checking
-# This function can be called once from the root script.
 check_all_prerequisites() {
     print_section_header "Prerequisites Verification"
 

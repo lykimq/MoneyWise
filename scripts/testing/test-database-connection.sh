@@ -5,22 +5,26 @@
 # Validates: connection, schema, and basic operations in read-only mode
 # Safe validation without data changes - connection testing only
 
-set -e  # Exit immediately if any command fails
+# Load core utilities
+DB_TEST_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULE_LOADER="$DB_TEST_SCRIPT_DIR/../core/module-loader.sh"
 
-# Source shared utilities
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_UTILS="$SCRIPT_DIR/output-utils.sh"
-
-# Source output utilities for consistent messaging
-if [ -f "$OUTPUT_UTILS" ]; then
-    source "$OUTPUT_UTILS"
-else
-    # Fallback functions if output-utils.sh is not available
-    print_status() { echo "▶ $1"; }
-    print_success() { echo "✅ $1"; }
-    print_warning() { echo "⚠️  $1"; }
-    print_error() { echo "❌ $1"; }
+# Load module loader first
+if [ ! -f "$MODULE_LOADER" ]; then
+    echo "❌ Error: Module loader not found at $MODULE_LOADER"
+    exit 1
 fi
+
+source "$MODULE_LOADER"
+
+# Load additional utilities
+TEST_UTILS="$SCRIPT_DIR/../core/test-utils.sh"
+ENV_UTILS="$SCRIPT_DIR/../core/env-utils.sh"
+COMMAND_UTILS="$SCRIPT_DIR/../core/command-utils.sh"
+
+source "$TEST_UTILS"
+source "$ENV_UTILS"
+source "$COMMAND_UTILS"
 
 echo "🗄️  MoneyWise Database Connection Test"
 echo "====================================="
@@ -30,108 +34,108 @@ echo
 # Environment detection for database configuration
 print_status "Detecting database environment..."
 
-# Check if we're in the backend directory or need to navigate
-if [ -f "../moneywise-backend/.env" ]; then
-    ENV_FILE="../moneywise-backend/.env"
-elif [ -f "moneywise-backend/.env" ]; then
-    ENV_FILE="moneywise-backend/.env"
-elif [ -f ".env" ]; then
-    ENV_FILE=".env"
-else
+# Find and load environment file
+ENV_PATHS=(
+    "../../moneywise-backend/.env"
+    "../../.env"
+    "../.env"
+    ".env"
+)
+
+ENV_FILE=""
+for path in "${ENV_PATHS[@]}"; do
+    if [ -f "$DB_TEST_SCRIPT_DIR/$path" ]; then
+        ENV_FILE="$DB_TEST_SCRIPT_DIR/$path"
+        break
+    fi
+done
+
+if [ -z "$ENV_FILE" ]; then
     print_warning "No .env file found"
     print_status "Please provide database connection details manually"
 
-    # Ask for database URL
     read -p "Enter DATABASE_URL (or press Enter to skip): " DATABASE_URL
     if [ -z "$DATABASE_URL" ]; then
         print_warning "Skipping database tests"
         exit 0
     fi
-fi
-
-# Load environment variables if file exists
-if [ -n "$ENV_FILE" ] && [ -f "$ENV_FILE" ]; then
+else
     print_status "Loading environment from $ENV_FILE"
-    source "$ENV_FILE"
+    if ! load_env_file "$ENV_FILE"; then
+        print_error "Failed to load environment file"
+        exit 1
+    fi
 
+    DATABASE_URL=$(extract_env_value "$ENV_FILE" "DATABASE_URL")
     if [ -z "$DATABASE_URL" ]; then
         print_error "DATABASE_URL not found in $ENV_FILE"
         exit 1
     fi
 
     print_success "Environment loaded successfully"
-else
-    print_warning "Using manually provided DATABASE_URL"
 fi
 
-# Database type detection for environment-specific handling
+# Database type detection
 print_status "Detecting database type..."
 
 if [[ "$DATABASE_URL" == *"supabase.com"* ]] || [[ "$DATABASE_URL" == *"supabase.co"* ]]; then
     DATABASE_TYPE="supabase"
-    print_success "✅ Detected Supabase database environment"
+    print_success "Detected Supabase database environment"
 elif [[ "$DATABASE_URL" == *"localhost"* ]] || [[ "$DATABASE_URL" == *"127.0.0.1"* ]]; then
     DATABASE_TYPE="local"
-    print_success "✅ Detected local database environment"
+    print_success "Detected local database environment"
 else
-    print_warning "⚠️  Unknown database environment - assuming remote"
+    print_warning "Unknown database environment - assuming remote"
     DATABASE_TYPE="remote"
 fi
 
 echo
 
-# Connection test for database validation
+# Test database connection
 print_status "Testing database connection..."
 
-# Test basic connectivity
-if command -v psql &> /dev/null; then
+if command_exists "psql"; then
     print_status "Testing with psql..."
 
-    # Extract connection parameters for safe testing
-    if [[ "$DATABASE_URL" =~ postgresql://([^:]+):([^@]+)@([^:]+):([^/]+)/(.+) ]]; then
-        DB_USER="${BASH_REMATCH[1]}"
-        DB_PASS="${BASH_REMATCH[2]}"
-        DB_HOST="${BASH_REMATCH[3]}"
-        DB_PORT="${BASH_REMATCH[4]}"
-        DB_NAME="${BASH_REMATCH[5]}"
+    # Extract connection parameters
+    DB_HOST=$(parse_database_url "$DATABASE_URL" "host")
+    DB_PORT=$(parse_database_url "$DATABASE_URL" "port")
+    DB_NAME=$(parse_database_url "$DATABASE_URL" "dbname")
+    DB_USER=$(parse_database_url "$DATABASE_URL" "user")
 
-        print_status "Connection parameters extracted:"
-        echo "  Host: $DB_HOST"
-        echo "  Port: $DB_PORT"
-        echo "  Database: $DB_NAME"
-        echo "  User: $DB_USER"
+    print_status "Connection parameters extracted:"
+    echo "  Host: $DB_HOST"
+    echo "  Port: $DB_PORT"
+    echo "  Database: $DB_NAME"
+    echo "  User: $DB_USER"
 
-        # Test connection with timeout
-        if timeout 10 psql "$DATABASE_URL" -c "SELECT 1;" > /dev/null 2>&1; then
-            print_success "✅ Database connection successful"
-        else
-            print_warning "⚠️  Database connection failed"
-            print_status "This may be expected if:"
-            echo "   - Database is not running"
-            echo "   - Network connectivity issues"
-            echo "   - Credentials are incorrect"
-            echo "   - Firewall blocking connection"
-            print_status "Continuing with other tests..."
-        fi
+    # Test connection
+    if test_database_connection "$DATABASE_URL" 10; then
+        print_success "Database connection successful"
     else
-        print_warning "Could not parse DATABASE_URL format"
+        print_warning "Database connection failed"
+        print_status "This may be expected if:"
+        echo "   - Database is not running"
+        echo "   - Network connectivity issues"
+        echo "   - Credentials are incorrect"
+        echo "   - Firewall blocking connection"
+        print_status "Continuing with other tests..."
     fi
 else
     print_warning "psql not available, skipping direct connection test"
 fi
 
-# Schema verification in read-only mode
+# Schema verification
 print_status "Verifying database schema (read-only mode)..."
 
-# Test if we can query the database schema
-if command -v psql &> /dev/null; then
+if command_exists "psql"; then
     print_status "Checking table structure..."
 
-    # Get list of tables (read-only operation)
-    TABLES=$(timeout 10 psql "$DATABASE_URL" -t -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;" 2>/dev/null | grep -v '^$' | tr -d ' ' || echo "")
+    # Get list of tables
+    TABLES=$(get_database_tables "$DATABASE_URL")
 
-        if [ -n "$TABLES" ]; then
-        print_success "✅ Found tables in database:"
+    if [ -n "$TABLES" ]; then
+        print_success "Found tables in database:"
         echo "$TABLES" | while read -r table; do
             if [ -n "$table" ]; then
                 echo "  📋 $table"
@@ -142,14 +146,14 @@ if command -v psql &> /dev/null; then
         TABLE_COUNT=$(echo "$TABLES" | wc -l)
         echo "  Total tables: $TABLE_COUNT"
     else
-        print_warning "⚠️  No tables found in public schema"
+        print_warning "No tables found in public schema"
         print_status "This may be expected if:"
         echo "   - Database is not accessible"
         echo "   - Schema is empty"
         echo "   - Connection failed"
     fi
 
-    # Check for specific MoneyWise tables
+    # Check for MoneyWise tables
     print_status "Checking for MoneyWise-specific tables..."
 
     MONEYWISE_TABLES=("categories" "budget_items" "budgets" "transactions")
@@ -157,10 +161,10 @@ if command -v psql &> /dev/null; then
 
     for table in "${MONEYWISE_TABLES[@]}"; do
         if echo "$TABLES" | grep -q "^$table$"; then
-            print_success "✅ Found $table table"
+            print_success "Found $table table"
             ((FOUND_TABLES++))
         else
-            print_warning "⚠️  Missing $table table"
+            print_warning "Missing $table table"
         fi
     done
 
@@ -169,23 +173,21 @@ if command -v psql &> /dev/null; then
     else
         print_warning "No MoneyWise-specific tables found"
     fi
-
 else
     print_warning "psql not available, skipping schema verification"
 fi
 
-# Data verification in read-only mode
+# Data verification
 print_status "Verifying sample data (read-only mode)..."
 
-if command -v psql &> /dev/null; then
-    # Check if we have any data in the tables
+if command_exists "psql"; then
     print_status "Checking data availability..."
 
-    # Test a simple count query on each table (safe, read-only)
+    # Test counts for each table
     for table in $TABLES; do
         if [ -n "$table" ]; then
-            COUNT=$(timeout 10 psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM \"$table\";" 2>/dev/null | tr -d ' ')
-            if [ -n "$COUNT" ] && [ "$COUNT" != "ERROR:" ]; then
+            COUNT=$(count_table_rows "$DATABASE_URL" "$table")
+            if [ -n "$COUNT" ] && [ "$COUNT" != "ERROR" ]; then
                 echo "  📊 $table: $COUNT rows"
             else
                 echo "  📊 $table: Unable to count rows"
@@ -193,12 +195,12 @@ if command -v psql &> /dev/null; then
         fi
     done
 
-    # Check for specific MoneyWise data
+    # Check categories data
     if echo "$TABLES" | grep -q "^categories$"; then
         print_status "Checking categories data..."
         CATEGORIES=$(timeout 10 psql "$DATABASE_URL" -t -c "SELECT name FROM categories LIMIT 5;" 2>/dev/null | grep -v '^$' | tr -d ' ')
         if [ -n "$CATEGORIES" ]; then
-            print_success "✅ Found categories:"
+            print_success "Found categories:"
             echo "$CATEGORIES" | while read -r category; do
                 if [ -n "$category" ]; then
                     echo "  🏷️  $category"
@@ -207,40 +209,38 @@ if command -v psql &> /dev/null; then
         fi
     fi
 
+    # Check budgets data
     if echo "$TABLES" | grep -q "^budgets$"; then
         print_status "Checking budgets data..."
-        BUDGET_COUNT=$(timeout 10 psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM budgets;" 2>/dev/null | tr -d ' ')
-        if [ -n "$BUDGET_COUNT" ] && [ "$BUDGET_COUNT" != "ERROR:" ]; then
-            print_success "✅ Found $BUDGET_COUNT budget records"
+        BUDGET_COUNT=$(count_table_rows "$DATABASE_URL" "budgets")
+        if [ -n "$BUDGET_COUNT" ] && [ "$BUDGET_COUNT" != "ERROR" ]; then
+            print_success "Found $BUDGET_COUNT budget records"
         fi
     fi
-
 else
     print_warning "psql not available, skipping data verification"
 fi
 
-# SQLx CLI test if available
+# SQLx CLI test
 print_status "Testing SQLx CLI availability..."
 
-if command -v sqlx &> /dev/null; then
-    print_success "✅ SQLx CLI is available"
+if command_exists "sqlx"; then
+    print_success "SQLx CLI is available"
 
-    # Test SQLx database info (read-only)
     print_status "Testing SQLx database info..."
     if timeout 10 sqlx database info "$DATABASE_URL" > /dev/null 2>&1; then
-        print_success "✅ SQLx can connect to database"
+        print_success "SQLx can connect to database"
     else
-        print_warning "⚠️  SQLx connection test failed"
+        print_warning "SQLx connection test failed"
     fi
 else
-    print_warning "⚠️  SQLx CLI not available"
+    print_warning "SQLx CLI not available"
     print_status "Install with: cargo install sqlx-cli --no-default-features --features postgres"
 fi
 
-# Local database test for common configurations
+# Local database test
 print_status "Testing local database connectivity (optional)..."
 
-# Test common local database configurations
 LOCAL_DB_URLS=(
     "postgresql://postgres@localhost:5432/postgres"
     "postgresql://postgres@localhost:5432/moneywise"
@@ -252,15 +252,15 @@ LOCAL_CONNECTION_FOUND=false
 for local_url in "${LOCAL_DB_URLS[@]}"; do
     print_status "Testing local connection: $local_url"
 
-    if timeout 5 psql "$local_url" -c "SELECT 1;" > /dev/null 2>&1; then
-        print_success "✅ Local database connection successful: $local_url"
+    if test_database_connection "$local_url" 5; then
+        print_success "Local database connection successful: $local_url"
         LOCAL_CONNECTION_FOUND=true
 
         # Test if this is a MoneyWise database
-        TABLES=$(timeout 5 psql "$local_url" -t -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;" 2>/dev/null | grep -v '^$' | tr -d ' ' || echo "")
+        TABLES=$(get_database_tables "$local_url")
 
         if [ -n "$TABLES" ]; then
-            print_success "✅ Found tables in local database:"
+            print_success "Found tables in local database:"
             echo "$TABLES" | while read -r table; do
                 if [ -n "$table" ]; then
                     echo "  📋 $table"
@@ -270,18 +270,16 @@ for local_url in "${LOCAL_DB_URLS[@]}"; do
 
         break
     else
-        print_warning "⚠️  Local connection failed: $local_url"
+        print_warning "Local connection failed: $local_url"
     fi
 done
 
 if [ "$LOCAL_CONNECTION_FOUND" = false ]; then
-    print_warning "⚠️  No local database connections found"
+    print_warning "No local database connections found"
     print_status "This is normal if you're using Supabase or remote database"
 fi
 
-echo
-
-# Final summary of test results
+# Print final summary
 echo
 echo "📊 DATABASE TEST RESULTS SUMMARY"
 echo "================================"
@@ -314,14 +312,14 @@ echo "📋 DETAILED RESULTS:"
 echo "   Primary DB Connection: $([ -n "$TABLES" ] && echo "✅ Working" || echo "❌ Failed")"
 echo "   Tables Found: $([ -n "$TABLES" ] && echo "✅ $TABLE_COUNT tables" || echo "❌ No tables accessible")"
 echo "   Local DB Available: $([ "$LOCAL_CONNECTION_FOUND" = true ] && echo "✅ Yes" || echo "❌ No")"
-echo "   SQLx CLI: $([ -n "$(command -v sqlx 2>/dev/null)" ] && echo "✅ Available" || echo "❌ Not installed")"
+echo "   SQLx CLI: $(command_exists "sqlx" && echo "✅ Available" || echo "❌ Not installed")"
 echo
 echo "🔒 SAFETY GUARANTEE:"
 echo "   Your database remains completely unchanged"
 echo "   All operations were performed in read-only mode"
 echo
 
-# Provide clear next steps based on results
+# Provide next steps
 if [ -n "$TABLES" ] || [ "$LOCAL_CONNECTION_FOUND" = true ]; then
     print_success "🎉 DATABASE IS WORKING!"
     echo
