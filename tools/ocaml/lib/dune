@@ -1,0 +1,7 @@
+(library
+ (name moneywise_lib)
+ (public_name moneywise-tools.lib)
+ (libraries
+  cmdliner
+  fmt)
+ (wrapped false))

@@ -1,0 +1,55 @@
+# MoneyWise OCaml Tools - Makefile Quick Reference
+# Print this file for easy reference during development
+
+# 🚀 QUICK START
+make help          # Show all available targets
+make build         # Build the project
+make test          # Run tests
+make run-status    # Run status command
+
+# 🔨 BUILD TARGETS
+make build         # Build the project (default)
+make clean         # Clean build artifacts
+make rebuild       # Clean and rebuild everything
+
+# 🧪 TESTING
+make test          # Run tests once
+make test-watch    # Run tests in watch mode
+
+# 🛠️ DEVELOPMENT
+make dev-setup     # Setup development environment
+make dev           # Complete development workflow
+make quick         # Quick build and test cycle
+make format        # Format OCaml code
+make lint          # Run linting checks
+
+# 📦 INSTALLATION
+make install       # Install tool system-wide
+make uninstall     # Uninstall tool
+
+# 🚀 EXECUTION
+make run           # Run CLI tool (pass ARGS="command args")
+make run-help      # Show CLI help
+make run-status    # Run status command
+
+# 🔍 UTILITIES
+make info          # Show project information
+make check-ocaml   # Check OCaml installation
+make check-dune    # Check Dune installation
+make check-opam    # Check OPAM installation
+make check-deps    # Check OCaml dependencies
+
+# 📖 HELP
+make help-command COMMAND=setup  # Get help for specific command
+
+# 💡 EXAMPLES
+make run ARGS="setup --project-root /path/to/project"
+make help-command COMMAND=check
+make dev-setup && make build && make test
+
+# 🎯 COMMON WORKFLOWS
+# Daily development: make quick
+# Setup new environment: make dev-setup
+# Full development cycle: make dev
+# Testing: make test-watch
+# Installation: make install

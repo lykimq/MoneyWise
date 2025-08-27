@@ -1,0 +1,12 @@
+(lang dune 3.0)
+(name moneywise-tools)
+(generate_opam_files true)
+(package
+ (name moneywise-tools)
+ (synopsis "MoneyWise Project Management Tools")
+ (description "OCaml-based tools for complex operations like database management, API calls, and configuration management")
+ (depends
+  (ocaml (>= 4.14.0))
+  (dune (>= 3.0))
+  (cmdliner (>= 1.3.0))
+  (fmt (>= 0.10.0))))
