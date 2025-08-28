@@ -82,10 +82,10 @@ tools/
 ## 🔄 Current Implementation Status
 
 **OCaml CLI Tools (DEFAULT - Currently Implemented)**:
+- ✅ `setup` - Basic project setup operations
 - ✅ `check` - Project prerequisites checking
 - ✅ `status` - Project status and health monitoring
 - ✅ `test` - Test execution and validation
-- ✅ `setup` - Basic project setup operations
 
 **Shell Script Commands (Use `--shell` flag)**:
 - 🔧 **Phase 1: Initial Setup & Prerequisites**
@@ -112,9 +112,9 @@ tools/
 
 The hybrid wrapper provides a logical execution order:
 
-1. **`check`** - Verify system requirements (OCaml - DEFAULT)
-2. **`--shell get-supabase-credentials`** - Configure database access (Shell)
-3. **`setup`** - Complete project setup (OCaml - DEFAULT)
+1. **`setup`** - Complete project setup (OCaml - DEFAULT)
+2. **`check`** - Verify setup was successful (OCaml - DEFAULT)
+3. **`--shell get-supabase-credentials`** - Configure database access (Shell)
 4. **`--shell setup-backend`** - Backend-specific setup (Shell)
 5. **`--shell schema-manager`** - Set up database structure (Shell)
 6. **`--shell service-manager`** - Start required services (Shell)
