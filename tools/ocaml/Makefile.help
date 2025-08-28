@@ -15,6 +15,9 @@ make rebuild       # Clean and rebuild everything
 # 🧪 TESTING
 make test          # Run tests
 
+# 📚 DOCUMENTATION
+make doc           # Generate documentation with OCamlDoc
+
 # 📦 INSTALLATION
 make install       # Install tool system-wide
 make uninstall     # Uninstall tool
@@ -35,6 +38,7 @@ make run ARGS="setup --project-root ." # Run setup with arguments
 # Build project: make build
 # Run tests: make test
 # Clean and rebuild: make rebuild
+# Generate docs: make doc
 # Install tool: make install
 # Run specific command: make run ARGS=command
 
@@ -43,3 +47,4 @@ make run ARGS="setup --project-root ." # Run setup with arguments
 # - Use 'make run ARGS="command args"' to pass arguments to the CLI
 # - The tool must be built before running (make build)
 # - Installation requires sudo privileges
+# - Documentation is generated in the project root docs/ directory

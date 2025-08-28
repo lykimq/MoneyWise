@@ -1,7 +1,6 @@
-# MoneyWise OCaml Tools Makefile
 # Provides convenient targets for building, testing, and development
 
-.PHONY: help build clean test install uninstall run
+.PHONY: help build clean test install uninstall run doc
 
 # Project configuration
 PROJECT_NAME := moneywise-tools
@@ -26,6 +25,9 @@ help: ## Show this help message
 	@echo
 	@echo "Testing:"
 	@echo "  test           - Run tests"
+	@echo
+	@echo "Documentation:"
+	@echo "  doc            - Generate documentation with OCamlDoc"
 	@echo
 	@echo "Installation:"
 	@echo "  install        - Install the tool system-wide"
@@ -57,6 +59,20 @@ test: ## Run tests
 	@echo "🧪 Running tests..."
 	dune runtest
 	@echo "✅ Tests completed!"
+
+# Documentation
+doc: ## Generate documentation with OCamlDoc
+	@echo "📚 Generating documentation with OCamlDoc..."
+	@if command -v ocamldoc >/dev/null 2>&1; then \
+		mkdir -p ../../docs; \
+		ocamldoc -html -d ../../docs -I _build/default/lib -t "MoneyWise OCaml Tools" lib/*.ml; \
+		echo "✅ Documentation generated in docs/"; \
+		echo "🌐 Open docs/index.html in your browser"; \
+	else \
+		echo "❌ OCamlDoc not found. Installing..."; \
+		opam install ocamldoc; \
+		$(MAKE) doc; \
+	fi
 
 # Installation
 install: build ## Install the tool system-wide
