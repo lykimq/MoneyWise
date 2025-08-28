@@ -3,8 +3,8 @@
 # MoneyWise Hybrid Wrapper Script
 #
 # This script provides a unified interface that routes commands to either:
-# 1. OCaml CLI tools (for complex operations like prerequisites checking)
-# 2. Existing shell scripts (for operations already implemented)
+# 1. OCaml CLI tools (DEFAULT - for complex operations like prerequisites checking)
+# 2. Shell scripts (use --shell flag to explicitly run shell commands)
 #
 # Current Implementation Status:
 # - ✅ OCaml CLI: prerequisites checking, basic setup/status/test commands
@@ -46,17 +46,47 @@ check_ocaml_tool() {
     fi
 }
 
+# Parse command line arguments
+SHELL_MODE=false
+COMMAND=""
+ARGS=()
+
+# Parse arguments to detect --shell flag
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --shell)
+            SHELL_MODE=true
+            shift
+            ;;
+        --help|-h)
+            COMMAND="help"
+            shift
+            ;;
+        *)
+            if [[ -z "$COMMAND" ]]; then
+                COMMAND="$1"
+            else
+                ARGS+=("$1")
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Set default command if none provided
+COMMAND="${COMMAND:-help}"
+
 # Route commands to appropriate handlers
-case "${1:-help}" in
+case "$COMMAND" in
     # ========================================
-    # OCaml CLI Commands (Currently Implemented)
+    # OCaml CLI Commands (DEFAULT - Currently Implemented)
     # ========================================
 
     "check")
-        # Check project prerequisites using OCaml tool
+        # Check project prerequisites using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
-            print_status "Checking prerequisites with OCaml tool..."
-            "$OCAML_TOOL" check
+            print_status "Checking prerequisites with OCaml tool (default)..."
+            "$OCAML_TOOL" check "${ARGS[@]}"
         else
             print_error "Cannot check prerequisites: OCaml tool unavailable"
             exit 1
@@ -64,10 +94,10 @@ case "${1:-help}" in
         ;;
 
     "status")
-        # Show project status using OCaml tool
+        # Show project status using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
-            print_status "Getting project status with OCaml tool..."
-            "$OCAML_TOOL" status
+            print_status "Getting project status with OCaml tool (default)..."
+            "$OCAML_TOOL" status "${ARGS[@]}"
         else
             print_error "Cannot get status: OCaml tool unavailable"
             exit 1
@@ -75,10 +105,10 @@ case "${1:-help}" in
         ;;
 
     "test")
-        # Run project tests using OCaml tool
+        # Run project tests using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
-            print_status "Running tests with OCaml tool..."
-            "$OCAML_TOOL" test
+            print_status "Running tests with OCaml tool (default)..."
+            "$OCAML_TOOL" test "${ARGS[@]}"
         else
             print_error "Cannot run tests: OCaml tool unavailable"
             exit 1
@@ -86,11 +116,10 @@ case "${1:-help}" in
         ;;
 
     "setup")
-        # Setup project using OCaml tool
+        # Setup project using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
-            print_status "Setting up project with OCaml tool..."
-            shift  # Remove 'setup' command, pass remaining args
-            "$OCAML_TOOL" setup "$@"
+            print_status "Setting up project with OCaml tool (default)..."
+            "$OCAML_TOOL" setup "${ARGS[@]}"
         else
             print_error "Cannot setup project: OCaml tool unavailable"
             exit 1
@@ -98,113 +127,187 @@ case "${1:-help}" in
         ;;
 
     # ========================================
-    # Shell Script Commands (Currently Available)
-    # ========================================
-
-    # ========================================
-    # PHASE 1: Initial Setup & Prerequisites
+    # Shell Script Commands (Use --shell flag)
     # ========================================
 
     "prereq-checker")
-        # Check project prerequisites using existing shell script
-        print_status "Using shell script for prerequisites checking..."
-        "$PROJECT_ROOT/scripts/setup/prereq-checker.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for prerequisites checking (--shell mode)..."
+            "$PROJECT_ROOT/scripts/setup/prereq-checker.sh" "${ARGS[@]}"
+        else
+            print_status "Prerequisites checking defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                "$OCAML_TOOL" check "${ARGS[@]}"
+            else
+                print_error "Cannot check prerequisites: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
-    # ========================================
-    # PHASE 2: Environment & Configuration
-    # ========================================
-
     "get-supabase-credentials")
-        # Get Supabase credentials using existing shell script
-        print_status "Using shell script to get Supabase credentials..."
-        "$PROJECT_ROOT/scripts/setup/get-supabase-credentials.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script to get Supabase credentials (--shell mode)..."
+            "$PROJECT_ROOT/scripts/setup/get-supabase-credentials.sh" "${ARGS[@]}"
+        else
+            print_status "get-supabase-credentials defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement get-supabase-credentials in OCaml CLI tool"
+            else
+                print_error "Cannot get Supabase credentials: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "env-manager")
-        # Environment management using existing shell scripts
-        print_status "Using shell script for environment management..."
-        "$PROJECT_ROOT/scripts/setup/env-manager.sh" "${@:2}"
-        ;;
-
-    # ========================================
-    # PHASE 2.5: Project Setup & Installation
-    # ========================================
-
-    "setup")
-        # Main project setup using root setup script
-        print_status "Using main project setup script..."
-        "$PROJECT_ROOT/setup.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for environment management (--shell mode)..."
+            "$PROJECT_ROOT/scripts/setup/env-manager.sh" "${ARGS[@]}"
+        else
+            print_status "env-manager defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement env-manager in OCaml CLI tool"
+            else
+                print_error "Cannot get environment manager: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "setup-backend")
-        # Backend-specific setup using backend setup script
-        print_status "Using backend setup script..."
-        "$PROJECT_ROOT/moneywise-backend/setup.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using backend setup script (--shell mode)..."
+            "$PROJECT_ROOT/moneywise-backend/setup.sh" "${ARGS[@]}"
+        else
+            print_status "setup-backend defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement setup-backend in OCaml CLI tool"
+            else
+                print_error "Cannot setup backend: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
-    # ========================================
-    # PHASE 3: Database Setup & Management
-    # ========================================
-
     "schema-manager")
-        # Database schema management using existing shell scripts
-        print_status "Using shell script for database schema management..."
-        "$PROJECT_ROOT/scripts/database/schema-manager.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for database schema management (--shell mode)..."
+            "$PROJECT_ROOT/scripts/database/schema-manager.sh" "${ARGS[@]}"
+        else
+            print_status "schema-manager defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement schema-manager in OCaml CLI tool"
+            else
+                print_error "Cannot manage database schema: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "db-operations")
-        # Database operations using existing shell scripts
-        print_status "Using shell script for database operations..."
-        "$PROJECT_ROOT/scripts/database/db-operations.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for database operations (--shell mode)..."
+            "$PROJECT_ROOT/scripts/database/db-operations.sh" "${ARGS[@]}"
+        else
+            print_status "db-operations defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement db-operations in OCaml CLI tool"
+            else
+                print_error "Cannot perform database operations: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
-
-    # ========================================
-    # PHASE 4: Service Management
-    # ========================================
 
     "service-manager")
-        # Service management using existing shell scripts
-        print_status "Using shell script for service management..."
-        "$PROJECT_ROOT/scripts/setup/service-manager.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for service management (--shell mode)..."
+            "$PROJECT_ROOT/scripts/setup/service-manager.sh" "${ARGS[@]}"
+        else
+            print_status "service-manager defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement service-manager in OCaml CLI tool"
+            else
+                print_error "Cannot manage services: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
-    # ========================================
-    # PHASE 5: Testing & Validation
-    # ========================================
-
     "test-schema-manager")
-        # Test database schema using existing shell script
-        print_status "Using shell script to test database schema..."
-        "$PROJECT_ROOT/scripts/testing/test-schema-manager.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script to test database schema (--shell mode)..."
+            "$PROJECT_ROOT/scripts/testing/test-schema-manager.sh" "${ARGS[@]}"
+        else
+            print_status "test-schema-manager defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement test-schema-manager in OCaml CLI tool"
+            else
+                print_error "Cannot test database schema: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "test-db-connection")
-        # Test database connection using existing shell script
-        print_status "Using shell script to test database connection..."
-        "$PROJECT_ROOT/scripts/testing/test-database-connection.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script to test database connection (--shell mode)..."
+            "$PROJECT_ROOT/scripts/testing/test-database-connection.sh" "${ARGS[@]}"
+        else
+            print_status "test-db-connection defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement test-db-connection in OCaml CLI tool"
+            else
+                print_error "Cannot test database connection: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "test-setup-scripts")
-        # Test setup scripts using existing shell script
-        print_status "Using shell script to test setup scripts..."
-        "$PROJECT_ROOT/scripts/testing/test-setup-scripts.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script to test setup scripts (--shell mode)..."
+            "$PROJECT_ROOT/scripts/testing/test-setup-scripts.sh" "${ARGS[@]}"
+        else
+            print_status "test-setup-scripts defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement test-setup-scripts in OCaml CLI tool"
+            else
+                print_error "Cannot test setup scripts: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     "run-all-tests")
-        # Run all tests using existing shell script
-        print_status "Using shell script to run all tests..."
-        "$PROJECT_ROOT/scripts/testing/run-all-tests.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script to run all tests (--shell mode)..."
+            "$PROJECT_ROOT/scripts/testing/run-all-tests.sh" "${ARGS[@]}"
+        else
+            print_status "run-all-tests defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement run-all-tests in OCaml CLI tool"
+            else
+                print_error "Cannot run all tests: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
-    # ========================================
-    # PHASE 6: Monitoring & Quick Checks
-    # ========================================
-
     "quick-check")
-        # Quick project check using existing shell script
-        print_status "Using shell script for quick project check..."
-        "$PROJECT_ROOT/scripts/quick-check.sh" "${@:2}"
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_status "Using shell script for quick project check (--shell mode)..."
+            "$PROJECT_ROOT/scripts/quick-check.sh" "${ARGS[@]}"
+        else
+            print_status "quick-check defaults to OCaml tool. Use --shell to run shell script instead."
+            if check_ocaml_tool; then
+                print_status "TODO: Implement quick-check in OCaml CLI tool"
+            else
+                print_error "Cannot run quick check: OCaml tool unavailable"
+                exit 1
+            fi
+        fi
         ;;
 
     # ========================================
@@ -215,62 +318,61 @@ case "${1:-help}" in
         echo "🚀 MoneyWise Hybrid Wrapper"
         echo "=========================="
         echo
-        echo "This wrapper routes commands to appropriate tools:"
+        echo "This wrapper provides a unified interface with OCaml tools as DEFAULT:"
         echo
-        echo "🔧 OCaml CLI Commands (Currently Implemented):"
-        echo "  check      - Check project prerequisites"
-        echo "  status     - Show project status"
-        echo "  test       - Run project tests"
-        echo "  setup      - Setup project (basic implementation)"
+        echo "🔧 OCaml CLI Commands (DEFAULT - No flags needed):"
+        echo "  check      - Check project prerequisites (OCaml)"
+        echo "  status     - Show project status (OCaml)"
+        echo "  test       - Run project tests (OCaml)"
+        echo "  setup      - Setup project (OCaml)"
         echo
-        echo "📁 Shell Script Commands (Currently Available):"
+        echo "📁 Shell Script Commands (Use --shell flag):"
         echo
         echo "  🚀 PHASE 1: Initial Setup & Prerequisites:"
-        echo "    prereq-checker     - Check project prerequisites"
+        echo "    prereq-checker     - Check project prerequisites (Shell)"
         echo
         echo "  ⚙️  PHASE 2: Environment & Configuration:"
-        echo "    get-supabase-credentials    - Get Supabase credentials"
-        echo "    env-manager        - Environment management"
+        echo "    get-supabase-credentials    - Get Supabase credentials (Shell)"
+        echo "    env-manager        - Environment management (Shell)"
         echo
         echo "  🚀 PHASE 2.5: Project Setup & Installation:"
-        echo "    setup              - Complete project setup (root)"
-        echo "    setup-backend      - Backend-specific setup"
+        echo "    setup-backend      - Backend-specific setup (Shell)"
         echo
         echo "  🗄️  PHASE 3: Database Setup & Management:"
-        echo "    schema-manager     - Database schema management"
-        echo "    db-operations      - Database operations"
+        echo "    schema-manager     - Database schema management (Shell)"
+        echo "    db-operations      - Database operations (Shell)"
         echo
         echo "  🔧 PHASE 4: Service Management:"
-        echo "    service-manager     - Service management"
+        echo "    service-manager     - Service management (Shell)"
         echo
         echo "  🧪 PHASE 5: Testing & Validation:"
-        echo "    test-schema-manager - Test database schema"
-        echo "    test-db-connection  - Test database connection"
-        echo "    test-setup-scripts  - Test setup scripts"
-        echo "    run-all-tests       - Run all tests"
+        echo "    test-schema-manager - Test database schema (Shell)"
+        echo "    test-db-connection  - Test database connection (Shell)"
+        echo "    test-setup-scripts  - Test setup scripts (Shell)"
+        echo "    run-all-tests       - Run all tests (Shell)"
         echo
         echo "  📊 PHASE 6: Monitoring & Quick Checks:"
-        echo "    quick-check         - Quick project check"
+        echo "    quick-check         - Quick project check (Shell)"
         echo
         echo "💡 Examples:"
-        echo "  $0 check                    # Check prerequisites (OCaml)"
-        echo "  $0 prereq-checker           # Check prerequisites (Shell)"
-        echo "  $0 setup                    # Complete project setup"
-        echo "  $0 setup-backend            # Backend setup only"
-        echo "  $0 test-schema-manager      # Test database schema"
-        echo "  $0 run-all-tests            # Run all tests"
-        echo "  $0 schema-manager --help    # Database schema help"
-        echo "  $0 env-manager --help       # Environment management help"
+        echo "  $0 check                    # Check prerequisites (OCaml - DEFAULT)"
+        echo "  $0 --shell prereq-checker   # Check prerequisites (Shell)"
+        echo "  $0 setup                    # Setup project (OCaml - DEFAULT)"
+        echo "  $0 --shell setup-backend    # Backend setup (Shell)"
+        echo "  $0 --shell schema-manager   # Database schema (Shell)"
+        echo "  $0 --shell run-all-tests    # Run all tests (Shell)"
         echo
         echo "🔄 Typical Setup Workflow:"
-        echo "  1. $0 prereq-checker            # Verify system requirements"
-        echo "  2. $0 get-supabase-credentials  # Configure database access"
-        echo "  3. $0 setup                     # Complete project setup"
-        echo "  4. $0 setup-backend             # Backend-specific setup (if needed)"
-        echo "  5. $0 schema-manager            # Set up database structure"
-        echo "  6. $0 service-manager           # Start required services"
-        echo "  7. $0 run-all-tests             # Validate everything works"
-        echo "  8. $0 quick-check               # Monitor ongoing status"
+        echo "  1. $0 check                     # Verify system requirements (OCaml)"
+        echo "  2. $0 --shell get-supabase-credentials  # Configure database access (Shell)"
+        echo "  3. $0 setup                     # Complete project setup (OCaml)"
+        echo "  4. $0 --shell setup-backend     # Backend-specific setup (Shell)"
+        echo "  5. $0 --shell schema-manager    # Set up database structure (Shell)"
+        echo "  6. $0 --shell service-manager   # Start required services (Shell)"
+        echo "  7. $0 --shell run-all-tests     # Validate everything works (Shell)"
+        echo "  8. $0 --shell quick-check       # Monitor ongoing status (Shell)"
+        echo
+        echo "📝 Note: OCaml tools are the DEFAULT. Use --shell flag to run shell scripts."
         ;;
 
     # ========================================
@@ -278,7 +380,7 @@ case "${1:-help}" in
     # ========================================
 
     *)
-        print_error "Unknown command: $1"
+        print_error "Unknown command: $COMMAND"
         print_status "Use '$0 help' for usage information"
         exit 1
         ;;
