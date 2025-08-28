@@ -7,12 +7,6 @@
 [![Language](https://img.shields.io/badge/language-Rust%20%7C%20OCaml%20%7C%20TypeScript-orange.svg)](https://github.com/lykimq/MoneyWise#-built-with)
 [![License](https://img.shields.io/badge/license-Non--Commercial-green.svg)](LICENSE)
 
-## 📚 API Documentation
-
-> **Development Tools API** - Complete documentation for our OCaml-based development tools, including prerequisites checking, project management, and CLI operations.
-
-**[📖 View Full API Documentation →](https://lykimq.github.io/MoneyWise)**
-
 ## ✨ What is MoneyWise?
 
 MoneyWise is a cross-platform personal finance app that helps you take control of your money. Built with privacy and simplicity in mind, it works completely offline while providing powerful insights into your spending habits, budget management, and savings goals.
@@ -97,7 +91,7 @@ MoneyWise/
 │   ├── 🐫 ocaml/              # OCaml-based project management tools
 │   └── 🔀 moneywise-hybrid.sh # Hybrid wrapper for OCaml + shell operations
 ├── 📚 docs/                    # Project documentation and guides
-│   └── 🐫 ocamldoc/           # Generated API documentation (deployed to GitHub Pages)
+│   └── 🐫 ocamldoc/           # Development tools documentation (deployed to GitHub Pages)
 ```
 
 ### **Database Strategy**
@@ -175,7 +169,10 @@ MoneyWise/
    make build        # Build tools
    make test         # Run tests
    ./tools/moneywise-hybrid.sh help  # Show available commands
+   ```
 
+5. **📚 Development Tools API Documentation**
+   **[📖 View API Docs →](https://lykimq.github.io/MoneyWise)** - Complete API reference
 ---
 
 ## 📋 Roadmap
