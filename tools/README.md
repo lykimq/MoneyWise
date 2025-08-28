@@ -1,6 +1,6 @@
 # 🚀 MoneyWise Development Tools
 
-**Purpose**: Streamline MoneyWise project development with a unified interface that intelligently routes commands to the most appropriate tool - either type-safe OCaml CLI tools or efficient shell scripts.
+**Purpose**: Streamline MoneyWise project development with a unified interface that intelligently routes commands to the most appropriate tool - either type-safe OCaml CLI tools (DEFAULT) or efficient shell scripts (use `--shell` flag).
 
 ## 🎯 Project Structure
 
@@ -16,7 +16,7 @@ The MoneyWise project has multiple script directories and tools for different ta
 
 We intentionally maintain both OCaml CLI tools and shell scripts because each approach has unique strengths that complement the other:
 
-### **OCaml CLI Tools - Strengths:**
+### **OCaml CLI Tools - Strengths (DEFAULT):**
 - **Type Safety**: Compile-time error checking prevents runtime failures
 - **Maintainability**: Structured code is easier to debug and enhance
 - **Performance**: Native compilation for compute-intensive operations
@@ -45,6 +45,8 @@ We intentionally maintain both OCaml CLI tools and shell scripts because each ap
 ## 🏗️ Our Hybrid Architecture
 
 **Unified Interface**: One command (`./tools/moneywise-hybrid.sh`) that intelligently routes to the best tool for each task:
+- **OCaml First**: OCaml tools are the DEFAULT for commands that have OCaml equivalents
+- **Shell Opt-in**: Use `--shell` flag to explicitly run shell script versions
 - **Intelligent Routing**: Automatically chooses OCaml or shell script based on command type
 - **Consistent Interface**: Same command pattern regardless of underlying implementation
 - **Centralized Control**: Manage all project operations from one place
@@ -56,12 +58,16 @@ We intentionally maintain both OCaml CLI tools and shell scripts because each ap
 # One command for all operations
 ./tools/moneywise-hybrid.sh <command>
 
-# Examples:
+# OCaml commands (DEFAULT - no flags needed)
 ./tools/moneywise-hybrid.sh check      # Verify project prerequisites (OCaml)
 ./tools/moneywise-hybrid.sh status     # Show project health (OCaml)
 ./tools/moneywise-hybrid.sh test       # Execute test suite (OCaml)
-./tools/moneywise-hybrid.sh setup      # Initialize project (Shell)
-./tools/moneywise-hybrid.sh db-schema  # Database operations (Shell)
+./tools/moneywise-hybrid.sh setup      # Initialize project (OCaml)
+
+# Shell commands (require --shell flag)
+./tools/moneywise-hybrid.sh --shell prereq-checker      # Verify prerequisites (Shell)
+./tools/moneywise-hybrid.sh --shell setup-backend       # Backend setup (Shell)
+./tools/moneywise-hybrid.sh --shell schema-manager      # Database operations (Shell)
 ```
 
 ## 📁 What's Inside
@@ -75,46 +81,45 @@ tools/
 
 ## 🔄 Current Implementation Status
 
-**OCaml CLI Tools (Currently Implemented)**:
+**OCaml CLI Tools (DEFAULT - Currently Implemented)**:
 - ✅ `check` - Project prerequisites checking
 - ✅ `status` - Project status and health monitoring
 - ✅ `test` - Test execution and validation
 - ✅ `setup` - Basic project setup operations
 
-**Shell Script Commands (Currently Available)**:
+**Shell Script Commands (Use `--shell` flag)**:
 - 🔧 **Phase 1: Initial Setup & Prerequisites**
-  - `prereq-checker` - Verify system requirements
+  - `prereq-checker` - Verify system requirements (Shell)
 - ⚙️ **Phase 2: Environment & Configuration**
-  - `get-supabase-credentials` - Get Supabase database credentials
-  - `env-manageer` - Environment management
+  - `get-supabase-credentials` - Get Supabase database credentials (Shell)
+  - `env-manager` - Environment management (Shell)
 - 🚀 **Phase 2.5: Project Setup & Installation**
-  - `setup` - Complete project setup (root)
-  - `setup-backend` - Backend-specific setup (if needed)
+  - `setup-backend` - Backend-specific setup (Shell)
 - 🗄️ **Phase 3: Database Setup & Management**
-  - `schema-manager` - Database schema management
-  - `db-operations` - Database operations
+  - `schema-manager` - Database schema management (Shell)
+  - `db-operations` - Database operations (Shell)
 - 🔧 **Phase 4: Service Management**
-  - `service-manager` - Service management
+  - `service-manager` - Service management (Shell)
 - 🧪 **Phase 5: Testing & Validation**
-  - `test-schema-manager` - Test database schema
-  - `test-db-connection` - Test database connection
-  - `test-setup-scripts` - Test setup scripts
-  - `run-all-tests` - Run all tests
+  - `test-schema-manager` - Test database schema (Shell)
+  - `test-db-connection` - Test database connection (Shell)
+  - `test-setup-scripts` - Test setup scripts (Shell)
+  - `run-all-tests` - Run all tests (Shell)
 - 📊 **Phase 6: Monitoring & Quick Checks**
-  - `quick-check` - Quick project check
+  - `quick-check` - Quick project check (Shell)
 
 ## 🚀 Typical Setup Workflow
 
 The hybrid wrapper provides a logical execution order:
 
-1. **`prerequ-checker`** - Verify system requirements
-2. **`get-supabase-credentials`** - Configure database access
-3. **`setup`** - Complete project setup
-4. **`setup-backend`** - Backend-specific setup (if needed)
-5. **`schema-manager`** - Set up database structure
-6. **`service-manager`** - Start required services
-7. **`run-all-tests`** - Validate everything works
-8. **`quick-check`** - Monitor ongoing status
+1. **`check`** - Verify system requirements (OCaml - DEFAULT)
+2. **`--shell get-supabase-credentials`** - Configure database access (Shell)
+3. **`setup`** - Complete project setup (OCaml - DEFAULT)
+4. **`--shell setup-backend`** - Backend-specific setup (Shell)
+5. **`--shell schema-manager`** - Set up database structure (Shell)
+6. **`--shell service-manager`** - Start required services (Shell)
+7. **`--shell run-all-tests`** - Validate everything works (Shell)
+8. **`--shell quick-check`** - Monitor ongoing status (Shell)
 
 ## 💡 Why This Hybrid Approach Matters
 
@@ -134,3 +139,17 @@ Our hybrid approach provides:
 - **Team Flexibility**: Developers can work with familiar tools while gaining new capabilities
 - **Performance Optimization**: OCaml for compute-intensive operations, shell scripts for I/O operations
 - **Maintenance Balance**: Structured code for complex logic, quick fixes for simple operations
+
+## 📝 Migration Strategy
+
+**OCaml First Approach**: We're gradually migrating functionality from shell scripts to OCaml tools:
+- **Phase 1**: Core operations (check, status, test, setup) ✅ Complete
+- **Phase 2**: Environment and configuration management 🔄 In Progress
+- **Phase 3**: Database operations 🔄 Planned
+- **Phase 4**: Service management 🔄 Planned
+- **Phase 5**: Testing and validation 🔄 Planned
+
+**Shell Scripts**: Will remain available via `--shell` flag for:
+- Operations not yet migrated to OCaml
+- Quick debugging and development
+- System-specific operations that benefit from shell flexibility
