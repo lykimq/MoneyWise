@@ -7,4 +7,9 @@
   unix)
  (wrapped false)
  (modules
-  prerequisites))
+  prerequisites
+  commands
+  setup_cmd
+  check_cmd
+  test_cmd
+  status_cmd))

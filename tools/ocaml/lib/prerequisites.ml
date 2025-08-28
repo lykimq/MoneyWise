@@ -134,7 +134,7 @@ let check_redis () =
       is_available = false;
       version = None;
       path = None;
-      error_message = Some "Redis not found (optional). Install from https://redis.io/download/";
+      error_message = Some "Redis not found. Install from https://redis.io/download/";
     }
   else
     let version = extract_version "redis-cli" "--version" in
@@ -189,59 +189,56 @@ let check_curl () =
       error_message = None;
     }
 
-(** Run all prerequisite checks
-    @return prerequisites_status with summary of all checks *)
+(** Check all prerequisites and return status
+    @return prerequisites_status with results of all checks *)
 let check_all_prerequisites () =
   let checks = [
-    check_rust;
-    check_nodejs;
-    check_postgresql;
-    check_git;
-    check_curl;
-    check_redis;
+    check_rust ();
+    check_nodejs ();
+    check_postgresql ();
+    check_git ();
+    check_curl ();
+    check_redis ();
   ] in
 
-  let results = List.map (fun check -> check ()) checks in
-  let total_checks = List.length results in
-  let passed_checks = List.length (List.filter (fun r -> r.is_available) results) in
+  let total_checks = List.length checks in
+  let passed_checks = List.length (List.filter (fun r -> r.is_available) checks) in
   let failed_checks = total_checks - passed_checks in
 
   {
     total_checks;
     passed_checks;
     failed_checks;
-    results;
+    results = checks;
   }
 
-(** Format prerequisite result for display
-    @param result The prerequisite result to format
-    @return Formatted string with status emoji, name, version, and error message *)
-let format_prerequisite_result result =
-  let status = if result.is_available then "✅" else "❌" in
-  let version_str = match result.version with
-    | Some v -> Printf.sprintf " (version: %s)" v
-    | None -> ""
-  in
-  let error_str = match result.error_message with
-    | Some msg -> Printf.sprintf " - %s" msg
-    | None -> ""
-  in
-  Printf.sprintf "%s %s%s%s" status result.name version_str error_str
-
-(** Display prerequisites status to stdout
-    @param status The prerequisites status to display *)
+(** Display prerequisites status with formatted output *)
 let display_prerequisites_status status =
   Printf.printf "🔍 Checking MoneyWise project prerequisites...\n";
   Printf.printf "============================================\n";
 
   List.iter (fun result ->
-    Printf.printf "%s\n" (format_prerequisite_result result)
+    let icon = if result.is_available then "✅" else "❌" in
+    let version_str = match result.version with
+      | Some v -> Printf.sprintf " (version: %s)" v
+      | None -> ""
+    in
+    let error_str = match result.error_message with
+      | Some msg -> Printf.sprintf " - %s" msg
+      | None -> ""
+    in
+    Printf.printf "%s %s%s%s\n" icon result.name version_str error_str
   ) status.results;
 
-  Printf.printf "\n";
-  Printf.printf "Summary: %d/%d checks passed\n" status.passed_checks status.total_checks;
+  Printf.printf "\nSummary: %d/%d checks passed\n" status.passed_checks status.total_checks;
 
-  if status.failed_checks > 0 then
-    Printf.printf "❌ Some prerequisites are missing. Please install them and run the check again.\n"
-  else
+  if status.failed_checks = 0 then
     Printf.printf "✅ All prerequisites verified successfully!\n"
+  else
+    Printf.printf "❌ Some prerequisites are missing. Please install them and try again.\n"
+
+(** Check prerequisites without displaying output - for use by other modules
+    @return true if all prerequisites are available, false otherwise *)
+let verify_prerequisites_silent () =
+  let status = check_all_prerequisites () in
+  status.failed_checks = 0
