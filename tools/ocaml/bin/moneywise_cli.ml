@@ -2,6 +2,9 @@
 
 open Cmdliner
 
+(** Import the prerequisites module *)
+open Prerequisites
+
 (** CLI command definitions *)
 
 let setup_cmd =
@@ -28,6 +31,7 @@ let setup_cmd =
   in
   Cmd.v (Cmd.info "setup" ~doc ~man) (Term.(const setup $ project_root))
 
+
 let check_cmd =
   let doc = "Check project prerequisites and status" in
   let man = [
@@ -37,9 +41,15 @@ let check_cmd =
     `P "$(mname) check";
   ] in
   let check () =
-    Printf.printf "🔍 Checking MoneyWise project status...\n";
-    (* TODO: Implement actual check logic *)
-    Printf.printf "✅ All checks passed!\n"
+    (* Checking prerequisites *)
+    let status = Prerequisites.check_all_prerequisites () in
+    Prerequisites.display_prerequisites_status status;
+
+    (* Return appropriate exit code *)
+    if status.failed_checks > 0 then
+      exit 1
+    else
+      exit 0
   in
   Cmd.v (Cmd.info "check" ~doc ~man) (Term.(const check $ const ()))
 
