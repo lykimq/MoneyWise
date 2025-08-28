@@ -4,78 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoneyWise OCaml Tools - Documentation</title>
+    <link rel="stylesheet" href="odoc.support/moneywise-enhanced.css">
     <style>
+        /* Custom styles for the main index page */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 0;
             line-height: 1.6;
-            color: #333;
+            color: var(--moneywise-text);
+            background: var(--moneywise-bg);
         }
+
         .header {
             text-align: center;
             margin-bottom: 3rem;
-            padding: 2rem;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, var(--moneywise-primary) 0%, var(--moneywise-primary-dark) 100%);
             color: white;
-            border-radius: 10px;
+            border-radius: 0;
         }
+
+        .header h1 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            margin: 1rem 0 0 0;
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 0 2rem;
+        }
+
+        .nav-links a {
+            margin: 0 1rem;
+        }
+
+        .main-content {
+            padding: 0 2rem 2rem 2rem;
+        }
+
         .card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+            background: var(--moneywise-bg-alt);
+            border: 1px solid var(--moneywise-border);
             border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 2rem;
+            margin: 2rem 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px var(--moneywise-shadow);
         }
+
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 16px var(--moneywise-shadow);
         }
+
         .card h3 {
             margin-top: 0;
-            color: #495057;
+            color: var(--moneywise-primary);
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--moneywise-border);
+            padding-bottom: 0.5rem;
         }
+
         .btn {
             display: inline-block;
-            background: #ff6b6b;
+            background: var(--moneywise-primary);
             color: white;
             padding: 0.75rem 1.5rem;
             text-decoration: none;
             border-radius: 5px;
-            transition: background 0.2s;
+            transition: background 0.2s ease;
             margin: 0.5rem 0.5rem 0.5rem 0;
+            font-weight: 500;
         }
+
         .btn:hover {
-            background: #ee5a24;
+            background: var(--moneywise-primary-dark);
+            transform: translateY(-1px);
         }
+
         .feature-list {
             list-style: none;
             padding: 0;
         }
+
         .feature-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e9ecef;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--moneywise-border);
+            position: relative;
+            padding-left: 2rem;
         }
+
         .feature-list li:before {
-            content: "✅ ";
-            margin-right: 0.5rem;
+            content: "✅";
+            position: absolute;
+            left: 0;
+            font-size: 1.1em;
         }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
         .code-block {
-            background: #f1f3f4;
-            border: 1px solid #e1e5e9;
-            border-radius: 5px;
-            padding: 1rem;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: var(--moneywise-code-bg);
+            border: 1px solid var(--moneywise-code-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'Fira Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             overflow-x: auto;
+            margin: 1rem 0;
+            line-height: 1.4;
         }
-        .nav-links {
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-block code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--moneywise-text);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--moneywise-secondary) 0%, var(--moneywise-accent) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box h4 {
+            margin-top: 0;
+            color: white;
+        }
+
+        .footer {
             text-align: center;
-            margin: 2rem 0;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--moneywise-text-light);
+            border-top: 1px solid var(--moneywise-border);
         }
-        .nav-links a {
-            margin: 0 1rem;
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .main-content {
+                padding: 0 1rem 1rem 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+                margin: 1rem 0;
+            }
         }
     </style>
 </head>
@@ -87,77 +189,66 @@
 
     <div class="nav-links">
         <a href="index.html" class="btn">📚 Documentation</a>
+        <a href="api-index.html" class="btn">🔍 API Reference</a>
         <a href="https://github.com/lykimq/MoneyWise" class="btn">🐙 GitHub</a>
     </div>
 
-    <div class="card">
-        <h3>📚 API Documentation</h3>
-        <p>Complete API reference for the MoneyWise OCaml tools library.</p>
-        <ul class="feature-list">
-            <li>Prerequisites checking functions</li>
-            <li>Command existence detection</li>
-            <li>Version extraction algorithms</li>
-            <li>Type definitions and structures</li>
-        </ul>
-        <a href="Prerequisites/index.html" class="btn">View Prerequisites API</a>
-        <a href="api-index.html" class="btn">View Full API Docs</a>
-    </div>
+    <div class="main-content">
+        <div class="card">
+            <h3>📚 API Documentation</h3>
+            <p>Complete API reference for the MoneyWise OCaml tools library with enhanced styling and improved UX.</p>
+            <div class="highlight-box">
+                <h4>🚀 What's New</h4>
+                <p>Enhanced documentation with modern design, dark mode support, and improved readability.</p>
+            </div>
+            <a href="Prerequisites/index.html" class="btn">View Prerequisites API</a>
+            <a href="api-index.html" class="btn">View Full API Docs</a>
+        </div>
 
-    <div class="card">
-        <h3>🚀 Quick Start</h3>
-        <p>Get started with the OCaml tools:</p>
-        <div class="code-block">
-# Check prerequisites
+        <div class="card">
+            <h3>🚀 Quick Start</h3>
+            <p>Get started with the OCaml tools:</p>
+            <div class="code-block">
+                <pre><code># Check prerequisites
 ./moneywise-hybrid.sh check
 
 # View project status
 ./moneywise-hybrid.sh status
 
 # Run tests
-./moneywise-hybrid.sh test
+./moneywise-hybrid.sh test</code></pre>
+            </div>
         </div>
-    </div>
 
-    <div class="card">
-        <h3>🔍 What These Tools Do</h3>
-        <p>The OCaml tools provide:</p>
-        <ul class="feature-list">
-            <li><strong>Prerequisites Checking</strong>: Verify Rust, Node.js, PostgreSQL, Redis, Git, curl</li>
-            <li><strong>Project Status</strong>: Monitor backend, frontend, and database health</li>
-            <li><strong>Test Execution</strong>: Run project tests with proper reporting</li>
-            <li><strong>Setup Management</strong>: Handle project initialization and configuration</li>
-        </ul>
-    </div>
+        <div class="card">
+            <h3>🔍 Core Features</h3>
+            <p>The OCaml tools provide essential functionality for MoneyWise development:</p>
+            <ul class="feature-list">
+                <li><strong>Prerequisites Checking</strong>: Verify Rust, Node.js, PostgreSQL, Redis, Git, curl</li>
+                <li><strong>Project Status</strong>: Monitor backend, frontend, and database health</li>
+                <li><strong>Test Execution</strong>: Run project tests with proper reporting</li>
+                <li><strong>Setup Management</strong>: Handle project initialization and configuration</li>
+            </ul>
+        </div>
 
-    <div class="card">
-        <h3>🏗️ Architecture</h3>
-        <p>Built with modern OCaml practices:</p>
-        <ul class="feature-list">
-            <li>Functional programming with immutable data structures</li>
-            <li>Comprehensive test coverage with OUnit2</li>
-            <li>Proper error handling and user feedback</li>
-            <li>Integration with existing shell script ecosystem</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h3>🧪 Testing</h3>
-        <p>Run the test suite:</p>
-        <div class="code-block">
-# Run all tests
+        <div class="card">
+            <h3>🧪 Development & Testing</h3>
+            <p>Build and test the OCaml tools:</p>
+            <div class="code-block">
+                <pre><code># Run all tests
 dune runtest
 
 # Build the project
 dune build
 
 # Run specific test
-dune exec -- prerequisites_test
+dune exec -- prerequisites_test</code></pre>
         </div>
     </div>
 
-    <footer style="text-align: center; margin-top: 3rem; color: #6c757d;">
+    <div class="footer">
         <p>Generated with ❤️ for the MoneyWise OCaml tools</p>
-        <p><small>Built with odoc 3.0.0</small></p>
-    </footer>
+        <p><small>Built with odoc 3.0.0 • Enhanced with custom styling</small></p>
+    </div>
 </body>
 </html>
