@@ -1,0 +1,106 @@
+# Documentation Deployment Workflow
+#
+# PURPOSE: Automatically build and deploy OCaml documentation to GitHub Pages
+# WHY: Ensures documentation stays in sync with code changes and provides up-to-date API docs
+# WHEN: Runs when OCaml tool source files change or manually triggered
+
+name: Deploy OCaml Documentation
+
+# TRIGGERS: Run when OCaml tools change or manually
+on:
+  push:
+    branches: [ main ]
+    paths:
+      # Trigger when OCaml tool source files change
+      - 'tools/ocaml/**'
+      # Also trigger when documentation workflow itself changes
+      - '.github/workflows/docs-deploy.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'tools/ocaml/**'
+      - '.github/workflows/docs-deploy.yml'
+  workflow_dispatch:  # Allows manual triggering for testing
+
+# PERMISSIONS: Required for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# CONCURRENCY: Prevent multiple deployments running simultaneously
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # BUILD: Generate OCaml documentation
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-version: '4.14.0'
+          opam-version: '2.1'
+
+      - name: Install dependencies
+        run: |
+          opam update
+          opam install ocamldoc
+
+      - name: Build and generate documentation
+        working-directory: ./tools/ocaml
+        run: |
+          make doc
+          echo "✅ Documentation generated successfully"
+
+      - name: Verify documentation files
+        run: |
+          echo "📚 Generated documentation files:"
+          ls -la docs/
+          echo "📄 Main index file:"
+          head -5 docs/index.html
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocaml-docs
+          path: docs/
+          retention-days: 1
+
+  # DEPLOY: Deploy to GitHub Pages
+  deploy-docs:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build-docs
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download documentation artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ocaml-docs
+          path: docs/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
