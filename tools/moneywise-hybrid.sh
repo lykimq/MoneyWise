@@ -101,17 +101,51 @@ case "${1:-help}" in
     # Shell Script Commands (Currently Available)
     # ========================================
 
+    # ========================================
+    # PHASE 1: Initial Setup & Prerequisites
+    # ========================================
+
+    "check-prerequisites"|"prereq-check")
+        # Check project prerequisites using existing shell script
+        print_status "Using shell script for prerequisites checking..."
+        "$PROJECT_ROOT/scripts/setup/prereq-checker.sh" "${@:2}"
+        ;;
+
+    # ========================================
+    # PHASE 2: Environment & Configuration
+    # ========================================
+
+    "get-credentials")
+        # Get Supabase credentials using existing shell script
+        print_status "Using shell script to get Supabase credentials..."
+        "$PROJECT_ROOT/scripts/setup/get-supabase-credentials.sh" "${@:2}"
+        ;;
+
     "env-manage")
         # Environment management using existing shell scripts
         print_status "Using shell script for environment management..."
         "$PROJECT_ROOT/scripts/setup/env-manager.sh" "${@:2}"
         ;;
 
-    "service-manage")
-        # Service management using existing shell scripts
-        print_status "Using shell script for service management..."
-        "$PROJECT_ROOT/scripts/setup/service-manager.sh" "${@:2}"
+    # ========================================
+    # PHASE 2.5: Project Setup & Installation
+    # ========================================
+
+    "setup")
+        # Main project setup using root setup script
+        print_status "Using main project setup script..."
+        "$PROJECT_ROOT/setup.sh" "${@:2}"
         ;;
+
+    "setup-backend")
+        # Backend-specific setup using backend setup script
+        print_status "Using backend setup script..."
+        "$PROJECT_ROOT/moneywise-backend/setup.sh" "${@:2}"
+        ;;
+
+    # ========================================
+    # PHASE 3: Database Setup & Management
+    # ========================================
 
     "db-schema")
         # Database schema management using existing shell scripts
@@ -125,10 +159,52 @@ case "${1:-help}" in
         "$PROJECT_ROOT/scripts/database/db-operations.sh" "${@:2}"
         ;;
 
+    # ========================================
+    # PHASE 4: Service Management
+    # ========================================
+
+    "service-manage")
+        # Service management using existing shell scripts
+        print_status "Using shell script for service management..."
+        "$PROJECT_ROOT/scripts/setup/service-manager.sh" "${@:2}"
+        ;;
+
+    # ========================================
+    # PHASE 5: Testing & Validation
+    # ========================================
+
+    "test-schema")
+        # Test database schema using existing shell script
+        print_status "Using shell script to test database schema..."
+        "$PROJECT_ROOT/scripts/testing/test-schema-manager.sh" "${@:2}"
+        ;;
+
+    "test-db-connection")
+        # Test database connection using existing shell script
+        print_status "Using shell script to test database connection..."
+        "$PROJECT_ROOT/scripts/testing/test-database-connection.sh" "${@:2}"
+        ;;
+
+    "test-setup")
+        # Test setup scripts using existing shell script
+        print_status "Using shell script to test setup scripts..."
+        "$PROJECT_ROOT/scripts/testing/test-setup-scripts.sh" "${@:2}"
+        ;;
+
+    "run-tests")
+        # Run all tests using existing shell script
+        print_status "Using shell script to run all tests..."
+        "$PROJECT_ROOT/scripts/testing/run-all-tests.sh" "${@:2}"
+        ;;
+
+    # ========================================
+    # PHASE 6: Monitoring & Quick Checks
+    # ========================================
+
     "quick-check")
         # Quick project check using existing shell script
         print_status "Using shell script for quick project check..."
-        "$PROJECT_ROOT/scripts/quick-check.sh"
+        "$PROJECT_ROOT/scripts/quick-check.sh" "${@:2}"
         ;;
 
     # ========================================
@@ -148,20 +224,54 @@ case "${1:-help}" in
         echo "  setup      - Setup project (basic implementation)"
         echo
         echo "📁 Shell Script Commands (Currently Available):"
-        echo "  env-manage      - Environment management"
-        echo "  service-manage  - Service management"
-        echo "  db-schema       - Database schema management"
-        echo "  db-operations   - Database operations"
-        echo "  quick-check     - Quick project check"
+        echo
+        echo "  🚀 PHASE 1: Initial Setup & Prerequisites:"
+        echo "    check-prerequisites - Check project prerequisites"
+        echo "    prereq-check       - Alias for check-prerequisites"
+        echo
+        echo "  ⚙️  PHASE 2: Environment & Configuration:"
+        echo "    get-credentials    - Get Supabase credentials"
+        echo "    env-manage         - Environment management"
+        echo
+        echo "  🚀 PHASE 2.5: Project Setup & Installation:"
+        echo "    setup              - Complete project setup (root)"
+        echo "    setup-backend      - Backend-specific setup"
+        echo
+        echo "  🗄️  PHASE 3: Database Setup & Management:"
+        echo "    db-schema          - Database schema management"
+        echo "    db-operations      - Database operations"
+        echo
+        echo "  🔧 PHASE 4: Service Management:"
+        echo "    service-manage     - Service management"
+        echo
+        echo "  🧪 PHASE 5: Testing & Validation:"
+        echo "    test-schema        - Test database schema"
+        echo "    test-db-connection - Test database connection"
+        echo "    test-setup         - Test setup scripts"
+        echo "    run-tests          - Run all tests"
+        echo
+        echo "  📊 PHASE 6: Monitoring & Quick Checks:"
+        echo "    quick-check        - Quick project check"
         echo
         echo "💡 Examples:"
         echo "  $0 check                    # Check prerequisites (OCaml)"
+        echo "  $0 check-prerequisites      # Check prerequisites (Shell)"
+        echo "  $0 setup                    # Complete project setup"
+        echo "  $0 setup-backend            # Backend setup only"
+        echo "  $0 test-schema              # Test database schema"
+        echo "  $0 run-tests                # Run all tests"
         echo "  $0 db-schema --help         # Database schema help"
         echo "  $0 env-manage --help        # Environment management help"
         echo
-        echo "🔄 Migration Status:"
-        echo "  - Prerequisites checking: ✅ Fully implemented in OCaml CLI"
-        echo "  - Other operations: Shell scripts (will migrate to OCaml gradually)"
+        echo "🔄 Typical Setup Workflow:"
+        echo "  1. $0 check-prerequisites   # Verify system requirements"
+        echo "  2. $0 get-credentials       # Configure database access"
+        echo "  3. $0 setup                 # Complete project setup"
+        echo "  4. $0 setup-backend         # Backend-specific setup (if needed)"
+        echo "  5. $0 db-schema             # Set up database structure"
+        echo "  6. $0 service-manage        # Start required services"
+        echo "  7. $0 run-tests             # Validate everything works"
+        echo "  8. $0 quick-check           # Monitor ongoing status"
         ;;
 
     # ========================================
