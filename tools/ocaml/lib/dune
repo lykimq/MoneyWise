@@ -3,5 +3,8 @@
  (public_name moneywise-tools.lib)
  (libraries
   cmdliner
-  fmt)
- (wrapped false))
+  fmt
+  unix)
+ (wrapped false)
+ (modules
+  prerequisites))
