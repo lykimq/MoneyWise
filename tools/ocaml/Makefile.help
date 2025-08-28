@@ -5,7 +5,7 @@
 make help          # Show all available targets
 make build         # Build the project
 make test          # Run tests
-make run-status    # Run status command
+make run           # Run CLI tool (defaults to 'status' command)
 
 # 🔨 BUILD TARGETS
 make build         # Build the project (default)
@@ -13,43 +13,33 @@ make clean         # Clean build artifacts
 make rebuild       # Clean and rebuild everything
 
 # 🧪 TESTING
-make test          # Run tests once
-make test-watch    # Run tests in watch mode
-
-# 🛠️ DEVELOPMENT
-make dev-setup     # Setup development environment
-make dev           # Complete development workflow
-make quick         # Quick build and test cycle
-make format        # Format OCaml code
-make lint          # Run linting checks
+make test          # Run tests
 
 # 📦 INSTALLATION
 make install       # Install tool system-wide
 make uninstall     # Uninstall tool
 
 # 🚀 EXECUTION
-make run           # Run CLI tool (pass ARGS="command args")
+make run           # Run CLI tool (defaults to 'status' command)
+make run ARGS=setup # Run CLI tool with specific command
 make run-help      # Show CLI help
 make run-status    # Run status command
 
-# 🔍 UTILITIES
-make info          # Show project information
-make check-ocaml   # Check OCaml installation
-make check-dune    # Check Dune installation
-make check-opam    # Check OPAM installation
-make check-deps    # Check OCaml dependencies
-
-# 📖 HELP
-make help-command COMMAND=setup  # Get help for specific command
-
 # 💡 EXAMPLES
-make run ARGS="setup --project-root /path/to/project"
-make help-command COMMAND=check
-make dev-setup && make build && make test
+make run ARGS=check                    # Run check command
+make run ARGS=status                   # Run status command
+make run ARGS=setup                    # Run setup command
+make run ARGS="setup --project-root ." # Run setup with arguments
 
 # 🎯 COMMON WORKFLOWS
-# Daily development: make quick
-# Setup new environment: make dev-setup
-# Full development cycle: make dev
-# Testing: make test-watch
-# Installation: make install
+# Build project: make build
+# Run tests: make test
+# Clean and rebuild: make rebuild
+# Install tool: make install
+# Run specific command: make run ARGS=command
+
+# 📚 NOTES
+# - The 'run' target defaults to 'status' if no ARGS provided
+# - Use 'make run ARGS="command args"' to pass arguments to the CLI
+# - The tool must be built before running (make build)
+# - Installation requires sudo privileges
