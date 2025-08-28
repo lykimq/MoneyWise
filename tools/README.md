@@ -71,8 +71,8 @@ tools/
 
 ## 💡 Why This Matters
 
-**Development Velocity**: Spend time building features, not figuring out tools
-**Code Quality**: Type safety prevents errors before they reach production
-**Team Onboarding**: New developers can contribute faster
-**Maintenance**: Structured code is easier to debug and enhance
-**Scalability**: Tools grow with project complexity
+- **Development Velocity**: Spend time building features, not figuring out tools
+- **Code Quality**: Type safety prevents errors before they reach production
+- **Team Onboarding**: New developers can contribute faster
+- **Maintenance**: Structured code is easier to debug and enhance
+- **Scalability**: Tools grow with project complexity
