@@ -7,9 +7,16 @@
 [![Language](https://img.shields.io/badge/language-Rust%20%7C%20OCaml%20%7C%20TypeScript-orange.svg)](https://github.com/lykimq/MoneyWise#-built-with)
 [![License](https://img.shields.io/badge/license-Non--Commercial-green.svg)](LICENSE)
 
-## 📚 [API Documentation](https://lykimq.github.io/MoneyWise/)
+## 📚 API Documentation
 
 > **Development Tools API** - Complete documentation for our OCaml-based development tools, including prerequisites checking, project management, and CLI operations.
+
+**📖 View Enhanced Documentation:**
+- **[Main Documentation](docs/index.html)** - Overview and quick start guide
+- **[API Reference](docs/api-index.html)** - Complete API documentation
+- **[Prerequisites Module](docs/Prerequisites/index.html)** - Detailed module reference
+
+> **✨ New Features:** Enhanced styling with dark mode support, improved readability, and better mobile experience.
 
 ---
 
@@ -81,7 +88,7 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 - **Cmdliner** - Professional CLI framework
 - **Hybrid Architecture** - OCaml for complex operations, shell scripts for simple tasks
 - **Professional Workflow** - Makefile integration and gradual migration strategy
-- **[📚 API Documentation](https://lykimq.github.io/MoneyWise/)** - Complete development tools reference
+- **[📚 API Documentation](docs/api-index.html)** - Complete development tools reference with enhanced styling
 
 ---
 
@@ -176,7 +183,7 @@ MoneyWise/
    ./tools/moneywise-hybrid.sh help  # Show available commands
    ```
 
-   📚 **API Documentation**: [https://lykimq.github.io/MoneyWise/](https://lykimq.github.io/MoneyWise/)
+   📚 **API Documentation**: [View Enhanced Docs](docs/api-index.html) - Now with improved styling and UX
 
 ---
 
@@ -249,7 +256,7 @@ This project is licensed under the Non-Commercial License - see the [LICENSE](LI
 - **GitHub Issues** - [Report bugs & request features](https://github.com/lykimq/MoneyWise/issues)
 - **Documentation** - [Setup & usage guides](https://github.com/lykimq/MoneyWise/tree/main/docs)
 - **Development Tools** - [OCaml tools & architecture](https://github.com/lykimq/MoneyWise/tree/main/tools)
-- **API Reference** - [Development Tools API](https://lykimq.github.io/MoneyWise/)
+- **API Reference** - [Development Tools API](docs/api-index.html) - Enhanced documentation with modern design
 
 ---
 
