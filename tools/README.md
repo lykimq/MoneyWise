@@ -88,24 +88,25 @@ tools/
 - ✅ `test` - Test execution and validation
 
 **Shell Script Commands (Use `--shell` flag)**:
-- 🔧 **Phase 1: Initial Setup & Prerequisites**
-  - `prereq-checker` - Verify system requirements (Shell)
-- ⚙️ **Phase 2: Environment & Configuration**
+- ✅ **Phase 1: Prerequisites & Structure Verification**
+  - `prereq-checker` - Verify system requirements (Shell - independent use)
+- 🚀 **Phase 2: Complete Project Setup (Main Setup)**
+  - `setup` - Complete project setup (OCaml - DEFAULT) - runs all setup phases
+  - `setup-backend` - Backend-specific setup (Shell - when user wants backend only)
+- ⚙️ **Phase 3: Environment & Configuration (Additional Setup)**
   - `get-supabase-credentials` - Get Supabase database credentials (Shell)
   - `env-manager` - Environment management (Shell)
-- 🚀 **Phase 2.5: Project Setup & Installation**
-  - `setup-backend` - Backend-specific setup (Shell)
-- 🗄️ **Phase 3: Database Setup & Management**
+- 🗄️ **Phase 4: Database Operations (Additional Setup)**
   - `schema-manager` - Database schema management (Shell)
   - `db-operations` - Database operations (Shell)
-- 🔧 **Phase 4: Service Management**
+- 🔧 **Phase 5: Service Management (Additional Setup)**
   - `service-manager` - Service management (Shell)
-- 🧪 **Phase 5: Testing & Validation**
+- 🧪 **Phase 6: Testing & Validation (Additional Setup)**
   - `test-schema-manager` - Test database schema (Shell)
   - `test-db-connection` - Test database connection (Shell)
   - `test-setup-scripts` - Test setup scripts (Shell)
   - `run-all-tests` - Run all tests (Shell)
-- 📊 **Phase 6: Monitoring & Quick Checks**
+- 📊 **Phase 7: Monitoring & Quick Checks (Additional Setup)**
   - `quick-check` - Quick project check (Shell)
 
 ## 🚀 Typical Setup Workflow
