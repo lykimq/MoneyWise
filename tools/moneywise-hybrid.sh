@@ -82,6 +82,17 @@ case "$COMMAND" in
     # OCaml CLI Commands (DEFAULT - Currently Implemented)
     # ========================================
 
+    "setup")
+        # Setup project using OCaml tool (DEFAULT)
+        if check_ocaml_tool; then
+            print_status "Setting up project with OCaml tool (default)..."
+            "$OCAML_TOOL" setup "${ARGS[@]}"
+        else
+            print_error "Cannot setup project: OCaml tool unavailable"
+            exit 1
+        fi
+        ;;
+
     "check")
         # Check project prerequisites using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
@@ -111,17 +122,6 @@ case "$COMMAND" in
             "$OCAML_TOOL" test "${ARGS[@]}"
         else
             print_error "Cannot run tests: OCaml tool unavailable"
-            exit 1
-        fi
-        ;;
-
-    "setup")
-        # Setup project using OCaml tool (DEFAULT)
-        if check_ocaml_tool; then
-            print_status "Setting up project with OCaml tool (default)..."
-            "$OCAML_TOOL" setup "${ARGS[@]}"
-        else
-            print_error "Cannot setup project: OCaml tool unavailable"
             exit 1
         fi
         ;;
@@ -321,10 +321,10 @@ case "$COMMAND" in
         echo "This wrapper provides a unified interface with OCaml tools as DEFAULT:"
         echo
         echo "🔧 OCaml CLI Commands (DEFAULT - No flags needed):"
+        echo "  setup      - Setup project (OCaml)"
         echo "  check      - Check project prerequisites (OCaml)"
         echo "  status     - Show project status (OCaml)"
         echo "  test       - Run project tests (OCaml)"
-        echo "  setup      - Setup project (OCaml)"
         echo
         echo "📁 Shell Script Commands (Use --shell flag):"
         echo
@@ -355,17 +355,17 @@ case "$COMMAND" in
         echo "    quick-check         - Quick project check (Shell)"
         echo
         echo "💡 Examples:"
+        echo "  $0 setup                    # Setup project (OCaml - DEFAULT)"
         echo "  $0 check                    # Check prerequisites (OCaml - DEFAULT)"
         echo "  $0 --shell prereq-checker   # Check prerequisites (Shell)"
-        echo "  $0 setup                    # Setup project (OCaml - DEFAULT)"
         echo "  $0 --shell setup-backend    # Backend setup (Shell)"
         echo "  $0 --shell schema-manager   # Database schema (Shell)"
         echo "  $0 --shell run-all-tests    # Run all tests (Shell)"
         echo
         echo "🔄 Typical Setup Workflow:"
-        echo "  1. $0 check                     # Verify system requirements (OCaml)"
-        echo "  2. $0 --shell get-supabase-credentials  # Configure database access (Shell)"
-        echo "  3. $0 setup                     # Complete project setup (OCaml)"
+        echo "  1. $0 setup                     # Complete project setup (OCaml)"
+        echo "  2. $0 check                     # Verify setup was successful (OCaml)"
+        echo "  3. $0 --shell get-supabase-credentials  # Configure database access (Shell)"
         echo "  4. $0 --shell setup-backend     # Backend-specific setup (Shell)"
         echo "  5. $0 --shell schema-manager    # Set up database structure (Shell)"
         echo "  6. $0 --shell service-manager   # Start required services (Shell)"
