@@ -21,51 +21,40 @@
     </header>
 
     <div class="odoc-content">
-        <div class="odoc-tocs">
-            <nav class="odoc-toc odoc-local-toc">
-                <h3>📖 Table of Contents</h3>
-                <ul>
-                    <li><a href="#library-moneywise-tools.lib">Library moneywise-tools.lib</a></li>
-                </ul>
-            </nav>
-        </div>
-
-        <div class="odoc-content">
+        <div class="api-overview">
             <h2 id="library-moneywise-tools.lib">
-                <a href="#library-moneywise-tools.lib" class="anchor"></a>
                 📚 Library moneywise-tools.lib
             </h2>
 
-            <div class="api-overview">
-                <p>The entry point of this library is the module:
-                    <a href="Prerequisites/index.html" class="api-link">
-                        <code>Prerequisites</code>
-                    </a>
-                </p>
+            <p>The entry point of this library is the module:
+                <a href="Prerequisites/index.html" class="api-link">
+                    <code>Prerequisites</code>
+                </a>
+            </p>
 
-                <div class="api-features">
-                    <h3>🚀 Key Features</h3>
-                    <ul>
-                        <li><strong>Prerequisites Checking</strong>: Verify system requirements for MoneyWise development</li>
-                        <li><strong>Command Detection</strong>: Check if required tools are available in PATH</li>
-                        <li><strong>Version Extraction</strong>: Parse version information from tool outputs</li>
-                        <li><strong>Comprehensive Reporting</strong>: Detailed status reports with error handling</li>
-                    </ul>
+            <div class="api-features">
+                <h3>🚀 Key Features</h3>
+                <ul>
+                    <li><strong>Prerequisites Checking</strong>: Verify system requirements for MoneyWise development</li>
+                    <li><strong>Command Detection</strong>: Check if required tools are available in PATH</li>
+                    <li><strong>Version Extraction</strong>: Parse version information from tool outputs</li>
+                    <li><strong>Comprehensive Reporting</strong>: Detailed status reports with error handling</li>
+                </ul>
+            </div>
+
+            <div class="api-modules">
+                <h3>📦 Available Modules</h3>
+                <div class="module-card">
+                    <h4>🔍 Prerequisites Module</h4>
+                    <p>Core functionality for checking system prerequisites including Rust, Node.js, PostgreSQL, Redis, Git, and curl.</p>
+                    <a href="Prerequisites/index.html" class="btn-primary">View API →</a>
                 </div>
+            </div>
 
-                <div class="api-modules">
-                    <h3>📦 Available Modules</h3>
-                    <div class="module-card">
-                        <h4>🔍 Prerequisites Module</h4>
-                        <p>Core functionality for checking system prerequisites including Rust, Node.js, PostgreSQL, Redis, Git, and curl.</p>
-                        <a href="Prerequisites/index.html" class="btn-primary">View API →</a>
-                    </div>
-                </div>
-
-                <div class="api-usage">
-                    <h3>💡 Quick Usage Example</h3>
-                    <div class="code-example">
-                        <pre><code class="ocaml"># Check all prerequisites
+            <div class="api-usage">
+                <h3>💡 Quick Usage Example</h3>
+                <div class="code-example">
+                    <pre><code class="ocaml"># Check all prerequisites
 let status = Prerequisites.check_all_prerequisites () in
 Prerequisites.display_prerequisites_status status
 
@@ -73,7 +62,6 @@ Prerequisites.display_prerequisites_status status
 let rust_status = Prerequisites.check_rust () in
 let formatted = Prerequisites.format_prerequisite_result rust_status in
 print_endline formatted</code></pre>
-                    </div>
                 </div>
             </div>
         </div>

@@ -185,13 +185,16 @@ body.odoc {
   font-style: italic;
 }
 
-/* Enhanced table of contents */
+/* Enhanced table of contents - Fixed positioning */
 .odoc-tocs {
   background: var(--moneywise-bg-alt);
   border: 1px solid var(--moneywise-border);
   border-radius: 8px;
   padding: 1.5rem;
   margin: 2rem 0;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
 }
 
 .odoc-toc {
@@ -223,6 +226,12 @@ body.odoc {
 .odoc-toc a:hover {
   color: var(--moneywise-primary-dark);
   text-decoration: underline;
+}
+
+/* Ensure content doesn't overlap with TOC */
+.odoc-content {
+  position: relative;
+  z-index: 1;
 }
 
 /* Enhanced anchors */

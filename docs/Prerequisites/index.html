@@ -21,331 +21,300 @@
     </header>
 
     <div class="odoc-content">
-        <div class="odoc-tocs">
-            <nav class="odoc-toc odoc-local-toc">
-                <h3>📖 Table of Contents</h3>
-                <ul>
-                    <li><a href="#type-prerequisite_result">Types</a>
-                        <ul>
-                            <li><a href="#type-prerequisite_result">prerequisite_result</a></li>
-                            <li><a href="#type-prerequisites_status">prerequisites_status</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#val-command_exists">Functions</a>
-                        <ul>
-                            <li><a href="#val-command_exists">command_exists</a></li>
-                            <li><a href="#val-extract_version">extract_version</a></li>
-                            <li><a href="#val-check_rust">check_rust</a></li>
-                            <li><a href="#val-check_nodejs">check_nodejs</a></li>
-                            <li><a href="#val-check_postgresql">check_postgresql</a></li>
-                            <li><a href="#val-check_redis">check_redis</a></li>
-                            <li><a href="#val-check_git">check_git</a></li>
-                            <li><a href="#val-check_curl">check_curl</a></li>
-                            <li><a href="#val-check_all_prerequisites">check_all_prerequisites</a></li>
-                            <li><a href="#val-format_prerequisite_result">format_prerequisite_result</a></li>
-                            <li><a href="#val-display_prerequisites_status">display_prerequisites_status</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        <div class="module-overview">
+            <h2>📋 Module Overview</h2>
+            <p>This module provides comprehensive functionality for checking system prerequisites required to run MoneyWise tools. It includes functions to verify the availability of essential development tools and services.</p>
 
-        <div class="odoc-content">
-            <div class="module-overview">
-                <h2>📋 Module Overview</h2>
-                <p>This module provides comprehensive functionality for checking system prerequisites required to run MoneyWise tools. It includes functions to verify the availability of essential development tools and services.</p>
-
-                <div class="prerequisites-list">
-                    <h3>🔧 Supported Prerequisites</h3>
-                    <div class="prereq-grid">
-                        <div class="prereq-item">
-                            <span class="prereq-icon">🦀</span>
-                            <span class="prereq-name">Rust & Cargo</span>
-                        </div>
-                        <div class="prereq-item">
-                            <span class="prereq-icon">🟢</span>
-                            <span class="prereq-name">Node.js</span>
-                        </div>
-                        <div class="prereq-item">
-                            <span class="prereq-icon">🐘</span>
-                            <span class="prereq-name">PostgreSQL</span>
-                        </div>
-                        <div class="prereq-item">
-                            <span class="prereq-icon">🔴</span>
-                            <span class="prereq-name">Redis</span>
-                        </div>
-                        <div class="prereq-item">
-                            <span class="prereq-icon">📝</span>
-                            <span class="prereq-name">Git</span>
-                        </div>
-                        <div class="prereq-item">
-                            <span class="prereq-icon">🌐</span>
-                            <span class="prereq-name">curl</span>
-                        </div>
+            <div class="prerequisites-list">
+                <h3>🔧 Supported Prerequisites</h3>
+                <div class="prereq-grid">
+                    <div class="prereq-item">
+                        <span class="prereq-icon">🦀</span>
+                        <span class="prereq-name">Rust & Cargo</span>
+                    </div>
+                    <div class="prereq-item">
+                        <span class="prereq-icon">🟢</span>
+                        <span class="prereq-name">Node.js</span>
+                    </div>
+                    <div class="prereq-item">
+                        <span class="prereq-icon">🐘</span>
+                        <span class="prereq-name">PostgreSQL</span>
+                    </div>
+                    <div class="prereq-item">
+                        <span class="prereq-icon">🔴</span>
+                        <span class="prereq-name">Redis</span>
+                    </div>
+                    <div class="prereq-item">
+                        <span class="prereq-icon">📝</span>
+                        <span class="prereq-name">Git</span>
+                    </div>
+                    <div class="prereq-item">
+                        <span class="prereq-icon">🌐</span>
+                        <span class="prereq-name">curl</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec type anchored" id="type-prerequisite_result">
-                    <a href="#type-prerequisite_result" class="anchor"></a>
-                    <code><span><span class="keyword">type</span> prerequisite_result</span><span> = </span><span>{</span></code>
-                    <ol>
-                        <li id="type-prerequisite_result.name" class="def record field anchored">
-                            <a href="#type-prerequisite_result.name" class="anchor"></a>
-                            <code><span>name : string;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Name of the prerequisite being checked</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisite_result.is_available" class="def record field anchored">
-                            <a href="#type-prerequisite_result.is_available" class="anchor"></a>
-                            <code><span>is_available : bool;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Whether the prerequisite is available on the system</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisite_result.version" class="def record field anchored">
-                            <a href="#type-prerequisite_result.version" class="anchor"></a>
-                            <code><span>version : <span>string option</span>;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Version string if available, None otherwise</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisite_result.path" class="def record field anchored">
-                            <a href="#type-prerequisite_result.path" class="anchor"></a>
-                            <code><span>path : <span>string option</span>;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Path to the executable if found</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisite_result.error_message" class="def record field anchored">
-                            <a href="#type-prerequisite_result.error_message" class="anchor"></a>
-                            <code><span>error_message : <span>string option</span>;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Error message if prerequisite is not available</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                    </ol>
-                    <code><span>}</span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Prerequisite check result containing detailed information about a single prerequisite check</p>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec type anchored" id="type-prerequisite_result">
+                <a href="#type-prerequisite_result" class="anchor"></a>
+                <code><span><span class="keyword">type</span> prerequisite_result</span><span> = </span><span>{</span></code>
+                <ol>
+                    <li id="type-prerequisite_result.name" class="def record field anchored">
+                        <a href="#type-prerequisite_result.name" class="anchor"></a>
+                        <code><span>name : string;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Name of the prerequisite being checked</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisite_result.is_available" class="def record field anchored">
+                        <a href="#type-prerequisite_result.is_available" class="anchor"></a>
+                        <code><span>is_available : bool;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Whether the prerequisite is available on the system</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisite_result.version" class="def record field anchored">
+                        <a href="#type-prerequisite_result.version" class="anchor"></a>
+                        <code><span>version : <span>string option</span>;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Version string if available, None otherwise</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisite_result.path" class="def record field anchored">
+                        <a href="#type-prerequisite_result.path" class="anchor"></a>
+                        <code><span>path : <span>string option</span>;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Path to the executable if found</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisite_result.error_message" class="def record field anchored">
+                        <a href="#type-prerequisite_result.error_message" class="anchor"></a>
+                        <code><span>error_message : <span>string option</span>;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Error message if prerequisite is not available</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                </ol>
+                <code><span>}</span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec type anchored" id="type-prerequisites_status">
-                    <a href="#type-prerequisites_status" class="anchor"></a>
-                    <code><span><span class="keyword">type</span> prerequisites_status</span><span> = </span><span>{</span></code>
-                    <ol>
-                        <li id="type-prerequisites_status.total_checks" class="def record field anchored">
-                            <a href="#type-prerequisites_status.total_checks" class="anchor"></a>
-                            <code><span>total_checks : int;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Total number of prerequisite checks performed</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisites_status.passed_checks" class="def record field anchored">
-                            <a href="#type-prerequisites_status.passed_checks" class="anchor"></a>
-                            <code><span>passed_checks : int;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Number of checks that passed</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisites_status.failed_checks" class="def record field anchored">
-                            <a href="#type-prerequisites_status.failed_checks" class="anchor"></a>
-                            <code><span>failed_checks : int;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>Number of checks that failed</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                        <li id="type-prerequisites_status.results" class="def record field anchored">
-                            <a href="#type-prerequisites_status.results" class="anchor"></a>
-                            <code><span>results : <span><a href="#type-prerequisite_result">prerequisite_result</a> list</span>;</span></code>
-                            <div class="def-doc">
-                                <span class="comment-delim">(*</span>
-                                <p>List of individual check results</p>
-                                <span class="comment-delim">*)</span>
-                            </div>
-                        </li>
-                    </ol>
-                    <code><span>}</span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Overall prerequisites status containing summary information and detailed results</p>
-                </div>
+            <div class="spec-doc">
+                <p>Prerequisite check result containing detailed information about a single prerequisite check</p>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-command_exists">
-                    <a href="#val-command_exists" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> command_exists : <span>string <span class="arrow">&#45;&gt;</span></span> bool</span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check if a command exists in PATH</p>
-                    <ul class="at-tags">
-                        <li class="parameter"><span class="at-tag">parameter</span> <span class="value">cmd</span> <p>The command name to check</p></li>
-                    </ul>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>true if the command exists and is executable, false otherwise</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec type anchored" id="type-prerequisites_status">
+                <a href="#type-prerequisites_status" class="anchor"></a>
+                <code><span><span class="keyword">type</span> prerequisites_status</span><span> = </span><span>{</span></code>
+                <ol>
+                    <li id="type-prerequisites_status.total_checks" class="def record field anchored">
+                        <a href="#type-prerequisites_status.total_checks" class="anchor"></a>
+                        <code><span>total_checks : int;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Total number of prerequisite checks performed</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisites_status.passed_checks" class="def record field anchored">
+                        <a href="#type-prerequisites_status.passed_checks" class="anchor"></a>
+                        <code><span>passed_checks : int;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Number of checks that passed</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisites_status.failed_checks" class="def record field anchored">
+                        <a href="#type-prerequisites_status.failed_checks" class="anchor"></a>
+                        <code><span>failed_checks : int;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>Number of checks that failed</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                    <li id="type-prerequisites_status.results" class="def record field anchored">
+                        <a href="#type-prerequisites_status.results" class="anchor"></a>
+                        <code><span>results : <span><a href="#type-prerequisite_result">prerequisite_result</a> list</span>;</span></code>
+                        <div class="def-doc">
+                            <span class="comment-delim">(*</span>
+                            <p>List of individual check results</p>
+                            <span class="comment-delim">*)</span>
+                        </div>
+                    </li>
+                </ol>
+                <code><span>}</span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-extract_version">
-                    <a href="#val-extract_version" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> extract_version : <span>string <span class="arrow">&#45;&gt;</span></span> <span>string <span class="arrow">&#45;&gt;</span></span> <span>string option</span></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Extract version from command output using pattern matching</p>
-                    <ul class="at-tags">
-                        <li class="parameter"><span class="at-tag">parameter</span> <span class="value">cmd</span> <p>The command to execute</p></li>
-                    </ul>
-                    <ul class="at-tags">
-                        <li class="parameter"><span class="at-tag">parameter</span> <span class="value">args</span> <p>The arguments to pass to the command</p></li>
-                    </ul>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>Some version_string if a version pattern is found, None otherwise</p></li>
-                    </ul>
-                </div>
+            <div class="spec-doc">
+                <p>Overall prerequisites status containing summary information and detailed results</p>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_rust">
-                    <a href="#val-check_rust" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_rust : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check Rust/Cargo installation</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Rust/Cargo availability and version</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-command_exists">
+                <a href="#val-command_exists" class="anchor"></a>
+                <code><span><span class="keyword">val</span> command_exists : <span>string <span class="arrow">&#45;&gt;</span></span> bool</span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_nodejs">
-                    <a href="#val-check_nodejs" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_nodejs : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check Node.js installation</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Node.js availability and version</p></li>
-                    </ul>
-                </div>
+            <div class="spec-doc">
+                <p>Check if a command exists in PATH</p>
+                <ul class="at-tags">
+                    <li class="parameter"><span class="at-tag">parameter</span> <span class="value">cmd</span> <p>The command name to check</p></li>
+                </ul>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>true if the command exists and is executable, false otherwise</p></li>
+                </ul>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_postgresql">
-                    <a href="#val-check_postgresql" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_postgresql : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check PostgreSQL installation</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating PostgreSQL availability and version</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-extract_version">
+                <a href="#val-extract_version" class="anchor"></a>
+                <code><span><span class="keyword">val</span> extract_version : <span>string <span class="arrow">&#45;&gt;</span></span> <span>string <span class="arrow">&#45;&gt;</span></span> <span>string option</span></span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_redis">
-                    <a href="#val-check_redis" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_redis : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check Redis installation (optional)</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Redis availability and version</p></li>
-                    </ul>
-                </div>
+            <div class="spec-doc">
+                <p>Extract version from command output using pattern matching</p>
+                <ul class="at-tags">
+                    <li class="parameter"><span class="at-tag">parameter</span> <span class="value">cmd</span> <p>The command to execute</p></li>
+                </ul>
+                <ul class="at-tags">
+                    <li class="parameter"><span class="at-tag">parameter</span> <span class="value">args</span> <p>The arguments to pass to the command</p></li>
+                </ul>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>Some version_string if a version pattern is found, None otherwise</p></li>
+                </ul>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_git">
-                    <a href="#val-check_git" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_git : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check Git installation</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Git availability and version</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_rust">
+                <a href="#val-check_rust" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_rust : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_curl">
-                    <a href="#val-check_curl" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_curl : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Check curl installation</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating curl availability</p></li>
-                    </ul>
-                </div>
+            <div class="spec-doc">
+                <p>Check Rust/Cargo installation</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Rust/Cargo availability and version</p></li>
+                </ul>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-check_all_prerequisites">
-                    <a href="#val-check_all_prerequisites" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> check_all_prerequisites : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisites_status">prerequisites_status</a></span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Run all prerequisite checks</p>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>prerequisites_status with summary of all checks</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_nodejs">
+                <a href="#val-check_nodejs" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_nodejs : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
             </div>
-
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-format_prerequisite_result">
-                    <a href="#val-format_prerequisite_result" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> format_prerequisite_result : <span><a href="#type-prerequisite_result">prerequisite_result</a> <span class="arrow">&#45;&gt;</span></span> string</span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Format prerequisite result for display</p>
-                    <ul class="at-tags">
-                        <li class="parameter"><span class="at-tag">parameter</span> <span class="value">result</span> <p>The prerequisite result to format</p></li>
-                    </ul>
-                    <ul class="at-tags">
-                        <li class="returns"><span class="at-tag">returns</span> <p>Formatted string with status emoji, name, version, and error message</p></li>
-                    </ul>
-                </div>
+            <div class="spec-doc">
+                <p>Check Node.js installation</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Node.js availability and version</p></li>
+                </ul>
             </div>
+        </div>
 
-            <div class="odoc-spec">
-                <div class="spec value anchored" id="val-display_prerequisites_status">
-                    <a href="#val-display_prerequisites_status" class="anchor"></a>
-                    <code><span><span class="keyword">val</span> display_prerequisites_status : <span><a href="#type-prerequisites_status">prerequisites_status</a> <span class="arrow">&#45;&gt;</span></span> unit</span></code>
-                </div>
-                <div class="spec-doc">
-                    <p>Display prerequisites status to stdout</p>
-                    <ul class="at-tags">
-                        <li class="parameter"><span class="at-tag">parameter</span> <span class="value">status</span> <p>The prerequisites status to display</p></li>
-                    </ul>
-                </div>
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_postgresql">
+                <a href="#val-check_postgresql" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_postgresql : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Check PostgreSQL installation</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating PostgreSQL availability and version</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_redis">
+                <a href="#val-check_redis" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_redis : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Check Redis installation (optional)</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Redis availability and version</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_git">
+                <a href="#val-check_git" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_git : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Check Git installation</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating Git availability and version</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_curl">
+                <a href="#val-check_curl" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_curl : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisite_result">prerequisite_result</a></span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Check curl installation</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisite_result indicating curl availability</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-check_all_prerequisites">
+                <a href="#val-check_all_prerequisites" class="anchor"></a>
+                <code><span><span class="keyword">val</span> check_all_prerequisites : <span>unit <span class="arrow">&#45;&gt;</span></span> <a href="#type-prerequisites_status">prerequisites_status</a></span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Run all prerequisite checks</p>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>prerequisites_status with summary of all checks</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-format_prerequisite_result">
+                <a href="#val-format_prerequisite_result" class="anchor"></a>
+                <code><span><span class="keyword">val</span> format_prerequisite_result : <span><a href="#type-prerequisite_result">prerequisite_result</a> <span class="arrow">&#45;&gt;</span></span> string</span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Format prerequisite result for display</p>
+                <ul class="at-tags">
+                    <li class="parameter"><span class="at-tag">parameter</span> <span class="value">result</span> <p>The prerequisite result to format</p></li>
+                </ul>
+                <ul class="at-tags">
+                    <li class="returns"><span class="at-tag">returns</span> <p>Formatted string with status emoji, name, version, and error message</p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="odoc-spec">
+            <div class="spec value anchored" id="val-display_prerequisites_status">
+                <a href="#val-display_prerequisites_status" class="anchor"></a>
+                <code><span><span class="keyword">val</span> display_prerequisites_status : <span><a href="#type-prerequisites_status">prerequisites_status</a> <span class="arrow">&#45;&gt;</span></span> unit</span></code>
+            </div>
+            <div class="spec-doc">
+                <p>Display prerequisites status to stdout</p>
+                <ul class="at-tags">
+                    <li class="parameter"><span class="at-tag">parameter</span> <span class="value">status</span> <p>The prerequisites status to display</p></li>
+                </ul>
             </div>
         </div>
     </div>
@@ -393,17 +362,6 @@
         .prereq-name {
             font-weight: 500;
             color: var(--moneywise-text);
-        }
-
-        .odoc-toc ul ul {
-            margin-left: 1rem;
-            border-left: 2px solid var(--moneywise-border);
-            padding-left: 1rem;
-        }
-
-        .odoc-toc ul ul li {
-            font-size: 0.9em;
-            padding: 0.25rem 0;
         }
     </style>
 </body>
