@@ -27,7 +27,7 @@ help: ## Show this help message
 	@echo "  test           - Run tests"
 	@echo
 	@echo "Documentation:"
-	@echo "  doc            - Generate documentation with OCamlDoc"
+	@echo "  doc            - Generate documentation with odoc"
 	@echo
 	@echo "Installation:"
 	@echo "  install        - Install the tool system-wide"
@@ -61,16 +61,20 @@ test: ## Run tests
 	@echo "✅ Tests completed!"
 
 # Documentation
-doc: ## Generate documentation with OCamlDoc
-	@echo "📚 Generating documentation with OCamlDoc..."
-	@if command -v ocamldoc >/dev/null 2>&1; then \
-		mkdir -p ../../docs; \
-		ocamldoc -html -d ../../docs -I _build/default/lib -t "MoneyWise OCaml Tools" lib/*.ml; \
-		echo "✅ Documentation generated in docs/"; \
-		echo "🌐 Open docs/index.html in your browser"; \
+doc: ## Generate documentation with odoc
+	@echo "📚 Generating documentation with odoc..."
+	@if command -v odoc >/dev/null 2>&1; then \
+		dune build @doc; \
+		echo "📁 Copying documentation to docs/ folder for GitHub Pages..."; \
+		rm -f ../../docs/*.html; \
+		rm -rf ../../docs/moneywise-tools ../../docs/odoc.support; \
+		cp -r _build/default/_doc/_html/* ../../docs/; \
+		echo "✅ Documentation generated and copied to docs/"; \
+		echo "🌐 Open ../../docs/index.html in your browser"; \
+		echo "🚀 Documentation ready for GitHub Pages deployment"; \
 	else \
-		echo "❌ OCamlDoc not found. Installing..."; \
-		opam install ocamldoc; \
+		echo "❌ odoc not found. Installing..."; \
+		opam install odoc; \
 		$(MAKE) doc; \
 	fi
 
