@@ -1,7 +1,7 @@
 # MoneyWise OCaml Tools Makefile
 # Provides convenient targets for building, testing, and development
 
-.PHONY: help build clean test install uninstall run help-command dev-setup check-deps format lint
+.PHONY: help build clean test install uninstall run
 
 # Project configuration
 PROJECT_NAME := moneywise-tools
@@ -24,32 +24,20 @@ help: ## Show this help message
 	@echo "  clean          - Clean build artifacts"
 	@echo "  rebuild        - Clean and rebuild everything"
 	@echo
-	@echo "Development:"
-	@echo "  dev-setup      - Setup development environment"
-	@echo "  check-deps     - Check OCaml dependencies"
-	@echo "  format         - Format OCaml code"
-	@echo "  lint           - Run linting checks"
-	@echo
 	@echo "Testing:"
 	@echo "  test           - Run tests"
-	@echo "  test-watch     - Run tests in watch mode"
 	@echo
 	@echo "Installation:"
 	@echo "  install        - Install the tool system-wide"
 	@echo "  uninstall      - Uninstall the tool"
 	@echo
 	@echo "Execution:"
-	@echo "  run            - Run the CLI tool"
+	@echo "  run            - Run the CLI tool (defaults to 'status' command)"
+	@echo "  run ARGS=setup - Run the CLI tool with specific command (e.g., setup)"
 	@echo "  run-help       - Show CLI help"
 	@echo "  run-status     - Run status command"
 	@echo
-	@echo "Utilities:"
-	@echo "  check-ocaml    - Check OCaml installation"
-	@echo "  check-dune     - Check Dune installation"
-	@echo "  check-opam     - Check OPAM installation"
-	@echo
 	@echo "Use 'make <target>' to run a specific target"
-	@echo "Use 'make help-command <command>' to get help for a specific command"
 
 # Build targets
 build: ## Build the project
@@ -64,57 +52,11 @@ clean: ## Clean build artifacts
 
 rebuild: clean build ## Clean and rebuild everything
 
-# Development setup
-dev-setup: ## Setup development environment
-	@echo "🛠️  Setting up development environment..."
-	@echo "Checking OCaml installation..."
-	@which ocamlc > /dev/null || (echo "❌ OCaml not found. Please install OCaml first." && exit 1)
-	@echo "✅ OCaml found: $(shell ocamlc -version)"
-	@echo
-	@echo "Checking Dune installation..."
-	@which dune > /dev/null || (echo "❌ Dune not found. Please install Dune first." && exit 1)
-	@echo "✅ Dune found: $(shell dune --version)"
-	@echo
-	@echo "Checking OPAM installation..."
-	@which opam > /dev/null || (echo "❌ OPAM not found. Please install OPAM first." && exit 1)
-	@echo "✅ OPAM found: $(shell opam --version)"
-	@echo
-	@echo "Installing dependencies..."
-	opam install --deps-only --with-test --with-doc .
-	@echo "✅ Development environment setup completed!"
-
-check-deps: ## Check OCaml dependencies
-	@echo "🔍 Checking OCaml dependencies..."
-	@echo "Installed packages:"
-	@opam list --short --depends-on=. | sort
-	@echo
-	@echo "Missing packages:"
-	@opam list --short --depends-on=. --depends-on=. --recursive | sort -u | while read pkg; do \
-		if ! opam list --short | grep -q "^$$pkg$$"; then \
-			echo "  ❌ $$pkg"; \
-		fi; \
-	done
-
-# Code quality
-format: ## Format OCaml code
-	@echo "🎨 Formatting OCaml code..."
-	dune build @fmt --auto-promote
-	@echo "✅ Code formatting completed!"
-
-lint: ## Run linting checks
-	@echo "🔍 Running linting checks..."
-	dune build @lint
-	@echo "✅ Linting completed!"
-
 # Testing
 test: ## Run tests
 	@echo "🧪 Running tests..."
 	dune runtest
 	@echo "✅ Tests completed!"
-
-test-watch: ## Run tests in watch mode
-	@echo "🧪 Running tests in watch mode..."
-	dune runtest --watch
 
 # Installation
 install: build ## Install the tool system-wide
@@ -139,10 +81,15 @@ uninstall: ## Uninstall the tool
 	fi
 
 # Execution
-run: build ## Run the CLI tool
+run: build ## Run the CLI tool (defaults to status command)
 	@echo "🚀 Running MoneyWise CLI tool..."
 	@if [ -f "$(EXECUTABLE)" ]; then \
-		$(EXECUTABLE) $(ARGS); \
+		if [ -n "$(ARGS)" ]; then \
+			$(EXECUTABLE) $(ARGS); \
+		else \
+			echo "ℹ️  No arguments provided, running default 'status' command..."; \
+			$(EXECUTABLE) status; \
+		fi; \
 	else \
 		echo "❌ Executable not found. Please run 'make build' first."; \
 		exit 1; \
@@ -150,91 +97,11 @@ run: build ## Run the CLI tool
 
 run-help: build ## Show CLI help
 	@echo "📖 Showing CLI help..."
-	$(EXECUTABLE) --help
+	$(EXECUTABLE) --help=plain
 
 run-status: build ## Run status command
 	@echo "📊 Running status command..."
 	$(EXECUTABLE) status
-
-# Utility checks
-check-ocaml: ## Check OCaml installation
-	@echo "🔍 Checking OCaml installation..."
-	@if which ocamlc > /dev/null; then \
-		echo "✅ OCaml found: $(shell ocamlc -version)"; \
-		echo "  Location: $(shell which ocamlc)"; \
-		echo "  Standard library: $(shell ocamlc -where)"; \
-	else \
-		echo "❌ OCaml not found"; \
-		echo "  Please install OCaml from https://ocaml.org/"; \
-		exit 1; \
-	fi
-
-check-dune: ## Check Dune installation
-	@echo "🔍 Checking Dune installation..."
-	@if which dune > /dev/null; then \
-		echo "✅ Dune found: $(shell dune --version)"; \
-		echo "  Location: $(shell which dune)"; \
-	else \
-		echo "❌ Dune not found"; \
-		echo "  Please install Dune: opam install dune"; \
-		exit 1; \
-	fi
-
-check-opam: ## Check OPAM installation
-	@echo "🔍 Checking OPAM installation..."
-	@if which opam > /dev/null; then \
-		echo "✅ OPAM found: $(shell opam --version)"; \
-		echo "  Location: $(shell which opam)"; \
-		echo "  Switch: $(shell opam switch show)"; \
-	else \
-		echo "❌ OPAM not found"; \
-		echo "  Please install OPAM from https://opam.ocaml.org/"; \
-		exit 1; \
-	fi
-
-# Project information
-info: ## Show project information
-	@echo "📋 MoneyWise OCaml Tools - Project Information"
-	@echo "==============================================="
-	@echo "Project Name: $(PROJECT_NAME)"
-	@echo "Build Directory: $(BUILD_DIR)"
-	@echo "Executable: $(EXECUTABLE)"
-	@echo "Public Name: $(PUBLIC_NAME)"
-	@echo
-	@echo "OCaml Version: $(shell ocamlc -version 2>/dev/null || echo 'Not available')"
-	@echo "Dune Version: $(shell dune --version 2>/dev/null || echo 'Not available')"
-	@echo "OPAM Version: $(shell opam --version 2>/dev/null || echo 'Not available')"
-	@echo
-	@if [ -f "$(EXECUTABLE)" ]; then \
-		echo "✅ Executable is built and ready"; \
-		echo "  Size: $(shell ls -lh "$(EXECUTABLE)" | awk '{print $$5}')"; \
-		echo "  Last modified: $(shell ls -l "$(EXECUTABLE)" | awk '{print $$6, $$7, $$8}')"; \
-	else \
-		echo "❌ Executable not built yet"; \
-		echo "  Run 'make build' to build the project"; \
-	fi
-
-# Development workflow
-dev: dev-setup build test ## Complete development workflow
-	@echo "🎉 Development workflow completed successfully!"
-
-# Quick development cycle
-quick: build test ## Quick build and test cycle
-
-# Help for specific commands
-help-command: ## Get help for a specific command (usage: make help-command COMMAND=setup)
-	@if [ -z "$(COMMAND)" ]; then \
-		echo "❌ Please specify a command: make help-command COMMAND=<command>"; \
-		echo "Available commands: setup, check, test, status"; \
-		exit 1; \
-	fi
-	@echo "📖 Help for command: $(COMMAND)"
-	@if [ -f "$(EXECUTABLE)" ]; then \
-		$(EXECUTABLE) $(COMMAND) --help; \
-	else \
-		echo "❌ Executable not built. Run 'make build' first."; \
-		exit 1; \
-	fi
 
 # Default target
 .DEFAULT_GOAL := help
