@@ -166,7 +166,6 @@ MoneyWise/
    # Build and run OCaml tools
    make build        # Build the OCaml CLI tool
    make verify       # Verify project structure and prerequisites
-   make check        # Check project status
    make test         # Run tests
    make help        # Show available commands
    ```

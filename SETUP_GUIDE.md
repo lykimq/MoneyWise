@@ -182,8 +182,8 @@ sqlx migrate run
 ## 📁 Project Structure
 ```
 MoneyWise/
-├── setup.sh                    # 🆕 Root-level setup script
-├── scripts/                    # 🆕 Modular setup utilities
+├── verify.sh                  # 🆕 Root-level verify script
+├── scripts/                   # 🆕 Modular setup utilities
 │   ├── core/                  # Core utility modules
 │   │   ├── setup-utils.sh     # Main orchestrator
 │   │   └── output-utils.sh    # Colors & formatting
