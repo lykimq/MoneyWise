@@ -2,6 +2,8 @@
 
 open Types
 open Utils
+open Results
+open Errors
 
 (** Setup backend by running the backend setup script *)
 let setup_backend root_dir =

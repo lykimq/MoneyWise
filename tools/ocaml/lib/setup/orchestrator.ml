@@ -4,6 +4,7 @@
     before any setup or installation can proceed. *)
 
 open Types
+open Results
 
 (** Import implemented phase modules *)
 open Phase1_structure  (* ✅ Fully implemented in OCaml *)

@@ -2,6 +2,8 @@
 
 open Types
 open Utils
+open Results
+open Errors
 
 (** Configure environment by running setup scripts *)
 let configure_environment root_dir =

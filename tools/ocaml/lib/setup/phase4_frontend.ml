@@ -1,7 +1,11 @@
-(** Phase 4: Frontend Setup *)
+(** Phase 4: Frontend Setup 
+    Note: This phase is not yet integrated into the main workflow.
+    It will be called from the orchestrator in future updates. *)
 
 open Types
 open Utils
+open Results
+open Errors
 
 (** Setup frontend by installing Node.js dependencies *)
 let setup_frontend root_dir =

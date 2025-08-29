@@ -1,6 +1,8 @@
 (** Phase 2: Prerequisites Verification *)
 
 open Types
+open Results
+open Errors
 
 (** Prerequisite check result *)
 type prerequisite_result = {

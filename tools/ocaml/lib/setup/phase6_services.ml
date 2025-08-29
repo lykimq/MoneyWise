@@ -2,6 +2,8 @@
 
 open Types
 open Utils
+open Results
+open Errors
 
 (** Manage services by running the service manager script *)
 let manage_services root_dir =

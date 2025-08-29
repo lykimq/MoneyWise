@@ -2,6 +2,8 @@
 
 open Types
 open Utils
+open Results
+open Errors
 
 (** Run final validation checks to verify everything is working *)
 let final_validation root_dir =

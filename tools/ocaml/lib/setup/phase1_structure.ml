@@ -14,8 +14,6 @@
     the scripts directory or shell utilities.
 *)
 
-open Types
-open Utils
 
 (** Result of checking a single path (file or directory) *)
 type path_check_result = {
@@ -46,7 +44,7 @@ let check_single_path root_dir path description exists_fn =
   let full_path = Filename.concat root_dir path in
   let exists = exists_fn full_path in
   let error_message = if not exists then
-    Some (Printf.sprintf "%s not found at %s" description (format_path full_path))
+    Some (Printf.sprintf "%s not found at %s" description (Utils.format_path full_path))
   else
     None
   in
@@ -88,7 +86,7 @@ let display_structure_status status =
 
 let verify_project_structure root_dir =
   Printf.printf "🔍 Phase 1: Project Structure Verification\n";
-  Printf.printf "  Checking project structure in: %s\n" (format_path root_dir);
+  Printf.printf "  Checking project structure in: %s\n" (Utils.format_path root_dir);
 
   let status = ref (create_empty_status ()) in
 
@@ -97,10 +95,10 @@ let verify_project_structure root_dir =
      - Frontend: Contains the React Native mobile application *)
   (* Define required paths to check *)
   let required_paths = [
-    ("moneywise-backend", "Backend directory", directory_exists);
-    ("moneywise-app", "Frontend directory", directory_exists);
-    ("moneywise-backend/setup.sh", "Backend setup script", file_exists);
-    ("moneywise-app/package.json", "Frontend package configuration", file_exists);
+    ("moneywise-backend", "Backend directory", Utils.directory_exists);
+    ("moneywise-app", "Frontend directory", Utils.directory_exists);
+    ("moneywise-backend/setup.sh", "Backend setup script", Utils.file_exists);
+    ("moneywise-app/package.json", "Frontend package configuration", Utils.file_exists);
   ] in
 
   (* Check all paths and update status *)
@@ -114,7 +112,7 @@ let verify_project_structure root_dir =
 
   (* Convert to phase result for compatibility *)
     let final_result = {
-    phase_name = "Project Structure Verification";
+    Types.phase_name = "Project Structure Verification";
     success = !status.failed_checks = 0;
     errors = List.filter_map (fun r -> r.error_message) !status.results;
     warnings = [];  (* No warnings in this phase *)
