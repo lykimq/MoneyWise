@@ -14,12 +14,6 @@ We've migrated from the shell scripts approach to pure OCaml CLI tools because t
 - **Scalability**: Tools grow robustly with project complexity
 - **Consistency**: Single, unified interface for all operations
 
-### **OCaml CLI Tools - Current Status:**
-- **Development Speed**: Optimized for the specific operations we need
-- **Build Time**: Fast incremental compilation for development
-- **Learning Curve**: Team has gained OCaml expertise
-- **Overhead**: Minimal complexity for our use cases
-
 ## 🏗️ Current Architecture
 
 **Pure OCaml Interface**: Direct command execution through the `moneywise_cli` executable:
@@ -63,6 +57,7 @@ tools/
 
 **Underlying Script Functionality**:
 The OCaml tools integrate with and build upon the existing shell scripts in the project:
+- **Verifying Project Structure**: `setup.sh`
 - **Prerequisites & Structure**: `scripts/setup/prereq-checker.sh`
 - **Environment & Configuration**: `scripts/setup/get-supabase-credentials.sh`, `scripts/setup/env-manager.sh`
 - **Backend Setup**: `moneywise-backend/setup.sh`
@@ -88,29 +83,6 @@ The OCaml tools provide the core verification, while leveraging the underlying s
 - **Scalability**: Tools grow with project complexity
 - **Consistency**: Single interface for all operations reduces cognitive load
 - **Script Reuse**: Leverages existing, tested shell script functionality
-
-## 🔮 Strategic Benefits
-
-Our pure OCaml approach provides:
-- **Optimal Tool Selection**: Use the right tool for each specific task
-- **Risk Mitigation**: Type safety for all critical operations
-- **Team Flexibility**: Developers work with a single, reliable interface
-- **Performance Optimization**: Native compilation for all operations
-- **Maintenance Balance**: Structured code for all logic, with underlying scripts providing proven functionality
-
-## 📝 Migration Status
-
-**Pure OCaml Approach**: We've successfully migrated core functionality to OCaml tools:
-- **Phase 1**: Core operations (verify, test) ✅ Complete
-- **Phase 2**: Environment and configuration management 🔄 Available via underlying scripts
-- **Phase 3**: Database operations 🔄 Available via underlying scripts
-- **Phase 4**: Service management 🔄 Available via underlying scripts
-- **Phase 5**: Testing and validation 🔄 Available via underlying scripts
-
-**Script Integration**: The OCaml tools integrate with existing scripts to provide:
-- Comprehensive project setup and management
-- Proven, tested functionality from existing scripts
-- Seamless user experience through unified interface
 
 ## 🚀 Getting Started
 
