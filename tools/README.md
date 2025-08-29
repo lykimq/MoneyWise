@@ -4,7 +4,7 @@
 
 ## 🔄 Why We Use OCaml CLI Tools
 
-We've migrated from the hybrid approach to pure OCaml CLI tools because they provide the best balance of reliability and maintainability:
+We've migrated from the shell scripts approach to pure OCaml CLI tools because they provide the best balance of reliability and maintainability:
 
 ### **OCaml CLI Tools - Strengths:**
 - **Type Safety**: Compile-time error checking prevents runtime failures
