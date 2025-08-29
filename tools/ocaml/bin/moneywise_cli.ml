@@ -5,16 +5,12 @@ open Cmdliner
 (** Import the commands module *)
 open Commands
 
-(** CLI command definitions - now imported from modular structure *)
-
 (** Main command group *)
-let cmds = [setup_cmd; check_cmd; test_cmd; status_cmd]
+let cmds = [verify_cmd; test_cmd]
 
 (** Workflow:
-    1. setup  - Creates and configures everything
-    2. check  - Validates that setup was successful
-    3. status - Ongoing monitoring
-    4. test   - Comprehensive testing
+    1. verify - Verify project structure and prerequisites
+    2. test   - Run project tests
 *)
 
 let () =

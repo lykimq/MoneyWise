@@ -25,6 +25,13 @@ else
     print_success() { echo "✅ $1"; }
     print_error() { echo "❌ $1"; }
     print_warning() { echo "⚠️  $1"; }
+    print_info() { echo "💡 $1"; }
+    print_section_header() {
+        echo
+        echo "$1"
+        echo "$(printf '=%.0s' $(seq 1 ${#1}))"
+        echo
+    }
 fi
 
 # OCaml tool path
@@ -35,8 +42,8 @@ check_ocaml_tool() {
     if [ -f "$OCAML_TOOL" ]; then
         return 0
     else
-        print_warning "OCaml tool not found, building..."
-        if cd "$SCRIPT_DIR/ocaml" && dune build; then
+        # Build quietly to avoid duplicate messages
+        if cd "$SCRIPT_DIR/ocaml" && dune build --display=quiet; then
             cd "$PROJECT_ROOT"
             return 0
         else
@@ -83,10 +90,48 @@ case "$COMMAND" in
     # ========================================
 
     "setup")
+        if [[ "$SHELL_MODE" == true ]]; then
+            print_error "Setup command is only available in OCaml mode"
+            print_info "The OCaml tool will verify project structure and prerequisites"
+            print_info "Then use individual shell commands for remaining setup steps:"
+            print_info "  ./tools/moneywise-hybrid.sh --shell setup-backend"
+            print_info "  ./tools/moneywise-hybrid.sh --shell get-supabase-credentials"
+            print_info "  ./tools/moneywise-hybrid.sh --shell service-manager"
+            exit 1
+        fi
+
         # Setup project using OCaml tool (DEFAULT)
         if check_ocaml_tool; then
-            print_status "Setting up project with OCaml tool (default)..."
-            "$OCAML_TOOL" setup "${ARGS[@]}"
+            # Export project root for OCaml tool
+            export PROJECT_ROOT
+
+            # Run OCaml setup tool directly without additional output
+            if [[ "${#ARGS[@]}" -eq 0 ]]; then
+                # If no args provided, use project root
+                "$OCAML_TOOL" setup --project-root "$PROJECT_ROOT"
+
+                # If verification passes, print next steps
+                if [ $? -eq 0 ]; then
+                    print_section_header "Next Steps"
+                    print_info "Project structure and prerequisites verified!"
+                    print_info "To complete setup, run these commands in order:"
+                    echo
+                    print_info "1. Setup backend:"
+                    echo "   ./tools/moneywise-hybrid.sh --shell setup-backend"
+                    echo
+                    print_info "2. Configure environment:"
+                    echo "   ./tools/moneywise-hybrid.sh --shell get-supabase-credentials"
+                    echo
+                    print_info "3. Start services:"
+                    echo "   ./tools/moneywise-hybrid.sh --shell service-manager"
+                    echo
+                    print_info "4. Verify setup:"
+                    echo "   ./tools/moneywise-hybrid.sh --shell quick-check"
+                fi
+            else
+                # Pass through any provided args
+                "$OCAML_TOOL" setup "${ARGS[@]}"
+            fi
         else
             print_error "Cannot setup project: OCaml tool unavailable"
             exit 1

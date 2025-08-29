@@ -1,4 +1,6 @@
-(** Prerequisites checking module for MoneyWise tools *)
+(** Phase 2: Prerequisites Verification *)
+
+open Types
 
 (** Prerequisite check result *)
 type prerequisite_result = {
@@ -17,9 +19,7 @@ type prerequisites_status = {
   results : prerequisite_result list; (** List of individual check results *)
 }
 
-(** Check if a command exists in PATH
-    @param cmd The command name to check
-    @return true if the command exists and is executable, false otherwise *)
+(** Check if a command exists in PATH *)
 let command_exists cmd =
   try
     let ic = Unix.open_process_in (Printf.sprintf "which %s" cmd) in
@@ -30,10 +30,7 @@ let command_exists cmd =
     | _ -> false
   with _ -> false
 
-(** Extract version from command output using pattern matching
-    @param cmd The command to execute
-    @param args The arguments to pass to the command
-    @return Some version_string if a version pattern is found, None otherwise *)
+(** Extract version from command output using pattern matching *)
 let extract_version cmd args =
   try
     let cmd_str = Printf.sprintf "%s %s" cmd args in
@@ -58,8 +55,7 @@ let extract_version cmd args =
     find_version 0
   with _ -> None
 
-(** Check Rust/Cargo installation
-    @return prerequisite_result indicating Rust/Cargo availability and version *)
+(** Check Rust/Cargo installation *)
 let check_rust () =
   let name = "Rust/Cargo" in
   if not (command_exists "cargo") then
@@ -80,8 +76,7 @@ let check_rust () =
       error_message = None;
     }
 
-(** Check Node.js installation
-    @return prerequisite_result indicating Node.js availability and version *)
+(** Check Node.js installation *)
 let check_nodejs () =
   let name = "Node.js" in
   if not (command_exists "node") then
@@ -102,8 +97,7 @@ let check_nodejs () =
       error_message = None;
     }
 
-(** Check PostgreSQL installation
-    @return prerequisite_result indicating PostgreSQL availability and version *)
+(** Check PostgreSQL installation *)
 let check_postgresql () =
   let name = "PostgreSQL" in
   if not (command_exists "psql") then
@@ -124,8 +118,7 @@ let check_postgresql () =
       error_message = None;
     }
 
-(** Check Redis installation (optional)
-    @return prerequisite_result indicating Redis availability and version *)
+(** Check Redis installation (optional) *)
 let check_redis () =
   let name = "Redis" in
   if not (command_exists "redis-cli") then
@@ -146,8 +139,7 @@ let check_redis () =
       error_message = None;
     }
 
-(** Check Git installation
-    @return prerequisite_result indicating Git availability and version *)
+(** Check Git installation *)
 let check_git () =
   let name = "Git" in
   if not (command_exists "git") then
@@ -168,8 +160,7 @@ let check_git () =
       error_message = None;
     }
 
-(** Check curl installation
-    @return prerequisite_result indicating curl availability *)
+(** Check curl installation *)
 let check_curl () =
   let name = "curl" in
   if not (command_exists "curl") then
@@ -189,8 +180,7 @@ let check_curl () =
       error_message = None;
     }
 
-(** Check all prerequisites and return status
-    @return prerequisites_status with results of all checks *)
+(** Check all prerequisites and return status *)
 let check_all_prerequisites () =
   let checks = [
     check_rust ();
@@ -237,8 +227,25 @@ let display_prerequisites_status status =
   else
     Printf.printf "❌ Some prerequisites are missing. Please install them and try again.\n"
 
-(** Check prerequisites without displaying output - for use by other modules
-    @return true if all prerequisites are available, false otherwise *)
-let verify_prerequisites_silent () =
-  let status = check_all_prerequisites () in
-  status.failed_checks = 0
+(** Verify all prerequisites are available *)
+let verify_prerequisites () =
+  Printf.printf "✅ Phase 2: Prerequisites Verification\n";
+
+  let result = ref (initial_phase_result "Prerequisites Verification") in
+  let prereq_status = check_all_prerequisites () in
+
+  display_prerequisites_status prereq_status;
+  result := add_detail !result (Printf.sprintf "%d/%d prerequisites verified"
+    prereq_status.passed_checks prereq_status.total_checks);
+
+  if prereq_status.failed_checks = 0 then (
+    result := { !result with success = true }
+  ) else (
+    result := add_phase_error !result "Some prerequisites are missing";
+    result := { !result with success = false }
+  );
+
+  Printf.printf "  Phase 2 completed: %d/%d checks passed\n"
+    (if !result.success then 1 else 0) 1;
+
+  !result

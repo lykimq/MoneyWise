@@ -5,18 +5,18 @@ open OUnit2
 (** Test that basic command existence detection works correctly *)
 let test_command_exists _test_ctxt =
   (* Test with a command that should exist *)
-  assert_bool "ls should exist" (Prerequisites.command_exists "ls");
+  assert_bool "ls should exist" (Phase2_prerequisites.command_exists "ls");
   (* Test with a command that should not exist *)
-  assert_bool "nonexistent_command should not exist" (not (Prerequisites.command_exists "nonexistent_command_xyz123"))
+  assert_bool "nonexistent_command should not exist" (not (Phase2_prerequisites.command_exists "nonexistent_command_xyz123"))
 
 (** Test command existence detection with edge cases and invalid inputs *)
 let test_command_exists_edge_cases _test_ctxt =
   (* Test with empty string *)
-  assert_bool "empty string should not exist" (not (Prerequisites.command_exists ""));
+  assert_bool "empty string should not exist" (not (Phase2_prerequisites.command_exists ""));
   (* Test with spaces *)
-  assert_bool "command with spaces should not exist" (not (Prerequisites.command_exists "command with spaces"));
+  assert_bool "command with spaces should not exist" (not (Phase2_prerequisites.command_exists "command with spaces"));
   (* Test with special characters *)
-  assert_bool "command with special chars should not exist" (not (Prerequisites.command_exists "command@#$%"))
+  assert_bool "command with special chars should not exist" (not (Phase2_prerequisites.command_exists "command@#$%"))
 
 (** Test the version extraction algorithm that scans command output strings to find version numbers.
     Algorithm: searches left-to-right for 'v'+digit or just digit, then extracts from that point to end *)
@@ -67,8 +67,8 @@ let test_version_extraction_logic _test_ctxt =
 (** Test version extraction with real system commands when available *)
 let test_extract_version_system _test_ctxt =
   (* Test that the function can handle real system calls *)
-  if Prerequisites.command_exists "git" then (
-    let result = Prerequisites.extract_version "git" "--version" in
+  if Phase2_prerequisites.command_exists "git" then (
+    let result = Phase2_prerequisites.extract_version "git" "--version" in
     match result with
     | Some version_str ->
         assert_bool "version string should not be empty" (String.length version_str > 0);
@@ -84,8 +84,8 @@ let test_extract_version_system _test_ctxt =
 (** Test version extraction with basic system commands to verify the function works in real environments *)
 let test_extract_version_basic_command _test_ctxt =
   (* Test with a command that returns version-like output *)
-  if Prerequisites.command_exists "sh" then (
-    let result = Prerequisites.extract_version "sh" "--version" in
+  if Phase2_prerequisites.command_exists "sh" then (
+    let result = Phase2_prerequisites.extract_version "sh" "--version" in
     match result with
     | Some output ->
         assert_bool "sh --version should return output" (String.length output > 0)
@@ -99,7 +99,7 @@ let test_extract_version_basic_command _test_ctxt =
 (** Test that prerequisite result data structures are created and accessed correctly *)
 let test_prerequisite_result_structure _test_ctxt =
   let result = {
-    Prerequisites.name = "test";
+    Phase2_prerequisites.name = "test";
     is_available = true;
     version = Some "1.0.0";
     path = None;

@@ -8,38 +8,45 @@ BUILD_DIR := _build/default
 BIN_DIR := $(BUILD_DIR)/bin
 LIB_DIR := $(BUILD_DIR)/lib
 EXECUTABLE := $(BIN_DIR)/moneywise_cli.exe
-PUBLIC_NAME := moneywise-cli
+PUBLIC_NAME := moneywise
+
+# Project root (for setup/check commands)
+PROJECT_ROOT ?= $(shell cd ../.. && pwd)
 
 # Default target
 all: build
 
 # Show help
 help: ## Show this help message
-	@echo "🚀 MoneyWise OCaml Tools - Available Targets"
-	@echo "============================================="
+	@echo "🚀 MoneyWise OCaml Tools"
+	@echo "======================="
 	@echo
-	@echo "Build Targets:"
-	@echo "  build          - Build the project (default)"
+	@echo "Project Commands:"
+	@echo "  verify         - Verify project structure and prerequisites"
+	@echo "  status         - Show project status"
+	@echo "  test-project   - Run project tests"
+	@echo
+	@echo "Build Commands:"
+	@echo "  build          - Build the project"
 	@echo "  clean          - Clean build artifacts"
-	@echo "  rebuild        - Clean and rebuild everything"
-	@echo
-	@echo "Testing:"
-	@echo "  test           - Run tests"
+	@echo "  rebuild        - Clean and rebuild"
+	@echo "  test           - Run OCaml tests"
 	@echo
 	@echo "Documentation:"
-	@echo "  doc            - Generate documentation with odoc"
+	@echo "  doc            - Generate OCaml documentation"
 	@echo
-	@echo "Installation:"
-	@echo "  install        - Install the tool system-wide"
-	@echo "  uninstall      - Uninstall the tool"
+	@echo "Development:"
+	@echo "  run ARGS=...   - Run CLI with custom arguments"
+	@echo "  help-cli       - Show detailed CLI help"
+	@echo "  install        - Install CLI tool system-wide"
+	@echo "  uninstall      - Uninstall CLI tool"
 	@echo
-	@echo "Execution:"
-	@echo "  run            - Run the CLI tool (defaults to 'status' command)"
-	@echo "  run ARGS=setup - Run the CLI tool with specific command (e.g., setup)"
-	@echo "  run-help       - Show CLI help"
-	@echo "  run-status     - Run status command"
+	@echo "Examples:"
+	@echo "  make verify                        # Verify project"
+	@echo "  make run ARGS='verify --help'      # Show verify command help"
+	@echo "  make run ARGS='check --verbose'    # Run check with options"
 	@echo
-	@echo "Use 'make <target>' to run a specific target"
+	@echo "Note: Only OCaml components are currently implemented."
 
 # Build targets
 build: ## Build the project
@@ -100,28 +107,37 @@ uninstall: ## Uninstall the tool
 		echo "ℹ️  Tool not found in /usr/local/bin/"; \
 	fi
 
-# Execution
-run: build ## Run the CLI tool (defaults to status command)
+# Project commands
+verify: build ## Verify project structure and prerequisites
+	@echo "🔍 Verifying project structure and prerequisites..."
+	$(EXECUTABLE) verify --project-root $(PROJECT_ROOT)
+
+status: build ## Show project status
+	@echo "📊 Getting project status..."
+	$(EXECUTABLE) status --project-root $(PROJECT_ROOT)
+
+test-project: build ## Run project tests
+	@echo "🧪 Running project tests..."
+	$(EXECUTABLE) test --project-root $(PROJECT_ROOT)
+
+# Development commands
+run: build ## Run the CLI tool with custom arguments
 	@echo "🚀 Running MoneyWise CLI tool..."
 	@if [ -f "$(EXECUTABLE)" ]; then \
 		if [ -n "$(ARGS)" ]; then \
 			$(EXECUTABLE) $(ARGS); \
 		else \
-			echo "ℹ️  No arguments provided, running default 'status' command..."; \
-			$(EXECUTABLE) status; \
+			echo "ℹ️  No arguments provided. Use 'make help' to see available commands."; \
+			$(EXECUTABLE) --help=plain; \
 		fi; \
 	else \
 		echo "❌ Executable not found. Please run 'make build' first."; \
 		exit 1; \
 	fi
 
-run-help: build ## Show CLI help
+help-cli: build ## Show detailed CLI help
 	@echo "📖 Showing CLI help..."
 	$(EXECUTABLE) --help=plain
-
-run-status: build ## Run status command
-	@echo "📊 Running status command..."
-	$(EXECUTABLE) status
 
 # Default target
 .DEFAULT_GOAL := help

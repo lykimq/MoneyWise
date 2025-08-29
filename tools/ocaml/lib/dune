@@ -4,12 +4,10 @@
  (libraries
   cmdliner
   fmt
-  unix)
+  unix
+  moneywise-tools.setup)
  (wrapped false)
  (modules
-  prerequisites
   commands
-  setup_cmd
-  check_cmd
-  test_cmd
-  status_cmd))
+  verify_cmd
+  test_cmd))

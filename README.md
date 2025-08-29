@@ -74,8 +74,8 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 - **Dune** - Modern build system
 - **OCamlDoc** - Professional documentation generation (better than odoc!)
 - **Cmdliner** - Professional CLI framework
-- **Hybrid Architecture** - OCaml for complex operations, shell scripts for simple tasks
-- **Professional Workflow** - Makefile integration and gradual migration strategy
+- **Professional Architecture** - Pure OCaml implementation for reliability and type safety
+- **Professional Workflow** - Makefile-based build and command system
 
 ---
 
@@ -88,8 +88,7 @@ MoneyWise/
 ├── 🦀 moneywise-backend/       # Rust backend API
 ├── 🗄️ scripts/                 # Setup and utility scripts
 ├── 🧰 tools/                   # Development tools and utilities
-│   ├── 🐫 ocaml/              # OCaml-based project management tools
-│   └── 🔀 moneywise-hybrid.sh # Hybrid wrapper for OCaml + shell operations
+│   └── 🐫 ocaml/              # OCaml-based project management tools
 ├── 📚 docs/                    # Project documentation and guides
 │   └── 🐫 ocamldoc/           # Development tools documentation (deployed to GitHub Pages)
 ```
@@ -162,13 +161,14 @@ MoneyWise/
    # See README.md in the backend directory for detailed setup instructions
    ```
 
-4. **Development Tools Setup** (Optional)
+4. **Development Tools**
    ```bash
-   cd tools/ocaml
-   make dev-setup    # Setup development environment
-   make build        # Build tools
+   # Build and run OCaml tools
+   make build        # Build the OCaml CLI tool
+   make verify       # Verify project structure and prerequisites
+   make check        # Check project status
    make test         # Run tests
-   ./tools/moneywise-hybrid.sh help  # Show available commands
+   make help        # Show available commands
    ```
 
 5. **📚 Development Tools API Documentation**
@@ -256,4 +256,3 @@ This project is licensed under the Non-Commercial License - see the [LICENSE](LI
 [⭐ Star this repo](https://github.com/lykimq/MoneyWise) • [🐛 Report an issue](https://github.com/lykimq/MoneyWise/issues) • [📖 View documentation](https://github.com/lykimq/MoneyWise/tree/main/docs)
 
 </div>
-
