@@ -3,13 +3,6 @@
     It ensures that all required components are in place and dependencies are installed
     before any setup or installation can proceed. *)
 
-open Types
-open Results
-
-(** Import implemented phase modules *)
-open Phase1_structure  (* ✅ Fully implemented in OCaml *)
-open Phase2_prerequisites  (* ✅ Fully implemented in OCaml *)
-
 (* TODO: These phases are still in shell scripts, will be migrated to OCaml
 open Phase3_backend
 open Phase4_frontend
@@ -34,7 +27,7 @@ let run_verification root_dir =
 
   (* Phase 1: Project Structure *)
   print_section "1️⃣  Verifying Project Structure";
-  let structure_result = verify_project_structure root_dir in
+  let structure_result = Phase1_structure.verify_project_structure root_dir in
   if not structure_result.success then (
     Printf.printf "\n❌ Project structure verification failed!\n";
     Printf.printf "Please fix the structure issues above before proceeding.\n";
@@ -43,7 +36,7 @@ let run_verification root_dir =
 
   (* Phase 2: Prerequisites *)
   print_section "2️⃣  Checking Prerequisites";
-  let prereq_result = verify_prerequisites () in
+  let prereq_result = Phase2_prerequisites.verify_prerequisites () in
   if not prereq_result.success then (
     Printf.printf "\n❌ Prerequisites check failed!\n";
     Printf.printf "Please install the missing prerequisites before proceeding.\n";
@@ -52,26 +45,15 @@ let run_verification root_dir =
 
   Printf.printf "\n✅ Initial verification passed successfully!\n";
 
-    (* Only run implemented phases *)
+  (* Only run implemented phases *)
   let phase_results = [structure_result; prereq_result] in
 
   (* Aggregate and display results *)
-  let final_result = aggregate_phase_results phase_results 2 in  (* Only 2 phases for now *)
+  let final_result = Results.aggregate_phase_results phase_results 2 in  (* Only 2 phases for now *)
 
-  (* Note about remaining phases *)
-  if final_result.success then (
-    print_section "ℹ️  Next Steps";
-    Printf.printf "The following phases need to be run using the shell scripts:\n";
-    Printf.printf "1. Backend Setup:           ./tools/moneywise-hybrid.sh --shell setup-backend\n";
-    Printf.printf "2. Frontend Setup:          cd moneywise-app && npm install\n";
-    Printf.printf "3. Environment Config:      ./tools/moneywise-hybrid.sh --shell get-supabase-credentials\n";
-    Printf.printf "4. Service Management:      ./tools/moneywise-hybrid.sh --shell service-manager\n";
-    Printf.printf "5. Final Validation:        ./tools/moneywise-hybrid.sh --shell quick-check\n";
-    Printf.printf "\nThese phases will be migrated to OCaml in future updates.\n"
-  );
   print_header (if final_result.success
-    then "✨ Setup Completed Successfully!"
-    else "⚠️  Setup Completed with Issues");
+    then "✨ Verification Completed Successfully!"
+    else "⚠️  Verification Completed with Issues");
 
   (* Display errors and warnings if any *)
   if final_result.errors <> [] then (
@@ -86,20 +68,25 @@ let run_verification root_dir =
 
   (* Display next steps *)
   if final_result.success then (
-    print_section "🚀 What's Running";
-    Printf.printf "• Backend API: http://localhost:3000/api\n";
-    Printf.printf "• Frontend: Ready to start with 'npm start' in moneywise-app/\n\n";
+    print_section "🚀 What's Ready";
+    Printf.printf "• Project structure: ✅ Verified\n";
+    Printf.printf "• Prerequisites: ✅ Installed\n";
+    Printf.printf "• Development environment: Ready for setup\n\n";
 
     print_section "📱 Next Steps";
-    Printf.printf "1. Backend is running in the backend terminal\n";
-    Printf.printf "2. Start frontend: cd moneywise-app && npm start\n";
-    Printf.printf "3. Test API: curl http://localhost:3000/api/budgets/overview\n";
-    Printf.printf "\n💡 Tip: Run 'moneywise check' to verify everything is working\n"
+    Printf.printf "Use the MoneyWise CLI tools for the remaining setup:
+";
+    Printf.printf "1. Backend Setup:           moneywise backend-setup\n";
+    Printf.printf "2. Frontend Setup:          moneywise frontend-setup\n";
+    Printf.printf "3. Environment Config:      moneywise env-setup\n";
+    Printf.printf "4. Service Management:      moneywise services-setup\n";
+    Printf.printf "5. Final Validation:        moneywise verify\n";
+    Printf.printf "\n💡 Tip: Use 'moneywise --help' to explore all available commands\n"
   ) else (
     print_section "🔄 Next Steps";
     Printf.printf "1. Address the errors listed above\n";
-    Printf.printf "2. Run 'moneywise check' to verify fixes\n";
-    Printf.printf "3. Run setup again\n"
+    Printf.printf "2. Run 'moneywise verify' to verify fixes\n";
+    Printf.printf "3. Run setup commands as needed\n"
   );
 
   (* Display final summary *)
@@ -110,7 +97,8 @@ let run_verification root_dir =
     Printf.printf "Verification Errors: %d\n" (List.length final_result.errors);
   if final_result.warnings <> [] then
     Printf.printf "Verification Warnings: %d\n" (List.length final_result.warnings);
-  Printf.printf "\nNote: Only structure and prerequisites verification are currently implemented in OCaml.\n";
+  Printf.printf "\nNote: Only structure and prerequisites verification are currently implemented.\n";
+  Printf.printf "Additional setup commands will be available in future updates.\n";
 
   (* Exit with appropriate code *)
   exit (if final_result.success then 0 else 1)

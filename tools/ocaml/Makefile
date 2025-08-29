@@ -23,7 +23,6 @@ help: ## Show this help message
 	@echo
 	@echo "Project Commands:"
 	@echo "  verify         - Verify project structure and prerequisites"
-	@echo "  status         - Show project status"
 	@echo "  test-project   - Run project tests"
 	@echo
 	@echo "Build Commands:"
