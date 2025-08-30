@@ -40,41 +40,45 @@ let run_verification (root_dir : string) : Types.setup_result =
     let phase_results = [structure_result; prereq_result] in
     (* Aggregate and display results *)
     let final_result = Results.aggregate_phase_results phase_results 2 in
-    (* Only 2 phases for now *)
+    (* Only 2 phases for now: present the aggregated final_result clearly.
+       Refactor printing into small helpers to avoid repeated checks and make
+       the output logic easier to maintain. *)
     print_header
       ( if final_result.success then "✨ Verification Completed Successfully!"
         else "⚠️  Verification Completed with Issues" ) ;
-    (* Display errors and warnings if any *)
-    if final_result.errors <> [] then (
-      print_section "❌ Errors" ;
-      List.iter (fun error -> Printf.printf "• %s\n" error) final_result.errors
-      ) ;
-    if final_result.warnings <> [] then (
-      print_section "⚠️  Warnings" ;
-      List.iter
-        (fun warning -> Printf.printf "• %s\n" warning)
-        final_result.warnings ) ;
-    (* Display next steps *)
-    if final_result.success then (
-      print_section "🚀 What's Ready" ;
-      Printf.printf "• Project structure: ✅ Verified\n" ;
-      Printf.printf "• Prerequisites: ✅ Installed\n" ;
-      Printf.printf "• Development environment: Ready for setup\n\n" ;
-      print_section "📱 Next Steps" ;
-      Printf.printf "Use the MoneyWise CLI tools for the remaining setup:\n" ;
-      Printf.printf "1. Backend Setup:           moneywise backend-setup\n" ;
-      Printf.printf "2. Frontend Setup:          moneywise frontend-setup\n" ;
-      Printf.printf "3. Environment Config:      moneywise env-setup\n" ;
-      Printf.printf "4. Service Management:      moneywise services-setup\n" ;
-      Printf.printf "5. Final Validation:        moneywise verify\n" ;
-      Printf.printf
-        "\n💡 Tip: Use 'moneywise --help' to explore all available commands\n" )
-    else (
-      print_section "🔄 Next Steps" ;
-      Printf.printf "1. Address the errors listed above\n" ;
-      Printf.printf "2. Run 'moneywise verify' to verify fixes\n" ;
-      Printf.printf "3. Run setup commands as needed\n" ) ;
-    (* Display final summary *)
+    (* Small helpers to reduce duplication *)
+    let print_list_section_if_any title items =
+      if items <> [] then (
+        print_section title ;
+        List.iter (fun s -> Printf.printf "• %s\n" s) items )
+    in
+    let print_next_steps (r : Types.setup_result) =
+      if r.success then (
+        print_section "🚀 What's Ready" ;
+        Printf.printf "• Project structure: ✅ Verified\n" ;
+        Printf.printf "• Prerequisites: ✅ Installed\n" ;
+        Printf.printf "• Development environment: Ready for setup\n\n" ;
+        print_section "📱 Next Steps" ;
+        Printf.printf "Use the MoneyWise CLI tools for the remaining setup:\n" ;
+        Printf.printf "1. Backend Setup:           moneywise backend-setup\n" ;
+        Printf.printf "2. Frontend Setup:          moneywise frontend-setup\n" ;
+        Printf.printf "3. Environment Config:      moneywise env-setup\n" ;
+        Printf.printf "4. Service Management:      moneywise services-setup\n" ;
+        Printf.printf "5. Final Validation:        moneywise verify\n" ;
+        Printf.printf
+          "\n💡 Tip: Use 'moneywise --help' to explore all available commands\n"
+        )
+      else (
+        print_section "🔄 Next Steps" ;
+        Printf.printf "1. Address the errors listed above\n" ;
+        Printf.printf "2. Run 'moneywise verify' to verify fixes\n" ;
+        Printf.printf "3. Run setup commands as needed\n" )
+    in
+    (* Print errors and warnings if any *)
+    print_list_section_if_any "❌ Errors" final_result.errors ;
+    print_list_section_if_any "⚠️  Warnings" final_result.warnings ;
+    (* Next steps and summary *)
+    print_next_steps final_result ;
     print_section "📊 Summary" ;
     Printf.printf "OCaml Phases completed: %d/%d\n" final_result.steps_completed
       final_result.total_steps ;
