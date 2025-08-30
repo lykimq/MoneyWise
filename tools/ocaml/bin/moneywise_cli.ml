@@ -7,11 +7,16 @@ open Commands
 let setup_logging () =
   (* Initialize Fmt_tty for proper terminal output *)
   Fmt_tty.setup_std_outputs ();
-  (* Set up a basic console reporter that shows all log levels *)
-  let reporter = Logs.format_reporter () in
-  Logs.set_reporter reporter;
-  (* Set default log level to info *)
-  Logs.set_level (Some Logs.Info)
+  (* Create a custom reporter that shows log levels for all messages *)
+  let reporter =
+    let pp_header ppf (level, header) =
+      let header_str = match header with Some s -> s | None -> "" in
+      let level_str = Utils.get_log_level_string level in
+      Fmt.pf ppf "[%s] %s" level_str header_str
+    in
+    Logs.format_reporter ~pp_header ()
+  in
+  Logs.set_reporter reporter
 
 (** Main command group *)
 let cmds = [ verify_cmd; test_cmd ]

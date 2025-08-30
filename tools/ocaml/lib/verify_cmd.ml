@@ -41,7 +41,9 @@ let verify_cmd =
       (* Initialize Fmt_tty for proper terminal output *)
       Fmt_tty.setup_std_outputs ();
       Logs.set_level (Some level);
-      Logs.info (fun m -> m "🔍 Setting log level to: %s" level_str)
+      (* Use the appropriate level function based on requested level *)
+      let log_fn = Utils.get_log_function level in
+      log_fn (fun m -> m "🔍 Setting log level to: %s" level_str)
     in
     setup_logs log_level;
 
@@ -58,13 +60,14 @@ let verify_cmd =
               else current)
     in
 
-    (* Log the verification start *)
-    Logs.info (fun m -> m "🚀 Starting verification for project root: %s" root);
+    Utils.log_at_current_level
+      (Printf.sprintf "🚀 Starting verification for project root: %s" root);
 
     let code = run_verification_code root in
 
-    (* Log the verification completion *)
-    Logs.info (fun m -> m "🏁 Verification completed with exit code: %d" code);
+    (* Log the verification completion - use requested level *)
+    Utils.log_at_current_level
+      (Printf.sprintf "🏁 Verification completed with exit code: %d" code);
 
     Stdlib.exit code
   in
