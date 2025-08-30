@@ -36,14 +36,18 @@ help: ## Show this help message
 	@echo
 	@echo "Development:"
 	@echo "  run ARGS=...   - Run CLI with custom arguments"
+	@echo "  logs           - Show logs with different levels"
 	@echo "  help-cli       - Show detailed CLI help"
 	@echo "  install        - Install CLI tool system-wide"
 	@echo "  uninstall      - Uninstall CLI tool"
 	@echo
 	@echo "Examples:"
 	@echo "  make verify                        # Verify project"
+	@echo "  make verify LOG_LEVEL=app          # Verify with app logging"
+	@echo "  make verify LOG_LEVEL=info         # Verify with info logging"
 	@echo "  make run ARGS='verify --help'      # Show verify command help"
 	@echo "  make run ARGS='check --verbose'    # Run check with options"
+	@echo "  make logs                          # Test logging output"
 	@echo
 	@echo "Note: Only OCaml components are currently implemented."
 
@@ -109,7 +113,11 @@ uninstall: ## Uninstall the tool
 # Project commands
 verify: build ## Verify project structure and prerequisites
 	@echo "🔍 Verifying project structure and prerequisites..."
-	$(EXECUTABLE) verify --project-root $(PROJECT_ROOT)
+	@if [ -n "$(LOG_LEVEL)" ]; then \
+		$(EXECUTABLE) verify --project-root $(PROJECT_ROOT) --log-level=$(LOG_LEVEL); \
+	else \
+		$(EXECUTABLE) verify --project-root $(PROJECT_ROOT); \
+	fi
 
 status: build ## Show project status
 	@echo "📊 Getting project status..."
@@ -141,6 +149,15 @@ run: build ## Run the CLI tool with custom arguments
 help-cli: build ## Show detailed CLI help
 	@echo "📖 Showing CLI help..."
 	$(EXECUTABLE) --help=plain
+
+# Logging examples
+logs: build ## Test different logging levels
+	@echo "📝 Testing logging levels..."
+	@echo "🔍 Info level (default):"
+	$(EXECUTABLE) verify --log-level=info --project-root $(PROJECT_ROOT) | head -20
+	@echo ""
+	@echo "📱 App level:"
+	$(EXECUTABLE) verify --log-level=app --project-root $(PROJECT_ROOT) | head -20
 
 # Default target
 .DEFAULT_GOAL := help
