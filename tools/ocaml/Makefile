@@ -1,6 +1,6 @@
 # Provides convenient targets for building, testing, and development
 
-.PHONY: help build clean test install uninstall run doc
+.PHONY: help build clean test install uninstall run doc format
 
 # Project configuration
 PROJECT_NAME := moneywise-tools
@@ -120,6 +120,10 @@ test-project: build ## Run project tests
 	$(EXECUTABLE) test --project-root $(PROJECT_ROOT)
 
 # Development commands
+format: ## Format OCaml code with ocamlformat
+	@echo "🎨 Formatting OCaml code..."
+	dune fmt
+
 run: build ## Run the CLI tool with custom arguments
 	@echo "🚀 Running MoneyWise CLI tool..."
 	@if [ -f "$(EXECUTABLE)" ]; then \

@@ -1,5 +1,3 @@
 (test
  (name prerequisites_test)
- (libraries
-  moneywise_lib
-  ounit2))
+ (libraries moneywise_lib ounit2))

@@ -1,7 +1,4 @@
 (executable
  (name moneywise_cli)
  (public_name moneywise-cli)
- (libraries
-  moneywise_lib
-  cmdliner
-  unix))
+ (libraries moneywise_lib cmdliner unix))

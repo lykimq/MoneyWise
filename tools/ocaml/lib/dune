@@ -1,13 +1,6 @@
 (library
  (name moneywise_lib)
  (public_name moneywise-tools.lib)
- (libraries
-  cmdliner
-  fmt
-  unix
-  moneywise-tools.setup)
+ (libraries cmdliner fmt unix moneywise-tools.setup)
  (wrapped false)
- (modules
-  commands
-  verify_cmd
-  test_cmd))
+ (modules commands verify_cmd test_cmd))

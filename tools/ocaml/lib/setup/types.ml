@@ -1,6 +1,5 @@
 (** Setup types and data structures for MoneyWise CLI *)
 
-(** Setup result type for tracking success/failure across phases *)
 type setup_result = {
   success : bool;
   errors : string list;
@@ -8,8 +7,8 @@ type setup_result = {
   steps_completed : int;
   total_steps : int;
 }
+(** Setup result type for tracking success/failure across phases *)
 
-(** Phase result type for individual phase outcomes *)
 type phase_result = {
   phase_name : string;
   success : bool;
@@ -17,3 +16,4 @@ type phase_result = {
   warnings : string list;
   details : string list;
 }
+(** Phase result type for individual phase outcomes *)

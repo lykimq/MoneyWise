@@ -4,9 +4,10 @@ open Types
 
 (** Mark phase as failed and add error message *)
 let add_phase_error phase_result error_msg =
-  { phase_result with
+  {
+    phase_result with
     success = false;
-    errors = error_msg :: phase_result.errors
+    errors = error_msg :: phase_result.errors;
   }
 
 (** Add warning message to phase result *)

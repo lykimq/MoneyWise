@@ -2,5 +2,17 @@
  (name setup)
  (public_name moneywise-tools.setup)
  (libraries unix cmdliner)
- (modules types results errors utils phase1_structure phase2_prerequisites phase3_backend phase4_frontend phase5_environment phase6_services phase7_validation orchestrator)
+ (modules
+  types
+  results
+  errors
+  utils
+  phase1_structure
+  phase2_prerequisites
+  phase3_backend
+  phase4_frontend
+  phase5_environment
+  phase6_services
+  phase7_validation
+  orchestrator)
  (wrapped false))
