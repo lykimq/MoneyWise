@@ -23,7 +23,11 @@ clean:
 # Verify project structure and prerequisites
 verify: build
 	@echo "🔍 Verifying MoneyWise project..."
-	@tools/ocaml/_build/default/bin/moneywise_cli.exe verify --project-root $(PWD)
+	@if [ -n "$(LOG_LEVEL)" ]; then \
+		tools/ocaml/_build/default/bin/moneywise_cli.exe verify --project-root $(PWD) --log-level=$(LOG_LEVEL); \
+	else \
+		tools/ocaml/_build/default/bin/moneywise_cli.exe verify --project-root $(PWD); \
+	fi
 
 # Run tests
 test: build
@@ -36,7 +40,9 @@ help:
 	@echo "==========================="
 	@echo
 	@echo "Project Commands:"
-	@echo "  make verify   - Verify project structure and prerequisites"
+	@echo "  make verify           - Verify project structure and prerequisites"
+	@echo "  make verify LOG_LEVEL=info  - Verify with info logging"
+	@echo "  make verify LOG_LEVEL=app   - Verify with app logging"
 	@echo "  make test     - Run tests"
 	@echo
 	@echo "Build Commands:"
