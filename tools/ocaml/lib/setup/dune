@@ -1,7 +1,7 @@
 (library
  (name setup)
  (public_name moneywise-tools.setup)
- (libraries unix cmdliner)
+ (libraries unix cmdliner logs fmt)
  (modules
   types
   results

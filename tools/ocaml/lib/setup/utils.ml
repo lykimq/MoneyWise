@@ -18,18 +18,15 @@ let directory_exists dir_path =
 
 (** Make file executable (chmod 755) *)
 let make_executable file_path =
-  try
-    chmod file_path 0o755;
-    true
-  with _ -> false
+  try chmod file_path 0o755 ; true with _ -> false
 
 (** Execute shell command in directory *)
 let execute_command_in_dir dir command =
   let full_command = "cd " ^ dir ^ " && " ^ command in
   try Sys.command full_command
   with e ->
-    Printf.printf "Error executing command '%s': %s\n" full_command
-      (Printexc.to_string e);
+    Logs.err (fun m ->
+        m "Error executing command '%s': %s" full_command (Printexc.to_string e) ) ;
     -1
 
 (** Truncate long paths to 50 chars with "..." prefix *)
