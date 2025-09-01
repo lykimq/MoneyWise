@@ -37,17 +37,28 @@ let run_verification (root_dir : string) : Types.setup_result =
     (* Phase 2: Prerequisites *)
     print_section "2️⃣  Checking Prerequisites";
     let prereq_result = Phase2_prerequisites.verify_prerequisites () in
-    (* Phase 4: Frontend Setup *)
-    print_section "4️⃣  Setting up Frontend";
+    (* Phase 3: Frontend Setup *)
+    print_section "3️⃣  Setting up Frontend";
     let frontend_result = setup_frontend root_dir in
     Logs.info (fun m -> m "✅ Initial verification passed successfully!");
+    (* Phase 4: Setup backend *)
+    print_section "4️⃣  Setting up Backend";
+    let root_backend = Filename.concat root_dir "moneywise-backend" in
+    let setup_backend_results =
+      match Backend_verification_steps.checks root_backend with
+      | Ok results -> results
+      | Error err -> [ err ]
+    in
     (* Only run implemented phases *)
-    let phase_results = [ structure_result; prereq_result; frontend_result ] in
+    let phase_results =
+      [ structure_result; prereq_result; frontend_result ]
+      @ setup_backend_results
+    in
     (* Aggregate and display results *)
     let final_result = Results.aggregate_phase_results phase_results (List.length phase_results) in
-    (* Only 3 phases for now: present the aggregated final_result clearly.
-       Refactor printing into small helpers to avoid repeated checks and make
-       the output logic easier to maintain. *)
+    (* All 4 phases are now implemented: present the aggregated final_result
+       clearly. Refactor printing into small helpers to avoid repeated checks
+       and make the output logic easier to maintain. *)
     print_header
       (if final_result.success then "✨ Verification Completed Successfully!"
        else "⚠️  Verification Completed with Issues");
@@ -63,16 +74,14 @@ let run_verification (root_dir : string) : Types.setup_result =
         Logs.info (fun m -> m "• Project structure: ✅ Verified");
         Logs.info (fun m -> m "• Prerequisites: ✅ Installed");
         Logs.info (fun m -> m "• Frontend: ✅ Dependencies installed");
+        Logs.info (fun m -> m "• Backend: ✅ Dependencies installed");
         Logs.info (fun m -> m "• Development environment: Ready for setup");
         print_section "📱 Next Steps";
         Logs.info (fun m ->
             m "Use the MoneyWise CLI tools for the remaining setup:");
         Logs.info (fun m ->
-            m "1. Backend Setup:           moneywise backend-setup");
-        Logs.info (fun m -> m "2. Environment Config:      moneywise env-setup");
-        Logs.info (fun m ->
-            m "3. Service Management:      moneywise services-setup");
-        Logs.info (fun m -> m "5. Final Validation:        moneywise verify");
+            m "1. Service Management:      moneywise services-setup");
+        Logs.info (fun m -> m "2. Final Validation:        moneywise verify");
         Logs.info (fun m ->
             m "💡 Tip: Use 'moneywise --help' to explore all available commands"))
       else (
@@ -102,8 +111,8 @@ let run_verification (root_dir : string) : Types.setup_result =
     Logs.info (fun m -> m "");
     Logs.info (fun m ->
         m
-          "Note: Structure, prerequisites, and frontend setup are currently \
-           implemented.");
+          "Note: Structure, prerequisites, frontend, and backend setup are \
+           currently implemented.");
     Logs.info (fun m ->
         m "Additional setup commands will be available in future updates.");
     (* Return result to caller instead of exiting *)
