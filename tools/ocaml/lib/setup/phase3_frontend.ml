@@ -1,4 +1,5 @@
-(** Phase 4: Frontend Setup
+(** Phase 3: Frontend Setup
+
     This phase handles the setup of the MoneyWise frontend application. It
     focuses on installing the required Node.js dependencies, which are essential
     for running, testing, and bundling the React Native application.
