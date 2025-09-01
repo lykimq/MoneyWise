@@ -88,7 +88,6 @@ let verify_project_structure root_dir =
     [
       ("moneywise-backend", "Backend directory", Utils.directory_exists);
       ("moneywise-app", "Frontend directory", Utils.directory_exists);
-      ("moneywise-backend/setup.sh", "Backend setup script", Utils.file_exists);
       ( "moneywise-app/package.json",
         "Frontend package configuration",
         Utils.file_exists );
