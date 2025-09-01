@@ -54,12 +54,12 @@ help: ## Show this help message
 # Build targets
 build: ## Build the project
 	@echo "🔨 Building MoneyWise OCaml tools..."
-	dune build
+	opam exec -- dune build
 	@echo "✅ Build completed successfully!"
 
 clean: ## Clean build artifacts
 	@echo "🧹 Cleaning build artifacts..."
-	dune clean
+	opam exec -- dune clean
 	@echo "✅ Clean completed!"
 
 rebuild: clean build ## Clean and rebuild everything
@@ -67,13 +67,13 @@ rebuild: clean build ## Clean and rebuild everything
 # Testing
 test: ## Run tests
 	@echo "🧪 Running tests..."
-	dune runtest
+	opam exec -- dune runtest
 	@echo "✅ Tests completed!"
 
 # Documentation
 doc: ## Generate documentation with odoc
 	@echo "📚 Generating documentation with odoc..."
-	dune build @doc
+	opam exec -- dune build @doc
 	@echo "📁 Copying documentation to docs/ folder for GitHub Pages..."
 	rm -f ../../docs/*.html
 	rm -rf ../../docs/moneywise-tools ../../docs/odoc.support
@@ -124,7 +124,7 @@ test-project: build ## Run project tests
 # Development commands
 format: ## Format OCaml code with ocamlformat
 	@echo "🎨 Formatting OCaml code..."
-	-dune fmt
+	-opam exec -- dune fmt
 
 run: build ## Run the CLI tool with custom arguments
 	@echo "🚀 Running MoneyWise CLI tool..."
