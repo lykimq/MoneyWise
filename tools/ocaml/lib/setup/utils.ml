@@ -41,21 +41,20 @@ let format_path path =
 (** Copy file from source to destination *)
 let copy_file src dest =
   try
-  let ic = open_in src in
-  let oc = open_out dest in
-  let buffer_size = 8192 in
-  let buffer = Bytes.create buffer_size in
-  let rec copy () =
-    let bytes_read = input ic buffer 0 buffer_size in
-    if bytes_read > 0 then (
-      output oc buffer 0 bytes_read;
-      copy ()
-    )
-  in
-  copy ();
-  close_in ic;
-  close_out oc;
-  Ok ()
-with
-| Sys_error msg -> Error msg
-| ex -> Error (Printexc.to_string ex)
+    let ic = open_in src in
+    let oc = open_out dest in
+    let buffer_size = 8192 in
+    let buffer = Bytes.create buffer_size in
+    let rec copy () =
+      let bytes_read = input ic buffer 0 buffer_size in
+      if bytes_read > 0 then (
+        output oc buffer 0 bytes_read;
+        copy ())
+    in
+    copy ();
+    close_in ic;
+    close_out oc;
+    Ok ()
+  with
+  | Sys_error msg -> Error msg
+  | ex -> Error (Printexc.to_string ex)

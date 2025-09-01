@@ -51,10 +51,9 @@ let run_verification (root_dir : string) : Types.setup_result =
       @ setup_backend_results
     in
     (* Aggregate and display results *)
-    let final_result = Results.aggregate_phase_results phase_results (List.length phase_results) in
-    (* All 4 phases are now implemented: present the aggregated final_result
-       clearly. Refactor printing into small helpers to avoid repeated checks
-       and make the output logic easier to maintain. *)
+    let final_result =
+      Results.aggregate_phase_results phase_results (List.length phase_results)
+    in
     print_header
       (if final_result.success then "✨ Verification Completed Successfully!"
        else "⚠️  Verification Completed with Issues");
@@ -80,7 +79,8 @@ let run_verification (root_dir : string) : Types.setup_result =
         Logs.info (fun m -> m "2. Final Validation:        moneywise verify");
         Logs.info (fun m ->
             m "💡 Tip: Use 'moneywise --help' to explore all available commands"))
-      else (        print_section "🔄 Next Steps";
+      else (
+        print_section "🔄 Next Steps";
         Logs.info (fun m -> m "1. Address the errors listed above");
         Logs.info (fun m -> m "2. Run 'moneywise verify' to verify fixes");
         Logs.info (fun m -> m "3. Run setup commands as needed"))
