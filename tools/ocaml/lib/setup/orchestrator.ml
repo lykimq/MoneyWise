@@ -6,11 +6,12 @@
 (* TODO: These phases are still implemented as shell scripts and will be
    migrated to OCaml in future updates. Example future module opens:
    open Phase3_backend
-   open Phase4_frontend
    open Phase5_environment
    open Phase6_services
    open Phase7_validation
 *)
+
+open Phase4_frontend
 
 open Types
 
@@ -36,12 +37,15 @@ let run_verification (root_dir : string) : Types.setup_result =
     (* Phase 2: Prerequisites *)
     print_section "2️⃣  Checking Prerequisites";
     let prereq_result = Phase2_prerequisites.verify_prerequisites () in
+    (* Phase 4: Frontend Setup *)
+    print_section "4️⃣  Setting up Frontend";
+    let frontend_result = setup_frontend root_dir in
     Logs.info (fun m -> m "✅ Initial verification passed successfully!");
     (* Only run implemented phases *)
-    let phase_results = [ structure_result; prereq_result ] in
+    let phase_results = [ structure_result; prereq_result; frontend_result ] in
     (* Aggregate and display results *)
-    let final_result = Results.aggregate_phase_results phase_results 2 in
-    (* Only 2 phases for now: present the aggregated final_result clearly.
+    let final_result = Results.aggregate_phase_results phase_results (List.length phase_results) in
+    (* Only 3 phases for now: present the aggregated final_result clearly.
        Refactor printing into small helpers to avoid repeated checks and make
        the output logic easier to maintain. *)
     print_header
@@ -58,17 +62,16 @@ let run_verification (root_dir : string) : Types.setup_result =
         print_section "🚀 What's Ready";
         Logs.info (fun m -> m "• Project structure: ✅ Verified");
         Logs.info (fun m -> m "• Prerequisites: ✅ Installed");
+        Logs.info (fun m -> m "• Frontend: ✅ Dependencies installed");
         Logs.info (fun m -> m "• Development environment: Ready for setup");
         print_section "📱 Next Steps";
         Logs.info (fun m ->
             m "Use the MoneyWise CLI tools for the remaining setup:");
         Logs.info (fun m ->
             m "1. Backend Setup:           moneywise backend-setup");
+        Logs.info (fun m -> m "2. Environment Config:      moneywise env-setup");
         Logs.info (fun m ->
-            m "2. Frontend Setup:          moneywise frontend-setup");
-        Logs.info (fun m -> m "3. Environment Config:      moneywise env-setup");
-        Logs.info (fun m ->
-            m "4. Service Management:      moneywise services-setup");
+            m "3. Service Management:      moneywise services-setup");
         Logs.info (fun m -> m "5. Final Validation:        moneywise verify");
         Logs.info (fun m ->
             m "💡 Tip: Use 'moneywise --help' to explore all available commands"))
@@ -99,7 +102,7 @@ let run_verification (root_dir : string) : Types.setup_result =
     Logs.info (fun m -> m "");
     Logs.info (fun m ->
         m
-          "Note: Only structure and prerequisites verification are currently \
+          "Note: Structure, prerequisites, and frontend setup are currently \
            implemented.");
     Logs.info (fun m ->
         m "Additional setup commands will be available in future updates.");
