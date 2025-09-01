@@ -73,20 +73,14 @@ test: ## Run tests
 # Documentation
 doc: ## Generate documentation with odoc
 	@echo "📚 Generating documentation with odoc..."
-	@if command -v odoc >/dev/null 2>&1; then \
-		dune build @doc; \
-		echo "📁 Copying documentation to docs/ folder for GitHub Pages..."; \
-		rm -f ../../docs/*.html; \
-		rm -rf ../../docs/moneywise-tools ../../docs/odoc.support; \
-		cp -r _build/default/_doc/_html/* ../../docs/; \
-		echo "✅ Documentation generated and copied to docs/"; \
-		echo "🌐 Open ../../docs/index.html in your browser"; \
-		echo "🚀 Documentation ready for GitHub Pages deployment"; \
-	else \
-		echo "❌ odoc not found. Installing..."; \
-		opam install odoc; \
-		$(MAKE) doc; \
-	fi
+	dune build @doc
+	@echo "📁 Copying documentation to docs/ folder for GitHub Pages..."
+	rm -f ../../docs/*.html
+	rm -rf ../../docs/moneywise-tools ../../docs/odoc.support
+	cp -r _build/default/_doc/_html/* ../../docs/
+	@echo "✅ Documentation generated and copied to docs/"
+	@echo "🌐 Open ../../docs/index.html in your browser"
+	@echo "🚀 Documentation ready for GitHub Pages deployment"
 
 # Installation
 install: build ## Install the tool system-wide
