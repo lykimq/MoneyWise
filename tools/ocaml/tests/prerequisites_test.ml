@@ -5,7 +5,7 @@ open OUnit2
 (** Test that basic command existence detection works correctly *)
 let test_command_exists _test_ctxt =
   (* Test with a command that should exist *)
-  assert_bool "ls should exist" (Phase2_prerequisites.command_exists "ls") ;
+  assert_bool "ls should exist" (Phase2_prerequisites.command_exists "ls");
   (* Test with a command that should not exist *)
   assert_bool "nonexistent_command should not exist"
     (not (Phase2_prerequisites.command_exists "nonexistent_command_xyz123"))
@@ -14,10 +14,10 @@ let test_command_exists _test_ctxt =
 let test_command_exists_edge_cases _test_ctxt =
   (* Test with empty string *)
   assert_bool "empty string should not exist"
-    (not (Phase2_prerequisites.command_exists "")) ;
+    (not (Phase2_prerequisites.command_exists ""));
   (* Test with spaces *)
   assert_bool "command with spaces should not exist"
-    (not (Phase2_prerequisites.command_exists "command with spaces")) ;
+    (not (Phase2_prerequisites.command_exists "command with spaces"));
   (* Test with special characters *)
   assert_bool "command with special chars should not exist"
     (not (Phase2_prerequisites.command_exists "command@#$%"))
@@ -51,21 +51,21 @@ let test_version_extraction_logic _test_ctxt =
       ~msg:
         (Printf.sprintf "Input: '%s', Expected: %s, Got: %s" input
            (match expected with Some s -> s | None -> "None")
-           (match result with Some s -> s | None -> "None") )
+           (match result with Some s -> s | None -> "None"))
       expected result
   in
   (* Test cases that should find versions - the algorithm looks for:
      - Strings starting with 'v' followed by a digit (e.g., "v18.17.0")
      - Strings starting with a digit (e.g., "1.83.0", "17.6")
      - And extracts from that point to the end of the string *)
-  test_version_finder "git version 2.34.1" (Some "2.34.1") ;
-  test_version_finder "v18.17.0" (Some "v18.17.0") ;
-  test_version_finder "1.83.0" (Some "1.83.0") ;
-  test_version_finder "PostgreSQL 17.6" (Some "17.6") ;
-  test_version_finder "redis-cli 6.0.16" (Some "6.0.16") ;
+  test_version_finder "git version 2.34.1" (Some "2.34.1");
+  test_version_finder "v18.17.0" (Some "v18.17.0");
+  test_version_finder "1.83.0" (Some "1.83.0");
+  test_version_finder "PostgreSQL 17.6" (Some "17.6");
+  test_version_finder "redis-cli 6.0.16" (Some "6.0.16");
   (* Test cases that should return None - strings with no version patterns *)
-  test_version_finder "" None ;
-  test_version_finder "no version here" None ;
+  test_version_finder "" None;
+  test_version_finder "no version here" None;
   test_version_finder "just text" None
 
 (** Test version extraction with real system commands when available *)
@@ -76,7 +76,7 @@ let test_extract_version_system _test_ctxt =
     match result with
     | Some version_str ->
         assert_bool "version string should not be empty"
-          (String.length version_str > 0) ;
+          (String.length version_str > 0);
         (* The version should contain digits *)
         let has_digits =
           String.exists (fun c -> c >= '0' && c <= '9') version_str
@@ -105,25 +105,28 @@ let test_extract_version_basic_command _test_ctxt =
     correctly *)
 let test_prerequisite_result_structure _test_ctxt =
   let result =
-    { Phase2_prerequisites.name= "test"
-    ; is_available= true
-    ; version= Some "1.0.0"
-    ; path= None
-    ; error_message= None }
+    {
+      Phase2_prerequisites.name = "test";
+      is_available = true;
+      version = Some "1.0.0";
+      path = None;
+      error_message = None;
+    }
   in
-  assert_equal "test" result.name ;
-  assert_bool "should be available" result.is_available ;
+  assert_equal "test" result.name;
+  assert_bool "should be available" result.is_available;
   assert_equal (Some "1.0.0") result.version
 
 (** Test suite *)
 let suite =
   "prerequisites"
-  >::: [ "command_exists" >:: test_command_exists
-       ; "command_exists_edge_cases" >:: test_command_exists_edge_cases
-       ; "version_extraction_logic" >:: test_version_extraction_logic
-       ; "extract_version_system" >:: test_extract_version_system
-       ; "extract_version_basic_command" >:: test_extract_version_basic_command
-       ; "prerequisite_result_structure" >:: test_prerequisite_result_structure
+  >::: [
+         "command_exists" >:: test_command_exists;
+         "command_exists_edge_cases" >:: test_command_exists_edge_cases;
+         "version_extraction_logic" >:: test_version_extraction_logic;
+         "extract_version_system" >:: test_extract_version_system;
+         "extract_version_basic_command" >:: test_extract_version_basic_command;
+         "prerequisite_result_structure" >:: test_prerequisite_result_structure;
        ]
 
 (** Run tests *)

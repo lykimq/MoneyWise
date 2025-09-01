@@ -124,7 +124,7 @@ test-project: build ## Run project tests
 # Development commands
 format: ## Format OCaml code with ocamlformat
 	@echo "🎨 Formatting OCaml code..."
-	dune fmt
+	-dune fmt
 
 run: build ## Run the CLI tool with custom arguments
 	@echo "🚀 Running MoneyWise CLI tool..."
