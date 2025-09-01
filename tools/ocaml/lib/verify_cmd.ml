@@ -1,10 +1,7 @@
-(** Project verification command module for MoneyWise CLI *)
-
-open Cmdliner
-open Orchestrator
-
 (** Project verification command implementation *)
+
 let verify_cmd =
+  let open Cmdliner in
   let doc = "Verify the MoneyWise project structure and prerequisites" in
   let man =
     [
@@ -57,7 +54,7 @@ let verify_cmd =
               else current)
     in
     Logs.info (fun m -> m "🚀 Starting verification for project root: %s" root);
-    let code = run_verification_code root in
+    let code = Orchestrator.run_verification_code root in
     (* Log the verification completion - use requested level *)
     Logs.info (fun m -> m "🏁 Verification completed with exit code: %d" code);
     Stdlib.exit code
