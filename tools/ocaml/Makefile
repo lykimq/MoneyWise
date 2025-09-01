@@ -73,6 +73,7 @@ test: ## Run tests
 # Documentation
 doc: ## Generate documentation with odoc
 	@echo "📚 Generating documentation with odoc..."
+	opam install . --deps-only -y
 	opam exec -- dune build @doc
 	@echo "📁 Copying documentation to docs/ folder for GitHub Pages..."
 	rm -f ../../docs/*.html
