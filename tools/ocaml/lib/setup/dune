@@ -10,9 +10,9 @@
   phase1_structure
   phase2_prerequisites
   backend_verification_steps
-  phase3_backend
-  phase3_backend_step1_checks
-  phase4_frontend
+  phase3_frontend
+  phase4_backend
+  phase4_backend_step1_checks
   phase5_environment
   phase6_services
   phase7_validation

@@ -11,10 +11,6 @@
    open Phase7_validation
 *)
 
-open Phase4_frontend
-
-open Types
-
 (** Helper functions for consistent output formatting *)
 
 let print_formatted_title char text =
@@ -39,7 +35,7 @@ let run_verification (root_dir : string) : Types.setup_result =
     let prereq_result = Phase2_prerequisites.verify_prerequisites () in
     (* Phase 3: Frontend Setup *)
     print_section "3️⃣  Setting up Frontend";
-    let frontend_result = setup_frontend root_dir in
+    let frontend_result = Phase3_frontend.setup_frontend root_dir in
     Logs.info (fun m -> m "✅ Initial verification passed successfully!");
     (* Phase 4: Setup backend *)
     print_section "4️⃣  Setting up Backend";
@@ -84,8 +80,7 @@ let run_verification (root_dir : string) : Types.setup_result =
         Logs.info (fun m -> m "2. Final Validation:        moneywise verify");
         Logs.info (fun m ->
             m "💡 Tip: Use 'moneywise --help' to explore all available commands"))
-      else (
-        print_section "🔄 Next Steps";
+      else (        print_section "🔄 Next Steps";
         Logs.info (fun m -> m "1. Address the errors listed above");
         Logs.info (fun m -> m "2. Run 'moneywise verify' to verify fixes");
         Logs.info (fun m -> m "3. Run setup commands as needed"))

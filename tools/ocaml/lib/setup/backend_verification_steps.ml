@@ -2,7 +2,7 @@
 let checks backend_dir =
   let steps =
     [
-      ("Step 1: Initial Checks", fun () -> Phase3_backend_step1_checks.check backend_dir);
+      ("Step 1: Initial Checks", fun () -> Phase4_backend_step1_checks.check backend_dir);
       (* TODO: Add Step 2: Database Setup *)
       (* TODO: Add Step 3: Dependencies Installation *)
       (* TODO: Add Step 4: Configuration Validation *)
