@@ -124,12 +124,6 @@ let run_verification (root_dir : string) : Types.setup_result =
       steps_completed = 0;
     }
 
-(* Helper: map a setup_result to an exit code. Kept here so the CLI can obtain
-  an exit code without depending directly on the Results module (avoids circular
-  compilation requirements). *)
-let exit_code_of_result (r : Types.setup_result) : int =
-  if r.success then 0 else 1
-
 let run_verification_code (root_dir : string) : int =
   let res = run_verification root_dir in
-  exit_code_of_result res
+  Results.exit_code res
