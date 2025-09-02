@@ -120,7 +120,7 @@ let check backend_dir =
           result :=
             Errors.add_detail !result (Fmt.str "Database type: %s" db_type_str);
 
-          (* Add warnings based on type *)
+          (* Add informational details based on type *)
           (match db_type with
           | Local ->
               Logs.info (fun m ->
@@ -136,10 +136,10 @@ let check backend_dir =
               result :=
                 Errors.add_detail !result "Using remote Supabase connection"
           | Unknown ->
-              Logs.warn (fun m -> m "Unknown database type - assuming Supabase");
+              Logs.warn (fun m -> m "Unknown database type detected");
               result :=
                 Errors.add_phase_warning !result
-                  "Unknown database type detected, assuming Supabase");
+                  "Unknown database type - manual configuration may be required");
 
           (* Mark success *)
           result := { !result with success = true };
