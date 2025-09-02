@@ -21,8 +21,9 @@ let check backend_dir =
   (* Check `cargo.toml` *)
   let result =
     if not (Utils.file_exists cargo_toml_path) then (
-      Logs.err (fun m -> m "Cargo.toml not found.");
-      Errors.add_phase_error result "Cargo.toml not found in backend directory")
+      Logs.err (fun m -> m "Cargo.toml not found");
+      Errors.add_phase_error result
+        (Errors.format_not_found "Cargo.toml" " in backend directory"))
     else result
   in
 
@@ -34,15 +35,16 @@ let check backend_dir =
         | Ok () ->
             Logs.info (fun m -> m "Copied .env.example to .env");
             Errors.add_phase_warning result
-              ".env file not found. Copied from .env.example"
+              (Errors.format_not_found ".env file" ", copied from .env.example")
         | Error msg ->
             Logs.err (fun m -> m "Failed to copy .env.example to .env: %s" msg);
             Errors.add_phase_error result
-              (Fmt.str "Failed to copy .env.example to .env: %s" msg))
+              (Errors.format_failed "Copy .env.example to .env" msg))
       else (
-        Logs.err (fun m -> m ".env.example not found.");
+        Logs.err (fun m -> m ".env.example not found");
         Errors.add_phase_error result
-          ".env file not found and .env.example is also missing")
+          (Errors.format_not_found ".env file"
+             " and .env.example is also missing"))
     else result
   in
 

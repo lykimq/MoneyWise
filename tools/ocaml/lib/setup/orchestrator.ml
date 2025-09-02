@@ -104,7 +104,7 @@ let run_verification (root_dir : string) : Types.setup_result =
     {
       Results.initial_result with
       success = false;
-      errors = [ "unexpected exception: " ^ msg ];
+      errors = [ Fmt.str "Unexpected exception: %s" msg ];
       steps_completed = 0;
     }
 
