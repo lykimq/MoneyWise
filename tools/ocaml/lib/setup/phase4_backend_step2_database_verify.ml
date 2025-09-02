@@ -81,8 +81,8 @@ let detect_database_type database_url =
 
 let check backend_dir =
   let env_path = Filename.concat backend_dir ".env" in
-  let result =
-    ref (Results.initial_phase_result "Database Environment Verification")
+  let initial_result =
+    Results.initial_phase_result "Database Environment Verification"
   in
 
   Logs.info (fun m -> m "Step 2: Verifying database environment...");
@@ -90,43 +90,42 @@ let check backend_dir =
   match read_env_file env_path with
   | Error msg ->
       Logs.err (fun m -> m "Failed to read .env file: %s" msg);
-      result := Errors.add_phase_error !result msg;
-      Error !result
+      Errors.add_phase_error initial_result msg
   | Ok env_vars -> (
-      result :=
-        Errors.add_detail !result
-          (Fmt.str "Parsed %d environment variables" (List.length env_vars));
+      let result1 =
+        Errors.add_detail initial_result
+          (Fmt.str "Parsed %d environment variables" (List.length env_vars))
+      in
 
       (* Extract DATABASE_URL using your helper *)
       match extract_database_type env_vars with
       | Error msg ->
           Logs.err (fun m -> m "DATABASE_URL not found: %s" msg);
-          result := Errors.add_phase_error !result msg;
-          Error !result
+          Errors.add_phase_error result1 msg
       | Ok database_url ->
-          result :=
-            Errors.add_detail !result "DATABASE_URL found in environment";
+          let result2 =
+            Errors.add_detail result1 "DATABASE_URL found in environment"
+          in
 
           (* Detect database type *)
           let db_type = detect_database_type database_url in
           let db_type_str = database_type_to_string db_type in
-          result :=
-            Errors.add_detail !result (Fmt.str "Database type: %s" db_type_str);
+          let result3 =
+            Errors.add_detail result2 (Fmt.str "Database type: %s" db_type_str)
+          in
 
           (* Add informational details based on type *)
-          (match db_type with
-          | Local ->
-              result :=
-                Errors.add_detail !result
+          let result4 =
+            match db_type with
+            | Local ->
+                Errors.add_detail result3
                   "Local PostgreSQL service will be required"
-          | Supabase ->
-              result :=
-                Errors.add_detail !result "Using remote Supabase connection"
-          | Unknown ->
-              result :=
-                Errors.add_phase_warning !result
-                  "Unknown database type - manual configuration may be required");
+            | Supabase ->
+                Errors.add_detail result3 "Using remote Supabase connection"
+            | Unknown ->
+                Errors.add_phase_warning result3
+                  "Unknown database type - manual configuration may be required"
+          in
 
           (* Mark success *)
-          result := { !result with success = true };
-          Ok !result)
+          { result4 with success = true })

@@ -37,8 +37,7 @@ let setup_frontend root_dir =
     if not (Utils.file_exists package_json) then (
       Logs.err (fun m -> m "    ❌ Frontend package.json not found");
       log_npm_error_suggestions ();
-      Errors.add_phase_error initial_result "Frontend package.json missing"
-      |> fun res -> { res with success = false })
+      Errors.add_phase_error initial_result "Frontend package.json missing")
     else Errors.add_detail initial_result "Frontend package.json found"
   in
 
@@ -57,8 +56,7 @@ let setup_frontend root_dir =
         Logs.err (fun m -> m "    ❌ Frontend dependency installation failed");
         log_npm_error_suggestions ();
         Errors.add_phase_error result_after_check
-          "Frontend dependency installation failed"
-        |> fun res -> { res with success = false }))
+          "Frontend dependency installation failed"))
     else result_after_check
   in
 

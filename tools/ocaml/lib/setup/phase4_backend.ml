@@ -61,21 +61,10 @@ let setup_backend root_dir =
 
   let step1_result = Phase4_backend_step1_checks.check backend_dir in
 
-  let final_result =
-    match step1_result with
-    | Ok result ->
-        {
-          initial_phase_result with
-          success = result.success;
-          details = result.details;
-          warnings = result.warnings;
-        }
-    | Error err ->
-        {
-          initial_phase_result with
-          success = false;
-          errors = err.errors;
-          details = err.details;
-        }
-  in
-  final_result
+  {
+    initial_phase_result with
+    success = step1_result.success;
+    details = step1_result.details;
+    warnings = step1_result.warnings;
+    errors = step1_result.errors;
+  }

@@ -40,9 +40,7 @@ let run_verification (root_dir : string) : Types.setup_result =
     print_section "4️⃣  Setting up Backend";
     let root_backend = Filename.concat root_dir "moneywise-backend" in
     let setup_backend_results =
-      match Phase4_backend_verification_steps.checks root_backend with
-      | Ok results -> results
-      | Error err -> [ err ]
+      Phase4_backend_verification_steps.checks root_backend
     in
     (* Only run implemented phases *)
     let phase_results =
