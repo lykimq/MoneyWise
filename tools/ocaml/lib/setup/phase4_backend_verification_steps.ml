@@ -3,6 +3,8 @@ let checks backend_dir =
     [
       ( "Step 1: Initial Checks",
         fun () -> Phase4_backend_step1_checks.check backend_dir );
+      ( "Step 2: Check database DATABSE_URL",
+        fun () -> Phase4_backend_step2_database_verify.check backend_dir );
       (* TODO: Add Step 2: Database Setup *)
       (* TODO: Add Step 3: Dependencies Installation *)
       (* TODO: Add Step 4: Configuration Validation *)
