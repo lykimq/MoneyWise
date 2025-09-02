@@ -73,7 +73,6 @@ let display_structure_status status =
 
 let verify_project_structure root_dir =
   Logs.info (fun m -> m "🔍 Phase 1: Project Structure Verification");
-  let status = ref (create_empty_status ()) in
   (* Required directories and files that form the core project structure:
      - Backend: Contains the Rust server implementation and database management
      - Frontend: Contains the React Native mobile application *)
@@ -87,27 +86,29 @@ let verify_project_structure root_dir =
         Utils.file_exists );
     ]
   in
-  (* Check all paths and update status *)
-  List.iter
-    (fun (path, desc, exists_fn) ->
-      let check_result = check_single_path root_dir path desc exists_fn in
-      status := update_status !status check_result)
-    required_paths;
-  (* Display results *)
-  display_structure_status !status;
-  (* Convert to phase result for compatibility *)
-  let final_result =
-    {
-      Types.phase_name = "Project Structure Verification";
-      success = !status.failed_checks = 0;
-      errors = List.filter_map (fun r -> r.error_message) !status.results;
-      warnings = [];
-      (* No warnings in this phase *)
-      details =
-        List.filter_map
-          (fun r ->
-            if r.exists then Some (Fmt.str "%s exists" r.description) else None)
-          !status.results;
-    }
+  (* Check all paths using functional composition *)
+  let check_results =
+    List.map
+      (fun (path, desc, exists_fn) ->
+        check_single_path root_dir path desc exists_fn)
+      required_paths
   in
-  final_result
+  (* Build final status using functional composition *)
+  let final_status =
+    List.fold_left update_status (create_empty_status ()) check_results
+  in
+  (* Display results *)
+  display_structure_status final_status;
+  (* Convert to phase result for compatibility *)
+  {
+    Types.phase_name = "Project Structure Verification";
+    success = final_status.failed_checks = 0;
+    errors = List.filter_map (fun r -> r.error_message) final_status.results;
+    warnings = [];
+    (* No warnings in this phase *)
+    details =
+      List.filter_map
+        (fun r ->
+          if r.exists then Some (Fmt.str "%s exists" r.description) else None)
+        final_status.results;
+  }

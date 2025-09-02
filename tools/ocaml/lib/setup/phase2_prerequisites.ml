@@ -205,17 +205,20 @@ let display_prerequisites_status status =
 (** Verify all prerequisites are available *)
 let verify_prerequisites () =
   Logs.info (fun m -> m "✅ Phase 2: Prerequisites Verification");
-  let result = ref (initial_phase_result "Prerequisites Verification") in
   let prereq_status = check_all_prerequisites () in
   display_prerequisites_status prereq_status;
-  result :=
-    add_detail !result
-      (Fmt.str "%d/%d prerequisites verified" prereq_status.passed_checks
-         prereq_status.total_checks);
-  if prereq_status.failed_checks = 0 then
-    result := { !result with success = true }
-  else (
-    result := add_phase_error !result "Some prerequisites are missing";
-    result := { !result with success = false });
 
-  !result
+  (* Build result using functional composition *)
+  let initial_result = initial_phase_result "Prerequisites Verification" in
+  let result_with_detail =
+    add_detail initial_result
+      (Fmt.str "%d/%d prerequisites verified" prereq_status.passed_checks
+         prereq_status.total_checks)
+  in
+  if prereq_status.failed_checks = 0 then
+    { result_with_detail with success = true }
+  else
+    let result_with_error =
+      add_phase_error result_with_detail "Some prerequisites are missing"
+    in
+    { result_with_error with success = false }
