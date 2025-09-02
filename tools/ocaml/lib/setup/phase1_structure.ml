@@ -57,7 +57,6 @@ let update_status status check_result =
 
 (** Display the results of structure verification *)
 let display_structure_status status =
-  Logs.info (fun m -> m "============================================");
   List.iter
     (fun result ->
       let icon = if result.exists then "✅" else "❌" in
@@ -66,9 +65,6 @@ let display_structure_status status =
       in
       Logs.info (fun m -> m "%s %s%s" icon result.description error_str))
     (List.rev status.results);
-  Logs.info (fun m -> m "");
-  Logs.info (fun m ->
-      m "Summary: %d/%d checks passed" status.passed_checks status.total_checks);
   if status.failed_checks = 0 then
     Logs.info (fun m -> m "✅ All structure checks passed successfully!")
   else
@@ -77,8 +73,6 @@ let display_structure_status status =
 
 let verify_project_structure root_dir =
   Logs.info (fun m -> m "🔍 Phase 1: Project Structure Verification");
-  Logs.info (fun m ->
-      m "  Checking project structure in: %s" (Utils.format_path root_dir));
   let status = ref (create_empty_status ()) in
   (* Required directories and files that form the core project structure:
      - Backend: Contains the Rust server implementation and database management

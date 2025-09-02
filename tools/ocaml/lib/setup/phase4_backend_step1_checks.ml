@@ -19,7 +19,6 @@ let check backend_dir =
   in
 
   (* Check `cargo.toml` *)
-  Logs.info (fun m -> m "Checking for Cargo.toml at %s" cargo_toml_path);
   let result =
     if not (Utils.file_exists cargo_toml_path) then (
       Logs.err (fun m -> m "Cargo.toml not found.");
@@ -28,10 +27,8 @@ let check backend_dir =
   in
 
   (* Check `.env` *)
-  Logs.info (fun m -> m "Checking for .env at %s" env_path);
   let result =
-    if not (Utils.file_exists env_path) then (
-      Logs.warn (fun m -> m ".env file not found. Checking for .env.example.");
+    if not (Utils.file_exists env_path) then
       if Utils.file_exists env_example_path then (
         match Utils.copy_file env_example_path env_path with
         | Ok () ->
@@ -45,7 +42,7 @@ let check backend_dir =
       else (
         Logs.err (fun m -> m ".env.example not found.");
         Errors.add_phase_error result
-          ".env file not found and .env.example is also missing."))
+          ".env file not found and .env.example is also missing.")
     else result
   in
 

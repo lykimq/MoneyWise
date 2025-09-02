@@ -36,7 +36,6 @@ let run_verification (root_dir : string) : Types.setup_result =
     (* Phase 3: Frontend Setup *)
     print_section "3️⃣  Setting up Frontend";
     let frontend_result = Phase3_frontend.setup_frontend root_dir in
-    Logs.info (fun m -> m "✅ Initial verification passed successfully!");
     (* Phase 4: Setup backend *)
     print_section "4️⃣  Setting up Backend";
     let root_backend = Filename.concat root_dir "moneywise-backend" in
@@ -97,19 +96,6 @@ let run_verification (root_dir : string) : Types.setup_result =
     Logs.info (fun m ->
         m "Verification Status: %s"
           (if final_result.success then "✅ Success" else "❌ Failed"));
-    if final_result.errors <> [] then
-      Logs.info (fun m ->
-          m "Verification Errors: %d" (List.length final_result.errors));
-    if final_result.warnings <> [] then
-      Logs.info (fun m ->
-          m "Verification Warnings: %d" (List.length final_result.warnings));
-    Logs.info (fun m -> m "");
-    Logs.info (fun m ->
-        m
-          "Note: Structure, prerequisites, frontend, and backend setup are \
-           currently implemented.");
-    Logs.info (fun m ->
-        m "Additional setup commands will be available in future updates.");
     (* Return result to caller instead of exiting *)
     final_result
   with exn ->

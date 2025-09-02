@@ -39,9 +39,7 @@ let setup_frontend root_dir =
       log_npm_error_suggestions ();
       Errors.add_phase_error initial_result "Frontend package.json missing"
       |> fun res -> { res with success = false })
-    else (
-      Logs.info (fun m -> m "    📦 Found frontend package configuration");
-      Errors.add_detail initial_result "Frontend package.json found")
+    else Errors.add_detail initial_result "Frontend package.json found"
   in
 
   (* 2. Install dependencies if package.json was found *)
@@ -64,8 +62,4 @@ let setup_frontend root_dir =
     else result_after_check
   in
 
-  Logs.info (fun m ->
-      m "  Phase 3 completed: %d/%d checks passed"
-        (if final_result.success then 1 else 0)
-        1);
   final_result

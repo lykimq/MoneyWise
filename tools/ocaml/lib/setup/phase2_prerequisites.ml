@@ -217,8 +217,5 @@ let verify_prerequisites () =
   else (
     result := add_phase_error !result "Some prerequisites are missing";
     result := { !result with success = false });
-  Logs.info (fun m ->
-      m "  Phase 2 completed: %d/%d checks passed"
-        (if !result.success then 1 else 0)
-        1);
+
   !result

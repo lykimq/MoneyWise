@@ -59,13 +59,11 @@ let setup_backend root_dir =
   let backend_dir = Filename.concat root_dir "moneywise-backend" in
   let initial_phase_result = Results.initial_phase_result "Backend Setup" in
 
-  Logs.info (fun m -> m "Step 1: Checking backend prerequisites...");
   let step1_result = Phase4_backend_step1_checks.check backend_dir in
 
   let final_result =
     match step1_result with
     | Ok result ->
-        Logs.info (fun m -> m "Step 1: successful");
         {
           initial_phase_result with
           success = result.success;
@@ -73,7 +71,6 @@ let setup_backend root_dir =
           warnings = result.warnings;
         }
     | Error err ->
-        Logs.err (fun m -> m "Step 1 failed");
         {
           initial_phase_result with
           success = false;
