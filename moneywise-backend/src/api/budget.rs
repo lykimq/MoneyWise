@@ -624,7 +624,7 @@ async fn get_category_budgets(
 
         // Percentage of budget used; safe when planned is zero
         let percentage = if &planned > &Decimal::from(0) {
-            (&spent / &planned) * Decimal::from(100)
+            ((&spent / &planned) * Decimal::from(100)).round_dp(2)
         } else {
             Decimal::from(0)
         };
@@ -663,7 +663,7 @@ fn generate_budget_insights(
     // Identify categories that exceeded their planned budget
     for category in categories {
         if category.percentage > Decimal::from(100) {
-            let over_percentage = category.percentage - Decimal::from(100);
+            let over_percentage = (category.percentage - Decimal::from(100)).round_dp(2);
             insights.push(BudgetInsight {
                 type_: "warning".to_string(),
                 message: format!(
