@@ -14,11 +14,11 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
  */
 
 interface OverviewCardProps {
-    label: string;           // The metric label (e.g., "Total Spent")
-    amount: string | number; // The main value to display
-    period: string;          // Time period description (e.g., "This Month")
-    loading?: boolean;       // Whether to show loading spinner
-    color?: string;          // Optional custom color for the amount
+    label: string;                    // The metric label (e.g., "Total Spent")
+    amount: string | number | undefined; // The main value to display
+    period: string;                   // Time period description (e.g., "This Month")
+    loading?: boolean;                // Whether to show loading spinner
+    color?: string;                   // Optional custom color for the amount
 }
 
 const OverviewCard: React.FC<OverviewCardProps> = ({
@@ -34,7 +34,8 @@ const OverviewCard: React.FC<OverviewCardProps> = ({
             <Text style={styles.label}>{label}</Text>
 
             {/* Main Amount Display - shows loading spinner or the actual value */}
-            {loading ? (
+            {/* Handle undefined amount to prevent showing 0 during data loading */}
+            {loading || amount === undefined ? (
                 <ActivityIndicator size="small" color={color} />
             ) : (
                 <Text style={[styles.amount, { color }]}>

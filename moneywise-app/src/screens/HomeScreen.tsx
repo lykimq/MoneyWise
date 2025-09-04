@@ -72,17 +72,22 @@ const HomeScreen: React.FC = () => {
             <ScrollView style={styles.scrollView}>
 
                 {/* SECTION 1: Budget Overview Cards */}
+                {/*
+                 * Prevent race condition by passing undefined during loading
+                 * This ensures the loading spinner shows instead of briefly showing 0
+                 * when data is still being fetched
+                 */}
                 <View style={styles.overviewSection}>
                     <OverviewCard
                         label="Total Spent"
-                        amount={overview?.spent || 0}
+                        amount={loading ? undefined : (overview?.spent || 0)}
                         period="This Month"
                         loading={loading}
                         color="#FF6B6B" // Red for spending
                     />
                     <OverviewCard
                         label="Remaining"
-                        amount={overview?.remaining || 0}
+                        amount={loading ? undefined : (overview?.remaining || 0)}
                         period="This Month"
                         loading={loading}
                         color="#4ECDC4" // Teal for remaining budget
