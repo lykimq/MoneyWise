@@ -6,12 +6,16 @@ import {
     ScrollView,
     SafeAreaView,
     TouchableOpacity,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { PieChart } from 'react-native-chart-kit';
+import { Dimensions } from 'react-native';
 
 // Import our custom components and hooks
 import FinancialDashboardCard from '../components/FinancialDashboardCard';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
+import { useCategorySpending } from '../hooks/useCategorySpending';
 
 /**
  * HomeScreen Component
@@ -25,8 +29,14 @@ import { useBudgetOverview } from '../hooks/useBudgetOverview';
 const HomeScreen: React.FC = () => {
     const {
         overview,
-        loading,
+        loading: overviewLoading,
     } = useBudgetOverview();
+
+    const {
+        categories,
+        loading: categoriesLoading,
+        isEmpty: categoriesEmpty,
+    } = useCategorySpending();
 
     /**
      * FAB Action Handler
@@ -47,15 +57,19 @@ const HomeScreen: React.FC = () => {
                  * with visual elements, progress indicators, and clear hierarchy
                  */}
                 <FinancialDashboardCard
-                    spent={loading ? undefined : (overview?.spent || 0)}
-                    remaining={loading ? undefined : (overview?.remaining || 0)}
+                    spent={overviewLoading ? undefined : (overview?.spent || 0)}
+                    remaining={overviewLoading ? undefined : (overview?.remaining || 0)}
                     savings={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
-                    loading={loading}
+                    loading={overviewLoading}
                     period="This Month"
                 />
 
                 {/* SECTION 2: Spending by Category */}
-                <CategorySpendingSection />
+                <CategorySpendingSection
+                    categories={categories}
+                    loading={categoriesLoading}
+                    isEmpty={categoriesEmpty}
+                />
 
                 {/* SECTION 3: Recent Transactions */}
                 <RecentTransactionsSection />
@@ -86,28 +100,122 @@ const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) =>
 /**
  * CategorySpendingSection Component
  *
- * Extracted as separate component for better organization
- * In a larger app, this might be in its own file
+ * Displays spending breakdown by category using a pie chart and legend.
+ * Shows loading state, empty state, and actual data visualization.
  */
-const CategorySpendingSection: React.FC = () => (
-    <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Spending by Category</Text>
+interface CategorySpendingSectionProps {
+    categories: Array<{
+        id: string;
+        category_name: string;
+        spent: string;
+        category_color: string;
+        currency: string;
+    }>;
+    loading: boolean;
+    isEmpty: boolean;
+}
 
-        {/* Chart Placeholder - In real app, this would be a chart library component */}
-        <View style={styles.chartContainer}>
-            <View style={styles.chartPlaceholder}>
-                <Ionicons name="pie-chart-outline" size={48} color={colors.primary} />
-                <Text style={styles.chartPlaceholderText}>Pie Chart</Text>
+const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
+    categories,
+    loading,
+    isEmpty
+}) => {
+    // Screen dimensions for chart sizing
+    const screenWidth = Dimensions.get('window').width;
+    const chartSize = Math.min(screenWidth - 120, 250); // Even more padding to prevent cutoff
+
+    // Prepare data for pie chart
+    const chartData = categories.map((category, index) => ({
+        name: category.category_name,
+        population: parseFloat(category.spent),
+        color: category.category_color || getDefaultColor(index),
+        legendFontColor: colors.text,
+        legendFontSize: 12,
+    }));
+
+    // Get default colors for categories without assigned colors
+    const getDefaultColor = (index: number) => {
+        const defaultColors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+            '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+        ];
+        return defaultColors[index % defaultColors.length];
+    };
+
+    // Format currency for display
+    const formatCurrency = (amount: string, currency: string) => {
+        const num = parseFloat(amount);
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency || 'USD',
+        }).format(num);
+    };
+
+    return (
+        <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Spending by Category</Text>
+
+            <View style={styles.chartContainer}>
+                {loading ? (
+                    <View style={styles.chartPlaceholder}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <Text style={styles.chartPlaceholderText}>Loading spending data...</Text>
+                    </View>
+                ) : isEmpty ? (
+                    <View style={styles.chartPlaceholder}>
+                        <Ionicons name="pie-chart-outline" size={48} color={colors.textSecondary} />
+                        <Text style={styles.chartPlaceholderText}>No spending data available</Text>
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.pieChartWrapper}>
+                            <PieChart
+                                data={chartData}
+                                width={chartSize + 40}
+                                height={chartSize + 40}
+                                chartConfig={{
+                                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                                }}
+                                accessor="population"
+                                backgroundColor="transparent"
+                                paddingLeft="40"
+                                center={[20, 20]}
+                                absolute
+                                hasLegend={false}
+                            />
+                        </View>
+
+                        {/* Category Legend - Grid Layout */}
+                        <View style={styles.categoryLegendGrid}>
+                            {categories.map((category, index) => (
+                                <CategoryLegendItem
+                                    key={category.id}
+                                    name={category.category_name}
+                                    amount={formatCurrency(category.spent, category.currency)}
+                                    color={category.category_color || getDefaultColor(index)}
+                                />
+                            ))}
+                        </View>
+                    </>
+                )}
             </View>
         </View>
+    );
+};
 
-        {/* Category List - Shows spending breakdown */}
-        <View style={styles.categoryList}>
-            <CategoryItem iconName="home-outline" text="Housing: $800" />
-            <CategoryItem iconName="restaurant-outline" text="Dining: $450" />
-            <CategoryItem iconName="car-outline" text="Transport: $300" />
-            <CategoryItem iconName="bag-outline" text="Shopping: $400" />
-        </View>
+/**
+ * CategoryLegendItem Component
+ * Displays individual category in the legend with color indicator
+ */
+const CategoryLegendItem: React.FC<{
+    name: string;
+    amount: string;
+    color: string;
+}> = ({ name, amount, color }) => (
+    <View style={styles.legendItem}>
+        <View style={[styles.legendColorIndicator, { backgroundColor: color }]} />
+        <Text style={styles.legendName}>{name}</Text>
+        <Text style={styles.legendAmount}>{amount}</Text>
     </View>
 );
 
@@ -308,9 +416,19 @@ const styles = StyleSheet.create({
     chartContainer: {
         backgroundColor: colors.white,
         borderRadius: 12,
-        padding: 20,
+        padding: 30,
         marginBottom: 15,
+        alignItems: 'center', // Center the chart
         ...cardShadow, // Reusable shadow style (defined below)
+    },
+
+    // Wrapper for pie chart to ensure proper centering
+    pieChartWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+        width: '100%',
+        overflow: 'visible',
     },
 
     // Placeholder for actual chart component
@@ -323,14 +441,62 @@ const styles = StyleSheet.create({
     chartPlaceholderText: {
         marginTop: 10,
         color: colors.textSecondary,
+        fontSize: 14,
     },
 
-    // List container for categories
+    // Category legend container - Grid layout
+    categoryLegendGrid: {
+        marginTop: 20,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+
+    // Individual legend item - Grid layout
+    legendItem: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: colors.background,
+        borderRadius: 8,
+        minWidth: 80,
+        maxWidth: 120,
+        flex: 1,
+    },
+
+    // Color indicator for legend
+    legendColorIndicator: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        marginBottom: 6,
+    },
+
+    // Category name in legend
+    legendName: {
+        fontSize: 12,
+        color: colors.text,
+        fontWeight: '500',
+        textAlign: 'center',
+        marginBottom: 2,
+    },
+
+    // Amount in legend
+    legendAmount: {
+        fontSize: 11,
+        color: colors.textSecondary,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+
+    // List container for categories (legacy - keeping for other components)
     categoryList: {
         gap: 10, // Space between category items
     },
 
-    // Individual category item layout
+    // Individual category item layout (legacy - keeping for other components)
     categoryItem: {
         flexDirection: 'row',
         alignItems: 'center',
