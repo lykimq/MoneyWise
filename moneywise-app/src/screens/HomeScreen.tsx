@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 // Import our custom components and hooks
-import OverviewCard from '../components/OverviewCard';
+import FinancialDashboardCard from '../components/FinancialDashboardCard';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
 
 /**
@@ -41,35 +41,18 @@ const HomeScreen: React.FC = () => {
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
 
-                {/* SECTION 1: Budget Overview Cards */}
+                {/* SECTION 1: Financial Dashboard Card */}
                 {/*
-                 * Prevent race condition by passing undefined during loading
-                 * This ensures the loading spinner shows instead of briefly showing 0
-                 * when data is still being fetched
+                 * Single large dashboard card that combines all three key metrics
+                 * with visual elements, progress indicators, and clear hierarchy
                  */}
-                <View style={styles.overviewSection}>
-                    <OverviewCard
-                        label="Total Spent"
-                        amount={loading ? undefined : (overview?.spent || 0)}
-                        period="This Month"
-                        loading={loading}
-                        color={colors.spending} // Red for spending
-                    />
-                    <OverviewCard
-                        label="Remaining"
-                        amount={loading ? undefined : (overview?.remaining || 0)}
-                        period="This Month"
-                        loading={loading}
-                        color={colors.remaining} // Teal for remaining budget
-                    />
-                    <OverviewCard
-                        label="Savings"
-                        amount={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
-                        period="Progress"
-                        loading={false} // TODO: Connect to real savings data when available
-                        color={colors.savings} // Blue for savings
-                    />
-                </View>
+                <FinancialDashboardCard
+                    spent={loading ? undefined : (overview?.spent || 0)}
+                    remaining={loading ? undefined : (overview?.remaining || 0)}
+                    savings={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
+                    loading={loading}
+                    period="This Month"
+                />
 
                 {/* SECTION 2: Spending by Category */}
                 <CategorySpendingSection />
@@ -291,13 +274,6 @@ const styles = StyleSheet.create({
         paddingVertical: 15,        // Vertical spacing between sections
     },
 
-    // Special section for overview cards at top
-    overviewSection: {
-        flexDirection: 'row',       // Horizontal layout for cards
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        gap: 10,                    // Space between cards
-    },
 
     // === TEXT STYLES ===
 
