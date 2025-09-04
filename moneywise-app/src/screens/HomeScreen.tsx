@@ -26,10 +26,6 @@ const HomeScreen: React.FC = () => {
     const {
         overview,
         loading,
-        error,
-        isStale,        // Know if data might be outdated
-        isFetching,     // Know if background update is happening
-        refetch         // Better refetch functionality
     } = useBudgetOverview();
 
     /**
@@ -57,21 +53,21 @@ const HomeScreen: React.FC = () => {
                         amount={loading ? undefined : (overview?.spent || 0)}
                         period="This Month"
                         loading={loading}
-                        color="#FF6B6B" // Red for spending
+                        color={colors.spending} // Red for spending
                     />
                     <OverviewCard
                         label="Remaining"
                         amount={loading ? undefined : (overview?.remaining || 0)}
                         period="This Month"
                         loading={loading}
-                        color="#4ECDC4" // Teal for remaining budget
+                        color={colors.remaining} // Teal for remaining budget
                     />
                     <OverviewCard
                         label="Savings"
-                        amount={1200} // This would come from API in real app
+                        amount={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
                         period="Progress"
-                        loading={false}
-                        color="#45B7D1" // Blue for savings
+                        loading={false} // TODO: Connect to real savings data when available
+                        color={colors.savings} // Blue for savings
                     />
                 </View>
 
@@ -100,7 +96,7 @@ const HomeScreen: React.FC = () => {
  */
 const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
     <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
-        <Ionicons name="add" size={24} color="#FFFFFF" />
+        <Ionicons name="add" size={24} color={colors.white} />
     </TouchableOpacity>
 );
 
@@ -117,7 +113,7 @@ const CategorySpendingSection: React.FC = () => (
         {/* Chart Placeholder - In real app, this would be a chart library component */}
         <View style={styles.chartContainer}>
             <View style={styles.chartPlaceholder}>
-                <Ionicons name="pie-chart-outline" size={48} color="#007AFF" />
+                <Ionicons name="pie-chart-outline" size={48} color={colors.primary} />
                 <Text style={styles.chartPlaceholderText}>Pie Chart</Text>
             </View>
         </View>
@@ -138,7 +134,7 @@ const CategorySpendingSection: React.FC = () => (
  */
 const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
     <View style={styles.categoryItem}>
-        <Ionicons name={iconName} size={20} color="#007AFF" />
+        <Ionicons name={iconName} size={20} color={colors.primary} />
         <Text style={styles.categoryText}>{text}</Text>
     </View>
 );
@@ -153,27 +149,27 @@ const RecentTransactionsSection: React.FC = () => (
         <View style={styles.transactionList}>
             <TransactionItem
                 iconName="restaurant-outline"
-                iconColor="#FF6B6B"
+                iconColor={colors.spending}
                 title="Dining Out"
                 time="Today 2:30 PM"
                 amount="-$45.00"
-                amountColor="#FF6B6B"
+                amountColor={colors.spending}
             />
             <TransactionItem
                 iconName="home-outline"
-                iconColor="#4ECDC4"
+                iconColor={colors.remaining}
                 title="Rent Payment"
                 time="Yesterday 9:00 AM"
                 amount="-$1,200.00"
-                amountColor="#FF6B6B"
+                amountColor={colors.spending}
             />
             <TransactionItem
                 iconName="cash-outline"
-                iconColor="#45B7D1"
+                iconColor={colors.savings}
                 title="Salary"
                 time="2 days ago 9:00 AM"
                 amount="+$3,500.00"
-                amountColor="#4ECDC4"
+                amountColor={colors.remaining}
             />
         </View>
     </View>
@@ -225,7 +221,7 @@ const UpcomingBillsSection: React.FC = () => (
  */
 const BillItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
     <View style={styles.billItem}>
-        <Ionicons name={iconName} size={20} color="#FF6B6B" />
+        <Ionicons name={iconName} size={20} color={colors.spending} />
         <Text style={styles.billText}>{text}</Text>
     </View>
 );
@@ -243,6 +239,23 @@ const cardShadow = {
     shadowRadius: 3.84,
     elevation: 5,
 };
+
+/**
+ * COLOR CONSTANTS
+ *
+ * Centralized color definitions to prevent duplication
+ * and ensure consistent theming across the app
+ */
+const colors = {
+    primary: '#007AFF',      // iOS blue
+    spending: '#FF6B6B',     // Red for expenses
+    remaining: '#4ECDC4',    // Teal for remaining budget
+    savings: '#45B7D1',      // Blue for savings
+    text: '#333',            // Primary text color
+    textSecondary: '#666',   // Secondary text color
+    background: '#F8F9FA',   // Light gray background
+    white: '#FFFFFF',        // White background for cards
+} as const;
 
 /**
  * STYLES ORGANIZATION
@@ -264,7 +277,7 @@ const styles = StyleSheet.create({
     // Main container - defines overall screen layout
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FA', // Light gray background for entire screen
+        backgroundColor: colors.background, // Light gray background for entire screen
     },
 
     // Scrollable content area
@@ -292,7 +305,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: colors.text,
         marginBottom: 15,
     },
 
@@ -306,7 +319,7 @@ const styles = StyleSheet.create({
         width: 56,                 // Standard FAB size
         height: 56,
         borderRadius: 28,          // Perfect circle
-        backgroundColor: '#007AFF', // iOS blue for primary action
+        backgroundColor: colors.primary, // iOS blue for primary action
         justifyContent: 'center',
         alignItems: 'center',
         ...cardShadow,             // Reuse shadow for elevation
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
 
     // Chart container with card styling
     chartContainer: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.white,
         borderRadius: 12,
         padding: 20,
         marginBottom: 15,
@@ -333,7 +346,7 @@ const styles = StyleSheet.create({
 
     chartPlaceholderText: {
         marginTop: 10,
-        color: '#666',
+        color: colors.textSecondary,
     },
 
     // List container for categories
@@ -350,7 +363,7 @@ const styles = StyleSheet.create({
 
     categoryText: {
         fontSize: 14,
-        color: '#333',
+        color: colors.text,
     },
 
     // === TRANSACTION SECTION STYLES ===
@@ -364,7 +377,7 @@ const styles = StyleSheet.create({
     transactionItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.white,
         padding: 15,
         borderRadius: 12,
         ...cardShadow,
@@ -381,12 +394,12 @@ const styles = StyleSheet.create({
     transactionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
+        color: colors.text,
     },
 
     transactionTime: {
         fontSize: 12,
-        color: '#666',
+        color: colors.textSecondary,
         marginTop: 2,
     },
 
@@ -405,7 +418,7 @@ const styles = StyleSheet.create({
     billItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.white,
         padding: 15,
         borderRadius: 12,
         gap: 10,
@@ -414,7 +427,7 @@ const styles = StyleSheet.create({
 
     billText: {
         fontSize: 14,
-        color: '#333',
+        color: colors.text,
     },
 });
 
