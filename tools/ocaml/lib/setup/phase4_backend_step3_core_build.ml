@@ -141,6 +141,8 @@ let check_and_install_sqlx_cli () : Types.phase_result =
 
 let run_database_migrations backend_dir : Types.phase_result =
   let migrations_path = Filename.concat backend_dir "database/migrations" in
+  (* TODO: check the database running first, also should handle the option that
+  do I need to run it if it is already have the database? etc. *)
   run_command_and_report_result ~phase_name:"Run Database Migrations"
     ~dir:backend_dir
     ~command:(Printf.sprintf "sqlx migrate run --source %s" migrations_path)
