@@ -124,23 +124,39 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
     const screenWidth = Dimensions.get('window').width;
     const chartSize = Math.min(screenWidth - 120, 250); // Even more padding to prevent cutoff
 
-    // Prepare data for pie chart
-    const chartData = categories.map((category, index) => ({
-        name: category.category_name,
-        population: parseFloat(category.spent),
-        color: category.category_color || getDefaultColor(index),
-        legendFontColor: colors.text,
-        legendFontSize: 12,
-    }));
-
-    // Get default colors for categories without assigned colors
+    // Get default colors for categories - distinct, easy-to-distinguish colors
     const getDefaultColor = (index: number) => {
         const defaultColors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
-            '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'
+            '#FF6B6B', // Red - highest spending
+            '#4ECDC4', // Teal
+            '#45B7D1', // Blue
+            '#96CEB4', // Green
+            '#FFEAA7', // Yellow
+            '#DDA0DD', // Purple
+            '#FF8A80', // Light Red
+            '#81C784', // Light Green
+            '#FFB74D', // Orange
+            '#BA68C8', // Light Purple
+            '#4DB6AC', // Dark Teal
+            '#FF7043'  // Deep Orange
         ];
         return defaultColors[index % defaultColors.length];
     };
+
+    // Calculate total spending for percentage calculations
+    const totalSpending = categories.reduce((sum, category) => sum + parseFloat(category.spent), 0);
+
+    // Sort categories by spending amount (highest to lowest) for better visual hierarchy
+    const sortedCategories = [...categories].sort((a, b) => parseFloat(b.spent) - parseFloat(a.spent));
+
+    // Prepare data for pie chart
+    const chartData = sortedCategories.map((category, index) => ({
+        name: category.category_name,
+        population: parseFloat(category.spent),
+        color: getDefaultColor(index), // Use our improved color palette
+        legendFontColor: colors.text,
+        legendFontSize: 12,
+    }));
 
     // Format currency for display
     const formatCurrency = (amount: string, currency: string) => {
@@ -187,14 +203,21 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
 
                         {/* Category Legend - Grid Layout */}
                         <View style={styles.categoryLegendGrid}>
-                            {categories.map((category, index) => (
-                                <CategoryLegendItem
-                                    key={category.id}
-                                    name={category.category_name}
-                                    amount={formatCurrency(category.spent, category.currency)}
-                                    color={category.category_color || getDefaultColor(index)}
-                                />
-                            ))}
+                            {sortedCategories.map((category, index) => {
+                                const spendingPercentage = totalSpending > 0
+                                    ? ((parseFloat(category.spent) / totalSpending) * 100).toFixed(1)
+                                    : '0.0';
+
+                                return (
+                                    <CategoryLegendItem
+                                        key={category.id}
+                                        name={category.category_name}
+                                        amount={formatCurrency(category.spent, category.currency)}
+                                        percentage={`${spendingPercentage}%`}
+                                        color={getDefaultColor(index)}
+                                    />
+                                );
+                            })}
                         </View>
                     </>
                 )}
@@ -205,17 +228,19 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
 
 /**
  * CategoryLegendItem Component
- * Displays individual category in the legend with color indicator
+ * Displays individual category in the legend with color indicator, amount, and percentage
  */
 const CategoryLegendItem: React.FC<{
     name: string;
     amount: string;
+    percentage: string;
     color: string;
-}> = ({ name, amount, color }) => (
+}> = ({ name, amount, percentage, color }) => (
     <View style={styles.legendItem}>
         <View style={[styles.legendColorIndicator, { backgroundColor: color }]} />
         <Text style={styles.legendName}>{name}</Text>
         <Text style={styles.legendAmount}>{amount}</Text>
+        <Text style={styles.legendPercentage}>{percentage}</Text>
     </View>
 );
 
@@ -488,6 +513,15 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: colors.textSecondary,
         fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 2,
+    },
+
+    // Percentage in legend
+    legendPercentage: {
+        fontSize: 10,
+        color: colors.primary,
+        fontWeight: '600',
         textAlign: 'center',
     },
 
