@@ -33,7 +33,8 @@ async fn main() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             // Use RUST_LOG environment variable or default to "info" level
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+            // Exclude sqlx query logs to reduce noise in production
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "info,sqlx::query=warn".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
