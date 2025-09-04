@@ -5,12 +5,12 @@ import {
     StyleSheet,
     ScrollView,
     SafeAreaView,
+    TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 // Import our custom components and hooks
 import OverviewCard from '../components/OverviewCard';
-import QuickActionButton from '../components/QuickActionButton';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
 
 /**
@@ -33,38 +33,12 @@ const HomeScreen: React.FC = () => {
     } = useBudgetOverview();
 
     /**
-     * Quick Action Handlers
-     * In a real app, these would navigate to different screens
-     * or trigger specific actions
+     * FAB Action Handler
+     * Primary action for adding transactions
      */
     const handleAddTransaction = () => {
         console.log('Navigate to Add Transaction screen');
         // navigation.navigate('AddTransaction');
-    };
-
-    const handleViewBudget = () => {
-        console.log('Navigate to Budget screen');
-        // navigation.navigate('Budget');
-    };
-
-    const handleGoalsProgress = () => {
-        console.log('Navigate to Goals screen');
-        // navigation.navigate('Goals');
-    };
-
-    const handleViewReports = () => {
-        console.log('Navigate to Reports screen');
-        // navigation.navigate('Reports');
-    };
-
-    const handleSearchTransactions = () => {
-        console.log('Navigate to Search screen');
-        // navigation.navigate('Search');
-    };
-
-    const handleUpcomingBills = () => {
-        console.log('Navigate to Bills screen');
-        // navigation.navigate('Bills');
     };
 
     return (
@@ -101,56 +75,34 @@ const HomeScreen: React.FC = () => {
                     />
                 </View>
 
-                {/* SECTION 2: Quick Actions Grid */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Quick Actions</Text>
-                    <View style={styles.quickActionsGrid}>
-                        <QuickActionButton
-                            iconName="add-circle-outline"
-                            text="Add Transaction"
-                            onPress={handleAddTransaction}
-                        />
-                        <QuickActionButton
-                            iconName="bar-chart-outline"
-                            text="View Budget"
-                            onPress={handleViewBudget}
-                        />
-                        <QuickActionButton
-                            iconName="flag-outline"
-                            text="Goals Progress"
-                            onPress={handleGoalsProgress}
-                        />
-                        <QuickActionButton
-                            iconName="analytics-outline"
-                            text="View Reports"
-                            onPress={handleViewReports}
-                        />
-                        <QuickActionButton
-                            iconName="search-outline"
-                            text="Search Transactions"
-                            onPress={handleSearchTransactions}
-                        />
-                        <QuickActionButton
-                            iconName="calendar-outline"
-                            text="Upcoming Bills"
-                            onPress={handleUpcomingBills}
-                        />
-                    </View>
-                </View>
-
-                {/* SECTION 3: Spending by Category */}
+                {/* SECTION 2: Spending by Category */}
                 <CategorySpendingSection />
 
-                {/* SECTION 4: Recent Transactions */}
+                {/* SECTION 3: Recent Transactions */}
                 <RecentTransactionsSection />
 
-                {/* SECTION 5: Upcoming Bills */}
+                {/* SECTION 4: Upcoming Bills */}
                 <UpcomingBillsSection />
 
             </ScrollView>
+
+            {/* Floating Action Button for Add Transaction */}
+            <FloatingActionButton onPress={handleAddTransaction} />
         </SafeAreaView>
     );
 };
+
+/**
+ * FloatingActionButton Component
+ *
+ * Modern FAB design for primary action (Add Transaction)
+ * Positioned absolutely in bottom-right corner
+ */
+const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
+    <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
+        <Ionicons name="add" size={24} color="#FFFFFF" />
+    </TouchableOpacity>
+);
 
 /**
  * CategorySpendingSection Component
@@ -344,13 +296,21 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
 
-    // === QUICK ACTIONS STYLES ===
+    // === FLOATING ACTION BUTTON STYLES ===
 
-    // Grid layout for quick action buttons
-    quickActionsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',          // Allow wrapping to next row
-        gap: 10,                   // Space between buttons
+    // Floating Action Button - positioned absolutely in bottom-right
+    fab: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        width: 56,                 // Standard FAB size
+        height: 56,
+        borderRadius: 28,          // Perfect circle
+        backgroundColor: '#007AFF', // iOS blue for primary action
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...cardShadow,             // Reuse shadow for elevation
+        zIndex: 1000,              // Ensure it stays on top
     },
 
     // === CATEGORY SECTION STYLES ===
