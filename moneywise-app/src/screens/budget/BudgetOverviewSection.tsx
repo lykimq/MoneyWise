@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, sectionStyles, cardVariants } from '../../styles';
+import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, sectionStyles, cardVariants, spacing } from '../../styles';
 
 /**
  * Props for the BudgetOverviewSection component
@@ -69,7 +69,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
             <Text style={sectionStyles.title}>Budget Overview</Text>
 
             {/* DASHBOARD CONTAINER - Holds the main and secondary budget cards. */}
-            <View style={{ gap: 15 }}>
+            <View style={{ gap: spacing.cardGap }}>
                 {/* MAIN CARD - Displays the "Planned Budget" as the most prominent information. */}
                 <View style={mainCardStyles.card}>
                     {/* Main Card Header - Contains the icon, title, and period. */}
@@ -118,7 +118,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                 </View>
 
                 {/* SECONDARY CARDS ROW - Contains the "Spent" and "Remaining" budget cards side-by-side. */}
-                <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flexDirection: 'row', gap: spacing.rowGap }}>
                     {/* SPENT CARD - Displays the total amount spent. */}
                     <View style={[
                         secondaryCardStyles.card,

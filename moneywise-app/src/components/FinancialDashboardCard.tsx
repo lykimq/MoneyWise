@@ -1,48 +1,21 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, shadows } from '../styles';
+import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, shadows, spacing } from '../styles';
 
+// Use design system styles directly - no redundant overrides needed
 const styles = {
     // Container with same padding as HomeScreen sections
     dashboardContainer: {
-        paddingHorizontal: 20, // Match HomeScreen section padding
-        paddingVertical: 15,   // Match HomeScreen section padding
-        gap: 15,
+        paddingHorizontal: spacing.sectionPadding,
+        paddingVertical: spacing.sectionVertical,
+        gap: spacing.cardGap,
     },
-    // Main card styles - use base card styling for proper alignment
-    mainCard: {
-        ...mainCardStyles.card,
-        padding: 16, // Use standard card padding instead of enhanced padding
-        borderRadius: 16, // Use standard border radius
-        ...shadows.md, // Use standard shadow instead of enhanced shadow
+    // Row layout for secondary cards
+    secondaryCardsRow: {
+        flexDirection: 'row' as const,
+        gap: spacing.rowGap,
     },
-    mainCardHeader: mainCardStyles.header,
-    mainCardTitleRow: mainCardStyles.titleRow,
-    mainCardTitle: mainCardStyles.title,
-    mainCardPeriod: mainCardStyles.period,
-    mainCardContent: mainCardStyles.content,
-    mainCardAmount: mainCardStyles.amount,
-    mainProgressContainer: mainCardStyles.progressContainer,
-    mainProgressBar: mainCardStyles.progressBar,
-    mainProgressFill: mainCardStyles.progressFill,
-    mainProgressText: mainCardStyles.progressText,
-    // Secondary card styles - use consistent padding
-    secondaryCard: {
-        ...secondaryCardStyles.card,
-        padding: 16, // Use standard card padding for consistency
-    },
-    secondaryCardHeader: secondaryCardStyles.header,
-    secondaryCardLabel: secondaryCardStyles.label,
-    secondaryCardAmount: secondaryCardStyles.amount,
-    secondaryCardIndicator: secondaryCardStyles.indicator,
-    secondaryCardDot: secondaryCardStyles.dot,
-    secondaryCardText: secondaryCardStyles.text,
-    // Progress bar styles
-    progressContainer: progressBarStyles.container,
-    progressBar: progressBarStyles.bar,
-    progressFill: progressBarStyles.fill,
-    progressText: mainCardStyles.progressText,
 };
 
 /**
@@ -104,11 +77,11 @@ const ProgressBar: React.FC<{
     color: string;
     label?: string;
 }> = ({ percentage, color, label }) => (
-    <View style={styles.progressContainer}>
-        <View style={[styles.progressBar, { backgroundColor: color + '20' }]}>
-            <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%`, backgroundColor: color }]} />
+    <View style={progressBarStyles.container}>
+        <View style={[progressBarStyles.bar, { backgroundColor: color + '20' }]}>
+            <View style={[progressBarStyles.fill, { width: `${Math.min(percentage, 100)}%`, backgroundColor: color }]} />
         </View>
-        {label && <Text style={styles.progressText}>{label}</Text>}
+        {label && <Text style={mainCardStyles.progressText}>{label}</Text>}
     </View>
 );
 
@@ -193,22 +166,22 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
     return (
         <View style={styles.dashboardContainer}>
             {/* Main Card: Displays the primary metric (Total Spent) prominently. */}
-            <View style={styles.mainCard}>
+            <View style={mainCardStyles.card}>
                 {/* Header for the main card, including icon, title, and period. */}
-                <View style={styles.mainCardHeader}>
-                    <View style={styles.mainCardTitleRow}>
+                <View style={mainCardStyles.header}>
+                    <View style={mainCardStyles.titleRow}>
                         <Ionicons name="trending-down-outline" size={28} color={colors.spending} />
-                        <Text style={styles.mainCardTitle}>Total Spent</Text>
+                        <Text style={mainCardStyles.title}>Total Spent</Text>
                     </View>
-                    <Text style={styles.mainCardPeriod}>{period}</Text>
+                    <Text style={mainCardStyles.period}>{period}</Text>
                 </View>
 
                 {/* Content for the main card: displays the amount and its progress bar. */}
-                <View style={styles.mainCardContent}>
+                <View style={mainCardStyles.content}>
                     {loading ? (
                         <ActivityIndicator size="large" color={colors.spending} />
                     ) : (
-                        <Text style={[styles.mainCardAmount, { color: colors.spending }]}>{data.spent}</Text>
+                        <Text style={[mainCardStyles.amount, { color: colors.spending }]}>{data.spent}</Text>
                     )}
                     {totalBudgetAmount > 0 ? (
                         <ProgressBar
@@ -217,13 +190,13 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                             label={`${Math.round(spentPercentage)}% of budget`}
                         />
                     ) : (
-                        <Text style={styles.mainProgressText}>No budget set</Text>
+                        <Text style={mainCardStyles.progressText}>No budget set</Text>
                     )}
                 </View>
             </View>
 
             {/* Secondary Metrics: Displays 'Remaining' and 'Savings' side-by-side. */}
-            <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={styles.secondaryCardsRow}>
                 {metrics.map((metric) => {
                     // Dynamically retrieve the value and percentage for each metric from the `data` object.
                     // Ensure percentage is treated as a number for ProgressBar component.
@@ -239,23 +212,23 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                         : metric.color;
 
                     return (
-                        <View key={metric.key} style={[styles.secondaryCard, isRemaining && cardVariants.remaining]}>
+                        <View key={metric.key} style={[secondaryCardStyles.card, isRemaining && cardVariants.remaining]}>
                             {/* Header for secondary card, including icon and label. */}
-                            <View style={styles.secondaryCardHeader}>
+                            <View style={secondaryCardStyles.header}>
                                 {/* Cast metric.icon to any to satisfy Ionicons name prop type, as the string values are known to be valid. */}
                                 <Ionicons name={metric.icon as any} size={20} color={metric.color} />
-                                <Text style={styles.secondaryCardLabel}>{metric.label}</Text>
+                                <Text style={secondaryCardStyles.label}>{metric.label}</Text>
                             </View>
                             {/* Amount display for secondary card, with loading indicator. */}
                             {loading ? (
                                 <ActivityIndicator size="small" color={metric.color} />
                             ) : (
-                                <Text style={[styles.secondaryCardAmount, { color: metric.color }]}>{value}</Text>
+                                <Text style={[secondaryCardStyles.amount, { color: metric.color }]}>{value}</Text>
                             )}
                             {/* Budget indicator for secondary cards - shows dot and status text */}
-                            <View style={styles.secondaryCardIndicator}>
-                                <View style={[styles.secondaryCardDot, { backgroundColor: progressColor }]} />
-                                <Text style={[styles.secondaryCardText, { color: progressColor }]}>
+                            <View style={secondaryCardStyles.indicator}>
+                                <View style={[secondaryCardStyles.dot, { backgroundColor: progressColor }]} />
+                                <Text style={[secondaryCardStyles.text, { color: progressColor }]}>
                                     {metric.key === 'remaining'
                                         ? (remainingNum > 0 ? 'On Track' : 'Over Budget')
                                         : 'Savings'

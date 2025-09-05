@@ -68,6 +68,11 @@ export const spacing = {
     lg: 16,
     xl: 20,
     '2xl': 24,
+    // Common layout spacing
+    sectionPadding: 20,    // Horizontal padding for sections
+    sectionVertical: 15,   // Vertical padding for sections
+    cardGap: 15,           // Gap between cards
+    rowGap: 12,            // Gap between items in rows
 } as const;
 
 /**

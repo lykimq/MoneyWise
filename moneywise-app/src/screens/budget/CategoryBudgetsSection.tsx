@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryBudgetApi } from '../../services/api';
-import { colors, sectionStyles, categoryCardStyles, progressBarStyles } from '../../styles';
+import { colors, sectionStyles, categoryCardStyles, progressBarStyles, spacing } from '../../styles';
 
 /**
  * Props for the CategoryBudgetsSection component
@@ -39,7 +39,7 @@ export const CategoryBudgetsSection: React.FC<CategoryBudgetsSectionProps> = ({
         <Text style={sectionStyles.title}>Category Budgets</Text>
 
         {/* CATEGORY LIST CONTAINER - Vertical stack of category budget cards */}
-        <View style={{ gap: 15 }}>
+        <View style={{ gap: spacing.cardGap }}>
             {categories.map((category) => (
                 // INDIVIDUAL CATEGORY CARD - Renders detailed budget info for each category
                 <CategoryBudgetCard
