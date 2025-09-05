@@ -35,12 +35,27 @@ const headerRowBase: ViewStyle = {
     alignItems: 'center',
 };
 
-// Reusable base style for progress bars, defining common properties like width,
-// border radius, and overflow behavior.
-const progressBarBase: ViewStyle = {
+/**
+ * Generic styles for a progress bar component.
+ * These are extracted to be reusable across different progress bar instances.
+ */
+const progressContainerBase: ViewStyle = {
+    width: '100%',
+    alignItems: 'center',
+};
+
+const genericProgressBarBase: ViewStyle = {
     width: '100%',
     borderRadius: 4,
     overflow: 'hidden',
+    height: 8, // Default height for progress bars
+    backgroundColor: financialDashboardColors.textSecondary + '20', // Default light background
+    marginBottom: 8,
+};
+
+const progressFillBase: ViewStyle = {
+    height: '100%',
+    borderRadius: 4,
 };
 
 /**
@@ -131,21 +146,18 @@ export const financialDashboardCardStyles = StyleSheet.create({
         alignItems: 'center',
     },
     /**
-     * Style for the main progress bar, inheriting from `progressBarBase`
+     * Style for the main progress bar, inheriting from `genericProgressBarBase`
      * and setting its height and a lighter shade of the spending background color.
      */
     mainProgressBar: {
-        ...progressBarBase,
-        height: 8,
+        ...genericProgressBarBase,
         backgroundColor: financialDashboardColors.spending + '20', // Lighter shade of spending color
-        marginBottom: 8,
     },
     /**
      * Style for the filled portion of the main progress bar.
      */
     mainProgressFill: {
-        height: '100%',
-        borderRadius: 4,
+        ...progressFillBase,
     },
     /**
      * Text style for the progress percentage or status message in the main card.
@@ -154,6 +166,26 @@ export const financialDashboardCardStyles = StyleSheet.create({
         fontSize: 12,
         color: financialDashboardColors.textSecondary,
         fontWeight: '500',
+    },
+
+    // === GENERIC PROGRESS BAR STYLES (for the reusable ProgressBar component) ===
+    /**
+     * Generic container for the ProgressBar component.
+     */
+    progressContainer: {
+        ...progressContainerBase,
+    },
+    /**
+     * Generic style for the ProgressBar component's bar.
+     */
+    progressBar: {
+        ...genericProgressBarBase,
+    },
+    /**
+     * Generic style for the filled portion of the ProgressBar component.
+     */
+    progressFill: {
+        ...progressFillBase,
     },
 
     // === SECONDARY CARDS STYLES (for Remaining and Savings) ===
@@ -219,21 +251,18 @@ export const financialDashboardCardStyles = StyleSheet.create({
         alignItems: 'center',
     },
     /**
-     * Style for the remaining progress bar, inheriting from `progressBarBase`
+     * Style for the remaining progress bar, inheriting from `genericProgressBarBase`
      * and setting its height and a lighter shade of the remaining background color.
      */
     remainingProgressBar: {
-        ...progressBarBase,
-        height: 8,
+        ...genericProgressBarBase,
         backgroundColor: financialDashboardColors.remaining + '20', // Lighter shade of remaining color
-        marginBottom: 8,
     },
     /**
      * Style for the filled portion of the remaining progress bar.
      */
     remainingProgressFill: {
-        height: '100%',
-        borderRadius: 4,
+        ...progressFillBase,
     },
 
     /**
@@ -243,19 +272,19 @@ export const financialDashboardCardStyles = StyleSheet.create({
         width: '100%',
     },
     /**
-     * Style for the savings progress bar, inheriting from `progressBarBase`
+     * Style for the savings progress bar, inheriting from `genericProgressBarBase`
      * and setting its height and a lighter shade of the savings background color.
      */
     savingsProgressBar: {
-        ...progressBarBase,
-        height: 4,
+        ...genericProgressBarBase,
+        height: 4, // Savings progress bar might be thinner
         backgroundColor: financialDashboardColors.savings + '20', // Lighter shade of savings color
     },
     /**
      * Style for the filled portion of the savings progress bar.
      */
     savingsProgressFill: {
-        height: '100%',
-        borderRadius: 2,
+        ...progressFillBase,
+        borderRadius: 2, // Smaller border radius for thinner bar
     },
 });
