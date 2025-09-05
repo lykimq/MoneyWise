@@ -38,7 +38,7 @@ export const useBudgetOverview = (
     const queryParams = {
         month: dateParams.month,
         year: dateParams.year,
-        currency: currency || 'USD',
+        currency: currency || 'USD', // TODO: Make default currency configurable via user settings or global app config
     };
 
     // Fetch overview data using centralized query configuration
