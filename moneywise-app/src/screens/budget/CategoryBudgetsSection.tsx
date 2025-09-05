@@ -21,6 +21,115 @@ interface CategoryBudgetCardProps {
 }
 
 /**
+ * Props for the CategoryBudgetCardHeader component
+ */
+interface CategoryBudgetCardHeaderProps {
+    category: CategoryBudgetApi;
+    iconName: keyof typeof Ionicons.glyphMap;
+    spentAmount: number;
+    plannedAmount: number;
+}
+
+/**
+ * Props for the CategoryProgressBar component
+ */
+interface CategoryProgressBarProps {
+    progressPercentage: number;
+    progressBarColor: string;
+}
+
+/**
+ * Props for the CategoryStatusText component
+ */
+interface CategoryStatusTextProps {
+    remainingAmount: number;
+    isOverBudget: boolean;
+}
+
+/**
+ * CategoryBudgetCardHeader Component
+ *
+ * Displays the category icon, name, and spending amounts.
+ */
+const CategoryBudgetCardHeader: React.FC<CategoryBudgetCardHeaderProps> = ({
+    category,
+    iconName,
+    spentAmount,
+    plannedAmount
+}) => (
+    <View style={categoryCardStyles.header}>
+        {/* CATEGORY ICON - Colored icon representing the budget category */}
+        <Ionicons
+            name={iconName}
+            size={24}
+            color={category.category_color}
+        />
+
+        {/* CATEGORY INFO SECTION - Name and spending amounts */}
+        <View style={categoryCardStyles.categoryInfo}>
+            {/* CATEGORY NAME - Primary category identifier */}
+            <Text style={categoryCardStyles.categoryName}>
+                {category.category_name}
+            </Text>
+
+            {/* AMOUNT COMPARISON - Shows spent vs planned amounts */}
+            <Text style={categoryCardStyles.amountText}>
+                ${spentAmount.toLocaleString()} / ${plannedAmount.toLocaleString()}
+            </Text>
+        </View>
+    </View>
+);
+
+/**
+ * CategoryProgressBar Component
+ *
+ * Displays the visual progress bar with percentage indicator.
+ */
+const CategoryProgressBar: React.FC<CategoryProgressBarProps> = ({
+    progressPercentage,
+    progressBarColor
+}) => (
+    <View style={progressBarStyles.container}>
+        {/* PROGRESS BAR BACKGROUND - Gray background for progress bar */}
+        <View style={progressBarStyles.categoryBar}>
+            {/* PROGRESS BAR FILL - Dynamic width and color based on spending */}
+            <View style={[
+                progressBarStyles.categoryFill,
+                {
+                    width: `${Math.min(progressPercentage, 100)}%`,  // Cap at 100% visual width
+                    backgroundColor: progressBarColor  // Red if over budget, category color if normal
+                }
+            ]} />
+        </View>
+
+        {/* PERCENTAGE TEXT - Numerical percentage display */}
+        <Text style={progressBarStyles.percentageText}>
+            {Math.round(progressPercentage)}%
+        </Text>
+    </View>
+);
+
+/**
+ * CategoryStatusText Component
+ *
+ * Displays the remaining budget or overspend amount with appropriate styling.
+ */
+const CategoryStatusText: React.FC<CategoryStatusTextProps> = ({
+    remainingAmount,
+    isOverBudget
+}) => (
+    <Text style={[
+        categoryCardStyles.remainingText,
+        { color: isOverBudget ? colors.spending : colors.text.secondary }  // Red for over budget, gray for normal
+    ]}>
+        {isOverBudget
+            ? `+$${Math.abs(remainingAmount).toLocaleString()} over budget`
+            : `-$${remainingAmount.toLocaleString()} remaining`
+        }
+    </Text>
+);
+
+/**
  * CategoryBudgetsSection Component
  *
  * Displays a detailed breakdown of budget categories with progress indicators.
@@ -82,60 +191,25 @@ const CategoryBudgetCard: React.FC<CategoryBudgetCardProps> = ({ category, iconN
     return (
         // MAIN CARD CONTAINER - Individual category budget card with shadow
         <View style={categoryCardStyles.card}>
-
             {/* CATEGORY HEADER SECTION - Icon, name, and spending summary */}
-            <View style={categoryCardStyles.header}>
-                {/* CATEGORY ICON - Colored icon representing the budget category */}
-                <Ionicons
-                    name={iconName}
-                    size={24}
-                    color={category.category_color}
-                />
-
-                {/* CATEGORY INFO SECTION - Name and spending amounts */}
-                <View style={categoryCardStyles.categoryInfo}>
-                    {/* CATEGORY NAME - Primary category identifier */}
-                    <Text style={categoryCardStyles.categoryName}>
-                        {category.category_name}
-                    </Text>
-
-                    {/* AMOUNT COMPARISON - Shows spent vs planned amounts */}
-                    <Text style={categoryCardStyles.amountText}>
-                        ${spentAmount.toLocaleString()} / ${plannedAmount.toLocaleString()}
-                    </Text>
-                </View>
-            </View>
+            <CategoryBudgetCardHeader
+                category={category}
+                iconName={iconName}
+                spentAmount={spentAmount}
+                plannedAmount={plannedAmount}
+            />
 
             {/* PROGRESS BAR SECTION - Visual progress indicator with percentage */}
-            <View style={progressBarStyles.container}>
-                {/* PROGRESS BAR BACKGROUND - Gray background for progress bar */}
-                <View style={progressBarStyles.categoryBar}>
-                    {/* PROGRESS BAR FILL - Dynamic width and color based on spending */}
-                    <View style={[
-                        progressBarStyles.categoryFill,
-                        {
-                            width: `${Math.min(progressPercentage, 100)}%`,  // Cap at 100% visual width
-                            backgroundColor: progressBarColor  // Red if over budget, category color if normal
-                        }
-                    ]} />
-                </View>
-
-                {/* PERCENTAGE TEXT - Numerical percentage display */}
-                <Text style={progressBarStyles.percentageText}>
-                    {Math.round(progressPercentage)}%
-                </Text>
-            </View>
+            <CategoryProgressBar
+                progressPercentage={progressPercentage}
+                progressBarColor={progressBarColor}
+            />
 
             {/* REMAINING/OVERSPEND STATUS - Shows remaining budget or overspend amount */}
-            <Text style={[
-                categoryCardStyles.remainingText,
-                { color: isOverBudget ? colors.spending : colors.text.secondary }  // Red for over budget, gray for normal
-            ]}>
-                {isOverBudget
-                    ? `+$${Math.abs(remainingAmount).toLocaleString()} over budget`
-                    : `-$${remainingAmount.toLocaleString()} remaining`
-                }
-            </Text>
+            <CategoryStatusText
+                remainingAmount={remainingAmount}
+                isOverBudget={isOverBudget}
+            />
         </View>
     );
 };

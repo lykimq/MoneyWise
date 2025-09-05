@@ -16,6 +16,39 @@ interface BudgetInsightsSectionProps {
 }
 
 /**
+ * Props for the InsightItem component
+ */
+interface InsightItemProps {
+    insight: {
+        type_: string;
+        message: string;
+        icon: string;
+        color: string;
+    };
+    isLast: boolean;
+}
+
+/**
+ * InsightItem Component
+ *
+ * Displays a single insight with icon and message.
+ * Handles the styling for individual insight items including proper spacing.
+ */
+const InsightItem: React.FC<InsightItemProps> = ({ insight, isLast }) => (
+    <View style={isLast ? contentCardStyles.itemLast : contentCardStyles.item}>
+        {/* INSIGHT ICON - Contextual icon with dynamic color from API */}
+        <Ionicons
+            name={insight.icon as keyof typeof Ionicons.glyphMap}
+            size={20}
+            color={insight.color}  // Dynamic color based on insight type
+        />
+
+        {/* INSIGHT MESSAGE - AI-generated recommendation text */}
+        <Text style={contentCardStyles.itemText}>{insight.message}</Text>
+    </View>
+);
+
+/**
  * BudgetInsightsSection Component
  *
  * Displays AI-generated insights and recommendations based on spending patterns.
@@ -45,17 +78,11 @@ export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({ in
             <View style={contentCardStyles.card}>
                 {insights.map((insight, index) => (
                     // INDIVIDUAL INSIGHT ITEM - Single insight with icon and message
-                    <View key={index} style={index < insights.length - 1 ? contentCardStyles.item : contentCardStyles.itemLast}>
-                        {/* INSIGHT ICON - Contextual icon with dynamic color from API */}
-                        <Ionicons
-                            name={insight.icon as keyof typeof Ionicons.glyphMap}
-                            size={20}
-                            color={insight.color}  // Dynamic color based on insight type
-                        />
-
-                        {/* INSIGHT MESSAGE - AI-generated recommendation text */}
-                        <Text style={contentCardStyles.itemText}>{insight.message}</Text>
-                    </View>
+                    <InsightItem
+                        key={index}
+                        insight={insight}
+                        isLast={index === insights.length - 1}
+                    />
                 ))}
             </View>
         </View>
