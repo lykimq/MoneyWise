@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, spacing } from '../styles';
+import { colors, spacing } from '../styles/theme';
+import { mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, standardCardStyles } from '../styles/components';
 import { toNumber, formatAmount } from '../utils/currencyUtils';
 
 // Use design system styles directly - no redundant overrides needed
@@ -12,11 +13,8 @@ const styles = {
         paddingVertical: spacing.sectionVertical,
         gap: spacing.cardGap,
     },
-    // Row layout for secondary cards
-    secondaryCardsRow: {
-        flexDirection: 'row' as const,
-        gap: spacing.rowGap,
-    },
+    // Row layout for secondary cards - using centralized styles
+    secondaryCardsRow: standardCardStyles.row,
 };
 
 /**

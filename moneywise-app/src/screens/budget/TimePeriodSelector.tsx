@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { BudgetTimePeriod } from '../../hooks/useBudgetData';
-import { colors, sectionStyles } from '../../styles';
+import { colors } from '../../styles/theme';
+import { sectionStyles } from '../../styles/components';
 
 /**
  * Props for the TimePeriodSelector component
