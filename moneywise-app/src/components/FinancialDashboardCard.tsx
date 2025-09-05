@@ -1,31 +1,11 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing } from '../styles/theme';
-import { mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, standardCardStyles } from '../styles/components';
+import { colors, spacing, mainCardStyles, secondaryCardStyles, progressBarStyles, sectionStyles, cardVariants, standardCardStyles } from '../styles';
 import { toNumber, formatAmount } from '../utils/currencyUtils';
 
-// Use design system styles directly - no redundant overrides needed
-const styles = {
-    // Container with same padding as HomeScreen sections
-    dashboardContainer: {
-        paddingHorizontal: spacing.sectionPadding,
-        paddingVertical: spacing.sectionVertical,
-        gap: spacing.cardGap,
-    },
-    // Row layout for secondary cards - using centralized styles
-    secondaryCardsRow: standardCardStyles.row,
-};
-
 /**
- * @interface FinancialDashboardCardProps
- * @description Defines the props for the FinancialDashboardCard component.
- * @property {string | number | undefined} spent - The total amount spent.
- * @property {string | number | undefined} remaining - The remaining budget.
- * @property {string | number | undefined} savings - The total savings.
- * @property {string | number} [totalBudget] - Optional total budget for progress calculations.
- * @property {boolean} [loading=false] - Indicates if the data is currently loading.
- * @property {string} [period="This Month"] - The financial period being displayed.
+ * Props for the FinancialDashboardCard component
  */
 interface FinancialDashboardCardProps {
     spent?: string | number;
@@ -36,195 +16,166 @@ interface FinancialDashboardCardProps {
     period?: string;
 }
 
-// Using shared utility functions for currency operations
 
 /**
- * @component ProgressBar
- * @description A reusable component to display a progress bar with a percentage fill and optional label.
- * @param {object} props - The component props.
- * @param {number} props.percentage - The percentage to fill the progress bar (0-100).
- * @param {string} props.color - The background color of the filled portion of the progress bar.
- * @param {string} [props.label] - An optional text label to display alongside the progress bar.
+ * FinancialDashboardCard Component
+ *
+ * Displays a financial overview dashboard with:
+ * - Total spent amount (main card with progress indicator)
+ * - Remaining budget and savings (secondary cards)
+ * - Visual progress bars and status indicators
+ * - Loading states and period information
+ *
+ * Uses consistent styling patterns matching other budget components.
+ *
+ * @param spent - The total amount spent
+ * @param remaining - The remaining budget amount
+ * @param savings - The total savings amount
+ * @param totalBudget - Optional total budget for progress calculations
+ * @param loading - Whether to show loading state
+ * @param period - The financial period being displayed
  */
-const ProgressBar: React.FC<{
-    percentage: number;
-    color: string;
-    label?: string;
-}> = ({ percentage, color, label }) => (
-    <View style={progressBarStyles.container}>
-        <View style={[progressBarStyles.bar, { backgroundColor: color + '20' }]}>
-            <View style={[progressBarStyles.fill, { width: `${Math.min(percentage, 100)}%`, backgroundColor: color }]} />
-        </View>
-        {label && <Text style={mainCardStyles.progressText}>{label}</Text>}
-    </View>
-);
-
-/**
- * @constant metrics
- * @description Configuration array for secondary financial metrics displayed on the dashboard.
- * This allows for data-driven rendering of the 'Remaining' and 'Savings' cards.
- * @property {string} key - Unique identifier for the metric.
- * @property {string} icon - Ionicons name for the metric's icon.
- * @property {string} label - Display label for the metric.
- * @property {string} color - Color associated with the metric.
- * @property {string} value - Key in the `data` object to retrieve the formatted amount.
- * @property {string} progress - Key in the `data` object to retrieve the percentage for the progress bar.
- * @property {boolean} showProgress - Whether to display a progress bar for this metric.
- */
-const metrics = [
-    {
-        key: 'remaining',
-        icon: 'checkmark-circle-outline',
-        label: 'Remaining',
-        color: colors.remaining,
-        value: 'remaining',
-        progress: 'remainingPercentage',
-        showProgress: true,
-    },
-    {
-        key: 'savings',
-        icon: 'trending-up-outline',
-        label: 'Savings',
-        color: colors.savings,
-        value: 'savings',
-        progress: 'savingsPercentage',
-        showProgress: false, // Savings progress bar is handled separately or has a different display logic.
-    },
-];
-
-/**
- * @component FinancialDashboardCard
- * @description A React functional component that displays a financial overview card.
- * It shows total spent, remaining budget, and savings, with progress indicators.
- * The component is designed for readability and maintainability using utility functions,
- * a reusable ProgressBar component, and data-driven metric configuration.
- * @param {FinancialDashboardCardProps} props - The properties passed to the component.
- */
-const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) => {
-    const {
-        spent = 0,
-        remaining = 0,
-        savings = 0,
-        totalBudget,
-        loading = false,
-        period = 'This Month',
-    } = props;
-
-    // Convert all incoming props to numbers for consistent calculations.
+const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = ({
+    spent = 0,
+    remaining = 0,
+    savings = 0,
+    totalBudget,
+    loading = false,
+    period = 'This Month',
+}) => {
+    // Convert all incoming props to numbers for consistent calculations
     const spentNum = toNumber(spent);
     const remainingNum = toNumber(remaining);
     const savingsNum = toNumber(savings);
     const totalBudgetNum = toNumber(totalBudget);
 
-    // Determine the total budget amount, falling back to spent + remaining if totalBudget is not provided.
+    // Determine the total budget amount, falling back to spent + remaining if totalBudget is not provided
     const totalBudgetAmount = totalBudgetNum || (spentNum + remainingNum);
 
-    // Calculate percentages for progress bars.
-    // Percentages are 0 if totalBudgetAmount is 0 to prevent division by zero.
+    // Calculate percentages for progress bars
     const spentPercentage = totalBudgetAmount > 0 ? (spentNum / totalBudgetAmount) * 100 : 0;
     const remainingPercentage = totalBudgetAmount > 0 ? (remainingNum / totalBudgetAmount) * 100 : 0;
-    // Savings percentage is a placeholder, assuming a goal of 1000 for now.
-    // TODO: Replace hardcoded $1000 with actual savings goal/target from API.
+    // Savings percentage is a placeholder, assuming a goal of 1000 for now
+    // TODO: Replace hardcoded $1000 with actual savings goal/target from API
     const savingsPercentage = Math.min(100, (savingsNum / 1000) * 100);
 
-    // Aggregate formatted values and percentages into a single data object for easier access in JSX.
-    const data = {
-        spent: formatAmount(spent),
-        remaining: formatAmount(remaining),
-        savings: formatAmount(savings),
-        spentPercentage,
-        remainingPercentage,
-        savingsPercentage,
-    };
-
     return (
-        <View style={styles.dashboardContainer}>
-            {/* Main Card: Displays the primary metric (Total Spent) prominently. */}
-            <View style={mainCardStyles.card}>
-                {/* Header for the main card, including icon, title, and period. */}
-                <View style={mainCardStyles.header}>
-                    <View style={mainCardStyles.titleRow}>
-                        <Ionicons name="trending-down-outline" size={28} color={colors.spending} />
-                        <Text style={mainCardStyles.title}>Total Spent</Text>
-                    </View>
-                    <Text style={mainCardStyles.period}>{period}</Text>
-                </View>
-
-                {/* Content for the main card: displays the amount and its progress bar. */}
-                <View style={mainCardStyles.content}>
-                    {loading ? (
-                        <ActivityIndicator size="large" color={colors.spending} />
-                    ) : (
-                        <Text style={[mainCardStyles.amount, { color: colors.spending }]}>{data.spent}</Text>
-                    )}
-                    {totalBudgetAmount > 0 ? (
-                        <ProgressBar
-                            percentage={spentPercentage}
-                            color={colors.spending}
-                            label={`${Math.round(spentPercentage)}% of budget`}
-                        />
-                    ) : (
-                        <Text style={mainCardStyles.progressText}>No budget set</Text>
-                    )}
-                </View>
-            </View>
-
-            {/* Secondary Metrics: Displays 'Remaining' and 'Savings' side-by-side. */}
-            <View style={styles.secondaryCardsRow}>
-                {metrics.map((metric) => {
-                    // Dynamically retrieve the value and percentage for each metric from the `data` object.
-                    // Ensure percentage is treated as a number for ProgressBar component.
-                    const value = data[metric.value as keyof typeof data];
-                    const percentage = data[metric.progress as keyof typeof data] as number;
-                    const isRemaining = metric.key === 'remaining';
-
-                    // Determine the progress bar color for 'Remaining' based on whether the user is over budget.
-                    const progressColor = isRemaining
-                        ? remainingNum > 0
-                            ? colors.remaining
-                            : colors.spending
-                        : metric.color;
-
-                    return (
-                        <View key={metric.key} style={[secondaryCardStyles.card, isRemaining && cardVariants.remaining]}>
-                            {/* Header for secondary card, including icon and label. */}
-                            <View style={secondaryCardStyles.header}>
-                                {/* Cast metric.icon to any to satisfy Ionicons name prop type, as the string values are known to be valid. */}
-                                <Ionicons name={metric.icon as any} size={20} color={metric.color} />
-                                <Text style={secondaryCardStyles.label}>{metric.label}</Text>
-                            </View>
-                            {/* Amount display for secondary card, with loading indicator. */}
-                            {loading ? (
-                                <ActivityIndicator size="small" color={metric.color} />
-                            ) : (
-                                <Text style={[secondaryCardStyles.amount, { color: metric.color }]}>{value}</Text>
-                            )}
-                            {/* Budget indicator for secondary cards - shows dot and status text */}
-                            <View style={secondaryCardStyles.indicator}>
-                                <View style={[secondaryCardStyles.dot, { backgroundColor: progressColor }]} />
-                                <Text style={[secondaryCardStyles.text, { color: progressColor }]}>
-                                    {metric.key === 'remaining'
-                                        ? (remainingNum > 0 ? 'On Track' : 'Over Budget')
-                                        : 'Savings'
-                                    }
-                                </Text>
-                            </View>
-                            {/* Progress bar for secondary metrics, if `showProgress` is true. */}
-                            {metric.showProgress && (
-                                <ProgressBar
-                                    percentage={percentage}
-                                    color={progressColor}
-                                    label={
-                                        // Custom label for 'Remaining' metric, indicating if over budget.
-                                        metric.key === 'remaining'
-                                            ? `${Math.round(percentage)}% ${remainingNum > 0 ? 'remaining' : 'over budget'}`
-                                            : undefined // No label for other secondary metrics by default.
-                                    }
-                                />
-                            )}
+        // MAIN SECTION CONTAINER - Uses shared section styling for consistency
+        <View style={sectionStyles.container}>
+            {/* DASHBOARD CONTAINER - Holds the main and secondary financial cards */}
+            <View style={standardCardStyles.container}>
+                {/* MAIN CARD - Displays the "Total Spent" as the most prominent information */}
+                <View style={mainCardStyles.card}>
+                    {/* Main Card Header - Contains the icon, title, and period */}
+                    <View style={mainCardStyles.header}>
+                        {/* Title Row - Groups the trending-down icon and "Total Spent" text */}
+                        <View style={mainCardStyles.titleRow}>
+                            <Ionicons name="trending-down-outline" size={28} color={colors.spending} />
+                            <Text style={mainCardStyles.title}>Total Spent</Text>
                         </View>
-                    );
-                })}
+                        {/* Period Text - Displays the current financial period (e.g., "This Month") */}
+                        <Text style={mainCardStyles.period}>{period}</Text>
+                    </View>
+
+                    {/* Main Card Content - Displays the spent amount and spending progress */}
+                    <View style={mainCardStyles.content}>
+                        {/* Spent Amount Display - Shows a loading indicator or the formatted spent amount */}
+                        {loading ? (
+                            <ActivityIndicator size="large" color={colors.spending} />
+                        ) : (
+                            <Text style={[mainCardStyles.amount, { color: colors.spending }]}>
+                                {formatAmount(spent)}
+                            </Text>
+                        )}
+
+                        {/* Progress Indicator - Visual bar showing spending against total budget */}
+                        <View style={mainCardStyles.progressContainer}>
+                            <View style={[mainCardStyles.progressBar, { backgroundColor: colors.spending + '20' }]}>
+                                <View
+                                    style={[
+                                        mainCardStyles.progressFill,
+                                        {
+                                            width: `${Math.min(spentPercentage, 100)}%`,
+                                            backgroundColor: colors.spending
+                                        }
+                                    ]}
+                                />
+                            </View>
+                            {/* Progress Text - Shows the percentage of budget spent or a "No budget set" message */}
+                            <Text style={mainCardStyles.progressText}>
+                                {totalBudgetAmount > 0 ? `${Math.round(spentPercentage)}% of budget` : 'No budget set'}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* SECONDARY CARDS ROW - Contains the "Remaining" and "Savings" cards side-by-side */}
+                <View style={standardCardStyles.row}>
+                    {/* REMAINING CARD - Displays the amount left to spend */}
+                    <View style={[secondaryCardStyles.card, cardVariants.remaining]}>
+                        {/* Secondary Card Header - Contains the icon and "Remaining" label */}
+                        <View style={secondaryCardStyles.header}>
+                            <Ionicons name="checkmark-circle-outline" size={20} color={colors.remaining} />
+                            <Text style={secondaryCardStyles.label}>Remaining</Text>
+                        </View>
+                        {/* Remaining Amount Display - Shows a loading indicator or the formatted remaining amount */}
+                        {loading ? (
+                            <ActivityIndicator size="small" color={colors.remaining} />
+                        ) : (
+                            <Text style={[secondaryCardStyles.amount, { color: colors.remaining }]}>
+                                {formatAmount(remaining)}
+                            </Text>
+                        )}
+                        {/* Budget Indicator - Shows a colored dot and text indicating budget status */}
+                        <View style={secondaryCardStyles.indicator}>
+                            <View style={[secondaryCardStyles.dot, { backgroundColor: colors.remaining }]} />
+                            <Text style={[secondaryCardStyles.text, { color: colors.remaining }]}>
+                                {remainingNum > 0 ? 'On Track' : 'Over Budget'}
+                            </Text>
+                        </View>
+                        {/* Remaining Progress - Visual bar showing remaining budget */}
+                        <View style={progressBarStyles.container}>
+                            <View style={[progressBarStyles.bar, { backgroundColor: colors.remaining + '20' }]}>
+                                <View
+                                    style={[
+                                        progressBarStyles.fill,
+                                        {
+                                            width: `${Math.min(remainingPercentage, 100)}%`,
+                                            backgroundColor: colors.remaining
+                                        }
+                                    ]}
+                                />
+                            </View>
+                            <Text style={progressBarStyles.percentageText}>
+                                {`${Math.round(remainingPercentage)}% ${remainingNum > 0 ? 'remaining' : 'over budget'}`}
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* SAVINGS CARD - Displays the total savings amount */}
+                    <View style={secondaryCardStyles.card}>
+                        {/* Secondary Card Header - Contains the icon and "Savings" label */}
+                        <View style={secondaryCardStyles.header}>
+                            <Ionicons name="trending-up-outline" size={20} color={colors.savings} />
+                            <Text style={secondaryCardStyles.label}>Savings</Text>
+                        </View>
+                        {/* Savings Amount Display - Shows a loading indicator or the formatted savings amount */}
+                        {loading ? (
+                            <ActivityIndicator size="small" color={colors.savings} />
+                        ) : (
+                            <Text style={[secondaryCardStyles.amount, { color: colors.savings }]}>
+                                {formatAmount(savings)}
+                            </Text>
+                        )}
+                        {/* Budget Indicator - Shows a colored dot and text indicating savings status */}
+                        <View style={secondaryCardStyles.indicator}>
+                            <View style={[secondaryCardStyles.dot, { backgroundColor: colors.savings }]} />
+                            <Text style={[secondaryCardStyles.text, { color: colors.savings }]}>
+                                Savings
+                            </Text>
+                        </View>
+                    </View>
+                </View>
             </View>
         </View>
     );
