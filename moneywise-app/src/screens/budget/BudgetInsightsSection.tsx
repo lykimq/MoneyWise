@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sectionStyles, budgetInsightsSectionStyles } from './styles/index';
+import { colors, sectionStyles } from '../../styles';
 
 /**
  * Props for the BudgetInsightsSection component
@@ -42,10 +42,23 @@ export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({ in
             <Text style={sectionStyles.title}>Budget Insights</Text>
 
             {/* INSIGHTS CONTAINER - White card container for all insight items */}
-            <View style={budgetInsightsSectionStyles.container}>
+            <View style={{
+                backgroundColor: colors.background.secondary,
+                borderRadius: 12,
+                padding: 16,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 4,
+            }}>
                 {insights.map((insight, index) => (
                     // INDIVIDUAL INSIGHT ITEM - Single insight with icon and message
-                    <View key={index} style={budgetInsightsSectionStyles.item}>
+                    <View key={index} style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: index < insights.length - 1 ? 12 : 0,
+                    }}>
                         {/* INSIGHT ICON - Contextual icon with dynamic color from API */}
                         <Ionicons
                             name={insight.icon as keyof typeof Ionicons.glyphMap}
@@ -54,7 +67,12 @@ export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({ in
                         />
 
                         {/* INSIGHT MESSAGE - AI-generated recommendation text */}
-                        <Text style={budgetInsightsSectionStyles.message}>{insight.message}</Text>
+                        <Text style={{
+                            marginLeft: 12,
+                            fontSize: 14,
+                            color: colors.text.primary,
+                            flex: 1,
+                        }}>{insight.message}</Text>
                     </View>
                 ))}
             </View>

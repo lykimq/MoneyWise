@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { BudgetTimePeriod } from '../../hooks/useBudgetData';
-import { sectionStyles } from './styles';
+import { colors, sectionStyles } from '../../styles';
 
 /**
  * Props for the TimePeriodSelector component
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     // Uses horizontal layout to arrange buttons side by side
     periodToggleContainer: {
         flexDirection: 'row',    // Horizontal arrangement of toggle buttons
-        backgroundColor: '#FFFFFF',  // Pure white background
+        backgroundColor: colors.background.secondary,  // Pure white background
         borderRadius: 12,        // Rounded corners for modern look
         padding: 4,              // Internal padding creates button spacing
 
@@ -110,21 +110,21 @@ const styles = StyleSheet.create({
     // ACTIVE BUTTON STATE - Styling for selected time period
     // Blue background to indicate current selection
     periodButtonActive: {
-        backgroundColor: '#007AFF',  // iOS blue for active state
+        backgroundColor: colors.primary,  // iOS blue for active state
     },
 
     // BUTTON TEXT - Base text styling for period labels
     // Medium gray color for inactive buttons
     periodButtonText: {
         fontSize: 14,            // Standard readable text size
-        color: '#666',           // Medium gray for inactive state
+        color: colors.text.secondary,           // Medium gray for inactive state
         fontWeight: '500',       // Medium weight for clarity
     },
 
     // ACTIVE BUTTON TEXT - Text styling for selected period
     // White color and bold weight for selected state
     periodButtonTextActive: {
-        color: '#FFFFFF',        // White text on blue background
+        color: colors.text.inverse,        // White text on blue background
         fontWeight: 'bold',      // Bold weight for emphasis
     },
 });

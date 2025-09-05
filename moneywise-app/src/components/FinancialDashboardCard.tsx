@@ -1,21 +1,49 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { financialDashboardColors } from './styles/colors';
-import { dashboardContainer } from './styles/dashboardLayoutStyles';
-import { mainFinancialCardStyles } from './styles/mainFinancialCardStyles';
-import { secondaryFinancialCardStyles } from './styles/secondaryFinancialCardStyles';
-import { progressContainerBase, genericProgressBarBase, progressFillBase } from './styles/progressBarStyles';
+import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, shadows } from '../styles';
 
 const styles = {
-    dashboardContainer,
-    ...mainFinancialCardStyles,
-    ...secondaryFinancialCardStyles,
-    progressContainer: progressContainerBase,
-    progressBar: genericProgressBarBase,
-    progressFill: progressFillBase,
+    // Container with same padding as HomeScreen sections
+    dashboardContainer: {
+        paddingHorizontal: 20, // Match HomeScreen section padding
+        paddingVertical: 15,   // Match HomeScreen section padding
+        gap: 15,
+    },
+    // Main card styles - use base card styling for proper alignment
+    mainCard: {
+        ...mainCardStyles.card,
+        padding: 16, // Use standard card padding instead of enhanced padding
+        borderRadius: 16, // Use standard border radius
+        ...shadows.md, // Use standard shadow instead of enhanced shadow
+    },
+    mainCardHeader: mainCardStyles.header,
+    mainCardTitleRow: mainCardStyles.titleRow,
+    mainCardTitle: mainCardStyles.title,
+    mainCardPeriod: mainCardStyles.period,
+    mainCardContent: mainCardStyles.content,
+    mainCardAmount: mainCardStyles.amount,
+    mainProgressContainer: mainCardStyles.progressContainer,
+    mainProgressBar: mainCardStyles.progressBar,
+    mainProgressFill: mainCardStyles.progressFill,
+    mainProgressText: mainCardStyles.progressText,
+    // Secondary card styles - use consistent padding
+    secondaryCard: {
+        ...secondaryCardStyles.card,
+        padding: 16, // Use standard card padding for consistency
+    },
+    secondaryCardHeader: secondaryCardStyles.header,
+    secondaryCardLabel: secondaryCardStyles.label,
+    secondaryCardAmount: secondaryCardStyles.amount,
+    secondaryCardIndicator: secondaryCardStyles.indicator,
+    secondaryCardDot: secondaryCardStyles.dot,
+    secondaryCardText: secondaryCardStyles.text,
+    // Progress bar styles
+    progressContainer: progressBarStyles.container,
+    progressBar: progressBarStyles.bar,
+    progressFill: progressBarStyles.fill,
+    progressText: mainCardStyles.progressText,
 };
-const colors = financialDashboardColors;
 
 /**
  * @interface FinancialDashboardCardProps
@@ -77,7 +105,7 @@ const ProgressBar: React.FC<{
     label?: string;
 }> = ({ percentage, color, label }) => (
     <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
+        <View style={[styles.progressBar, { backgroundColor: color + '20' }]}>
             <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%`, backgroundColor: color }]} />
         </View>
         {label && <Text style={styles.progressText}>{label}</Text>}
@@ -172,7 +200,7 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                         <Ionicons name="trending-down-outline" size={28} color={colors.spending} />
                         <Text style={styles.mainCardTitle}>Total Spent</Text>
                     </View>
-                    <Text style={styles.period}>{period}</Text>
+                    <Text style={styles.mainCardPeriod}>{period}</Text>
                 </View>
 
                 {/* Content for the main card: displays the amount and its progress bar. */}
@@ -189,13 +217,13 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                             label={`${Math.round(spentPercentage)}% of budget`}
                         />
                     ) : (
-                        <Text style={styles.progressText}>No budget set</Text>
+                        <Text style={styles.mainProgressText}>No budget set</Text>
                     )}
                 </View>
             </View>
 
             {/* Secondary Metrics: Displays 'Remaining' and 'Savings' side-by-side. */}
-            <View style={styles.secondaryCardsRow}>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
                 {metrics.map((metric) => {
                     // Dynamically retrieve the value and percentage for each metric from the `data` object.
                     // Ensure percentage is treated as a number for ProgressBar component.
@@ -211,7 +239,7 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                         : metric.color;
 
                     return (
-                        <View key={metric.key} style={[styles.secondaryCard, isRemaining && styles.remainingCard]}>
+                        <View key={metric.key} style={[styles.secondaryCard, isRemaining && cardVariants.remaining]}>
                             {/* Header for secondary card, including icon and label. */}
                             <View style={styles.secondaryCardHeader}>
                                 {/* Cast metric.icon to any to satisfy Ionicons name prop type, as the string values are known to be valid. */}
@@ -224,6 +252,16 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = (props) =>
                             ) : (
                                 <Text style={[styles.secondaryCardAmount, { color: metric.color }]}>{value}</Text>
                             )}
+                            {/* Budget indicator for secondary cards - shows dot and status text */}
+                            <View style={styles.secondaryCardIndicator}>
+                                <View style={[styles.secondaryCardDot, { backgroundColor: progressColor }]} />
+                                <Text style={[styles.secondaryCardText, { color: progressColor }]}>
+                                    {metric.key === 'remaining'
+                                        ? (remainingNum > 0 ? 'On Track' : 'Over Budget')
+                                        : 'Savings'
+                                    }
+                                </Text>
+                            </View>
                             {/* Progress bar for secondary metrics, if `showProgress` is true. */}
                             {metric.showProgress && (
                                 <ProgressBar

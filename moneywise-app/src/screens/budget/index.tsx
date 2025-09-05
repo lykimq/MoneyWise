@@ -31,7 +31,7 @@ import { BudgetOverviewSection } from './BudgetOverviewSection';
 import { CategoryBudgetsSection } from './CategoryBudgetsSection';
 import { BudgetInsightsSection } from './BudgetInsightsSection';
 import { getCategoryIconName } from './utils';
-import { screenStyles, buttonStyles } from './styles';
+import { colors, sectionStyles, buttonStyles } from '../../styles';
 
 /**
  * Main Budget Screen Component
@@ -77,12 +77,16 @@ const BudgetsScreen: React.FC = () => {
     // Shows loading spinner during initial data fetch
     if (isLoading) {
         return (
-            <SafeAreaView style={screenStyles.mainContainer}>
-                <View style={screenStyles.centeredMessageContainer}>
-                    <ActivityIndicator size="large" color="#007AFF" />
-                    <Text style={screenStyles.loadingText}>Loading budget data...</Text>
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{ fontSize: 18, color: colors.text.primary, marginTop: 16 }}>
+                        Loading budget data...
+                    </Text>
                     {isFetching && (
-                        <Text style={screenStyles.subText}>Fetching latest updates...</Text>
+                        <Text style={{ fontSize: 14, color: colors.text.secondary, marginTop: 8 }}>
+                            Fetching latest updates...
+                        </Text>
                     )}
                 </View>
             </SafeAreaView>
@@ -95,15 +99,17 @@ const BudgetsScreen: React.FC = () => {
         const errorMessage = error?.message || 'Failed to load budget data';
 
         return (
-            <SafeAreaView style={screenStyles.mainContainer}>
-                <View style={screenStyles.centeredMessageContainer}>
-                    <Ionicons name="alert-circle-outline" size={48} color="#FF6B6B" />
-                    <Text style={screenStyles.errorText}>{errorMessage}</Text>
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <Ionicons name="alert-circle-outline" size={48} color={colors.spending} />
+                    <Text style={{ fontSize: 18, color: colors.text.primary, textAlign: 'center', marginVertical: 16 }}>
+                        {errorMessage}
+                    </Text>
                     <TouchableOpacity
-                        style={buttonStyles.retryButton}
+                        style={buttonStyles.primary}
                         onPress={handleRetryDataFetch}
                     >
-                        <Text style={buttonStyles.retryButtonText}>Retry</Text>
+                        <Text style={buttonStyles.primaryText}>Retry</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -115,9 +121,9 @@ const BudgetsScreen: React.FC = () => {
     // ScrollView enables vertical scrolling through all budget sections
     return (
         // SAFE AREA CONTAINER - Ensures content respects device safe areas
-        <SafeAreaView style={screenStyles.mainContainer}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }}>
             {/* SCROLL CONTAINER - Vertical scrolling for all budget content */}
-            <ScrollView style={screenStyles.scrollContainer}>
+            <ScrollView style={{ flex: 1 }}>
 
                 {/* TIME PERIOD SELECTOR SECTION - Monthly/Yearly toggle at top */}
                 {/* Allows users to switch between different time periods for budget data */}
