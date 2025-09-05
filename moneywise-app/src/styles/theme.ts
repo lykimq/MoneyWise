@@ -22,7 +22,6 @@ export const colors = {
     text: {
         primary: '#333',     // Dark gray for main text
         secondary: '#666',   // Medium gray for secondary text
-        tertiary: '#999',    // Light gray for less important text
         inverse: '#FFFFFF',  // White text for dark backgrounds
     },
 
@@ -46,9 +45,7 @@ export const colors = {
  */
 export const typography = {
     sizes: {
-        xs: 10,
         sm: 12,
-        base: 14,
         lg: 16,
         xl: 18,
         '2xl': 20,
@@ -102,13 +99,6 @@ export const shadows = {
         shadowRadius: 4,
         elevation: 4,
     },
-    lg: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-    },
     xl: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
@@ -118,24 +108,3 @@ export const shadows = {
     },
 } as const;
 
-/**
- * Theme type for TypeScript support
- */
-export type Theme = {
-    colors: typeof colors;
-    typography: typeof typography;
-    spacing: typeof spacing;
-    borderRadius: typeof borderRadius;
-    shadows: typeof shadows;
-};
-
-/**
- * Default theme object
- */
-export const theme: Theme = {
-    colors,
-    typography,
-    spacing,
-    borderRadius,
-    shadows,
-};
