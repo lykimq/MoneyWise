@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, shadows, spacing } from '../styles';
+import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, cardVariants, spacing } from '../styles';
+import { toNumber, formatAmount } from '../utils/currencyUtils';
 
 // Use design system styles directly - no redundant overrides needed
 const styles = {
@@ -37,32 +38,7 @@ interface FinancialDashboardCardProps {
     period?: string;
 }
 
-/**
- * @function toNumber
- * @description Converts a value (string, number, or undefined) into a number.
- * Handles currency symbols and commas in strings.
- * @param {string | number | undefined} value - The input value to convert.
- * @returns {number} The converted number, or 0 if conversion fails or value is undefined.
- */
-const toNumber = (value: string | number | undefined): number => {
-    if (value === undefined) return 0;
-    if (typeof value === 'string') {
-        const cleaned = value.replace(/[$,]/g, '');
-        return parseFloat(cleaned) || 0;
-    }
-    return value;
-};
-
-/**
- * @function formatAmount
- * @description Formats a numerical amount into a currency string (e.g., "$1,234.56").
- * @param {string | number | undefined} amount - The amount to format.
- * @returns {string} The formatted currency string.
- */
-const formatAmount = (amount: string | number | undefined): string => {
-    const numAmount = toNumber(amount);
-    return `$${numAmount.toLocaleString()}`;
-};
+// Using shared utility functions for currency operations
 
 /**
  * @component ProgressBar

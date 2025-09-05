@@ -16,6 +16,7 @@ import { Dimensions } from 'react-native';
 import FinancialDashboardCard from '../components/FinancialDashboardCard';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
 import { useCategorySpending } from '../hooks/useCategorySpending';
+import { colors } from '../styles';
 
 /**
  * HomeScreen Component
@@ -93,7 +94,7 @@ const HomeScreen: React.FC = () => {
  */
 const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
     <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
-        <Ionicons name="add" size={24} color={colors.white} />
+        <Ionicons name="add" size={24} color={colors.text.inverse} />
     </TouchableOpacity>
 );
 
@@ -154,7 +155,7 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
         name: category.category_name,
         population: parseFloat(category.spent),
         color: getDefaultColor(index), // Use our improved color palette
-        legendFontColor: colors.text,
+        legendFontColor: colors.text.primary,
         legendFontSize: 12,
     }));
 
@@ -179,7 +180,7 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
                     </View>
                 ) : isEmpty ? (
                     <View style={styles.chartPlaceholder}>
-                        <Ionicons name="pie-chart-outline" size={48} color={colors.textSecondary} />
+                        <Ionicons name="pie-chart-outline" size={48} color={colors.text.secondary} />
                         <Text style={styles.chartPlaceholderText}>No spending data available</Text>
                     </View>
                 ) : (
@@ -356,22 +357,7 @@ const cardShadow = {
     elevation: 5,
 };
 
-/**
- * COLOR CONSTANTS
- *
- * Centralized color definitions to prevent duplication
- * and ensure consistent theming across the app
- */
-const colors = {
-    primary: '#007AFF',      // iOS blue
-    spending: '#FF6B6B',     // Red for expenses
-    remaining: '#4ECDC4',    // Teal for remaining budget
-    savings: '#45B7D1',      // Blue for savings
-    text: '#333',            // Primary text color
-    textSecondary: '#666',   // Secondary text color
-    background: '#F8F9FA',   // Light gray background
-    white: '#FFFFFF',        // White background for cards
-} as const;
+// Using centralized color definitions from theme system
 
 /**
  * STYLES ORGANIZATION
@@ -393,7 +379,7 @@ const styles = StyleSheet.create({
     // Main container - defines overall screen layout
     container: {
         flex: 1,
-        backgroundColor: colors.background, // Light gray background for entire screen
+        backgroundColor: colors.background.primary, // Light gray background for entire screen
     },
 
     // Scrollable content area
@@ -414,7 +400,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: colors.text,
+        color: colors.text.primary,
         marginBottom: 15,
     },
 
@@ -439,7 +425,7 @@ const styles = StyleSheet.create({
 
     // Chart container with card styling
     chartContainer: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.secondary,
         borderRadius: 12,
         padding: 30,
         marginBottom: 15,
@@ -465,7 +451,7 @@ const styles = StyleSheet.create({
 
     chartPlaceholderText: {
         marginTop: 10,
-        color: colors.textSecondary,
+        color: colors.text.secondary,
         fontSize: 14,
     },
 
@@ -484,7 +470,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 8,
         paddingHorizontal: 12,
-        backgroundColor: colors.background,
+        backgroundColor: colors.background.tertiary,
         borderRadius: 8,
         minWidth: 80,
         maxWidth: 120,
@@ -502,7 +488,7 @@ const styles = StyleSheet.create({
     // Category name in legend
     legendName: {
         fontSize: 12,
-        color: colors.text,
+        color: colors.text.primary,
         fontWeight: '500',
         textAlign: 'center',
         marginBottom: 2,
@@ -511,7 +497,7 @@ const styles = StyleSheet.create({
     // Amount in legend
     legendAmount: {
         fontSize: 11,
-        color: colors.textSecondary,
+        color: colors.text.secondary,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 2,
@@ -539,7 +525,7 @@ const styles = StyleSheet.create({
 
     categoryText: {
         fontSize: 14,
-        color: colors.text,
+        color: colors.text.primary,
     },
 
     // === TRANSACTION SECTION STYLES ===
@@ -553,7 +539,7 @@ const styles = StyleSheet.create({
     transactionItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.secondary,
         padding: 15,
         borderRadius: 12,
         ...cardShadow,
@@ -570,12 +556,12 @@ const styles = StyleSheet.create({
     transactionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: colors.text,
+        color: colors.text.primary,
     },
 
     transactionTime: {
         fontSize: 12,
-        color: colors.textSecondary,
+        color: colors.text.secondary,
         marginTop: 2,
     },
 
@@ -594,7 +580,7 @@ const styles = StyleSheet.create({
     billItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.white,
+        backgroundColor: colors.background.secondary,
         padding: 15,
         borderRadius: 12,
         gap: 10,
@@ -603,7 +589,7 @@ const styles = StyleSheet.create({
 
     billText: {
         fontSize: 14,
-        color: colors.text,
+        color: colors.text.primary,
     },
 });
 

@@ -5,7 +5,7 @@
  * These styles extend the base styles with specific configurations.
  */
 
-import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { colors, spacing, borderRadius, shadows, typography } from './theme';
 import { cardBase, headerRowBase, progressBarBase, buttonBase } from './base';
 

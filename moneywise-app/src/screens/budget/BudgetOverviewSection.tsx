@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, mainCardStyles, secondaryCardStyles, progressBarStyles, sectionStyles, cardVariants, spacing } from '../../styles';
+import { toNumber, formatAmount } from '../../utils/currencyUtils';
 
 /**
  * Props for the BudgetOverviewSection component
@@ -35,16 +36,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
     loading = false,
     period = "This Month"
 }) => {
-    // Helper function to convert string/number to number for calculations
-    const toNumber = (value: string | number | undefined): number => {
-        if (value === undefined) return 0;
-        if (typeof value === 'string') {
-            // Remove currency symbols and parse as float
-            const cleaned = value.replace(/[$,]/g, '');
-            return parseFloat(cleaned) || 0;
-        }
-        return value;
-    };
+    // Using shared utility function for number conversion
 
     // Convert all values to numbers for calculations
     const plannedNum = toNumber(overview.planned);
@@ -56,11 +48,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
     const remainingPercentage = plannedNum > 0 ? (remainingNum / plannedNum) * 100 : 0;
     const isOverBudget = remainingNum < 0;
 
-    const formatAmount = (amount: string | number | undefined) => {
-        if (amount === undefined) return '$0';
-        const numAmount = toNumber(amount);
-        return `$${numAmount.toLocaleString()}`; // TODO: Implement proper currency formatting based on user locale and currency settings
-    };
+    // Using shared utility function for currency formatting
 
     return (
         // Main container for the entire Budget Overview section.
