@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sectionStyles } from './styles';
+import { sectionStyles, budgetOverviewColors, budgetOverviewSectionStyles } from './styles';
 
 /**
  * Props for the BudgetOverviewSection component
@@ -67,40 +67,40 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
             {/* SECTION TITLE - Uses shared title styling across all budget sections */}
             <Text style={sectionStyles.title}>Budget Overview</Text>
 
-            <View style={styles.dashboardContainer}>
+            <View style={budgetOverviewSectionStyles.dashboardContainer}>
                 {/* Main Card - Planned Budget (Most Important) */}
-                <View style={styles.mainCard}>
-                    <View style={styles.mainCardHeader}>
-                        <View style={styles.mainCardTitleRow}>
-                            <Ionicons name="wallet-outline" size={28} color={colors.planned} />
-                            <Text style={styles.mainCardTitle}>Planned Budget</Text>
+                <View style={budgetOverviewSectionStyles.mainCard}>
+                    <View style={budgetOverviewSectionStyles.mainCardHeader}>
+                        <View style={budgetOverviewSectionStyles.mainCardTitleRow}>
+                            <Ionicons name="wallet-outline" size={28} color={budgetOverviewColors.planned} />
+                            <Text style={budgetOverviewSectionStyles.mainCardTitle}>Planned Budget</Text>
                         </View>
-                        <Text style={styles.period}>{period}</Text>
+                        <Text style={budgetOverviewSectionStyles.period}>{period}</Text>
                     </View>
 
-                    <View style={styles.mainCardContent}>
+                    <View style={budgetOverviewSectionStyles.mainCardContent}>
                         {loading ? (
-                            <ActivityIndicator size="large" color={colors.planned} />
+                            <ActivityIndicator size="large" color={budgetOverviewColors.planned} />
                         ) : (
-                            <Text style={[styles.mainCardAmount, { color: colors.planned }]}>
+                            <Text style={[budgetOverviewSectionStyles.mainCardAmount, { color: budgetOverviewColors.planned }]}>
                                 {formatAmount(overview.planned)}
                             </Text>
                         )}
 
                         {/* Progress indicator for spending vs planned */}
-                        <View style={styles.mainProgressContainer}>
-                            <View style={styles.mainProgressBar}>
+                        <View style={budgetOverviewSectionStyles.mainProgressContainer}>
+                            <View style={budgetOverviewSectionStyles.mainProgressBar}>
                                 <View
                                     style={[
-                                        styles.mainProgressFill,
+                                        budgetOverviewSectionStyles.mainProgressFill,
                                         {
                                             width: `${Math.min(spentPercentage, 100)}%`,
-                                            backgroundColor: isOverBudget ? colors.spending : colors.spent
+                                            backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent
                                         }
                                     ]}
                                 />
                             </View>
-                            <Text style={styles.progressText}>
+                            <Text style={budgetOverviewSectionStyles.progressText}>
                                 {plannedNum > 0 ? `${Math.round(spentPercentage)}% spent` : 'No budget planned'} {/* TODO: Add more detailed budget progress text */}
                             </Text>
                         </View>
@@ -108,30 +108,30 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                 </View>
 
                 {/* Secondary Cards Row */}
-                <View style={styles.secondaryCardsRow}>
+                <View style={budgetOverviewSectionStyles.secondaryCardsRow}>
                     {/* Spent Card */}
-                    <View style={[styles.secondaryCard, isOverBudget ? styles.overBudgetCard : styles.spentCard]}>
-                        <View style={styles.secondaryCardHeader}>
-                            <Ionicons name="trending-down-outline" size={20} color={isOverBudget ? colors.spending : colors.spent} />
-                            <Text style={styles.secondaryCardLabel}>Spent</Text>
+                    <View style={[budgetOverviewSectionStyles.secondaryCard, isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.spentCard]}>
+                        <View style={budgetOverviewSectionStyles.secondaryCardHeader}>
+                            <Ionicons name="trending-down-outline" size={20} color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent} />
+                            <Text style={budgetOverviewSectionStyles.secondaryCardLabel}>Spent</Text>
                         </View>
                         {loading ? (
-                            <ActivityIndicator size="small" color={isOverBudget ? colors.spending : colors.spent} />
+                            <ActivityIndicator size="small" color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent} />
                         ) : (
-                            <Text style={[styles.secondaryCardAmount, { color: isOverBudget ? colors.spending : colors.spent }]}>
+                            <Text style={[budgetOverviewSectionStyles.secondaryCardAmount, { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent }]}>
                                 {formatAmount(overview.spent)}
                             </Text>
                         )}
-                        <View style={styles.budgetIndicator}>
+                        <View style={budgetOverviewSectionStyles.budgetIndicator}>
                             <View style={[
-                                styles.budgetDot,
+                                budgetOverviewSectionStyles.budgetDot,
                                 {
-                                    backgroundColor: isOverBudget ? colors.spending : colors.spent
+                                    backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent
                                 }
                             ]} />
                             <Text style={[
-                                styles.budgetText,
-                                { color: isOverBudget ? colors.spending : colors.spent }
+                                budgetOverviewSectionStyles.budgetText,
+                                { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent }
                             ]}>
                                 {isOverBudget ? 'Over Budget' : 'On Track'} {/* TODO: Add more sophisticated budget health logic (e.g., warning at 80%, danger at 95%) */}
                             </Text>
@@ -139,28 +139,28 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                     </View>
 
                     {/* Remaining Card */}
-                    <View style={[styles.secondaryCard, isOverBudget ? styles.overBudgetCard : styles.remainingCard]}>
-                        <View style={styles.secondaryCardHeader}>
-                            <Ionicons name="checkmark-circle-outline" size={20} color={isOverBudget ? colors.spending : colors.remaining} />
-                            <Text style={styles.secondaryCardLabel}>
+                    <View style={[budgetOverviewSectionStyles.secondaryCard, isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.remainingCard]}>
+                        <View style={budgetOverviewSectionStyles.secondaryCardHeader}>
+                            <Ionicons name="checkmark-circle-outline" size={20} color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining} />
+                            <Text style={budgetOverviewSectionStyles.secondaryCardLabel}>
                                 {isOverBudget ? 'Over Budget' : 'Remaining'}
                             </Text>
                         </View>
                         {loading ? (
-                            <ActivityIndicator size="small" color={isOverBudget ? colors.spending : colors.remaining} />
+                            <ActivityIndicator size="small" color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining} />
                         ) : (
-                            <Text style={[styles.secondaryCardAmount, { color: isOverBudget ? colors.spending : colors.remaining }]}>
+                            <Text style={[budgetOverviewSectionStyles.secondaryCardAmount, { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining }]}>
                                 {formatAmount(Math.abs(remainingNum))}
                             </Text>
                         )}
-                        <View style={styles.remainingProgress}>
-                            <View style={styles.remainingProgressBar}>
+                        <View style={budgetOverviewSectionStyles.remainingProgress}>
+                            <View style={budgetOverviewSectionStyles.remainingProgressBar}>
                                 <View
                                     style={[
-                                        styles.remainingProgressFill,
+                                        budgetOverviewSectionStyles.remainingProgressFill,
                                         {
                                             width: `${Math.min(Math.abs(remainingPercentage), 100)}%`,
-                                            backgroundColor: isOverBudget ? colors.spending : colors.remaining
+                                            backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining
                                         }
                                     ]}
                                 />
@@ -173,211 +173,3 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
         </View>
     );
 };
-
-/**
- * Color constants matching the existing app theme with budget-specific colors
- */
-const colors = {
-    primary: '#007AFF',      // iOS blue
-    planned: '#4ECDC4',      // Teal for planned budget
-    spent: '#45B7D1',        // Blue for spent amount
-    remaining: '#4ECDC4',    // Teal for remaining budget
-    spending: '#FF6B6B',     // Red for over budget
-    text: '#333',            // Primary text color
-    textSecondary: '#666',   // Secondary text color
-    background: '#F8F9FA',   // Light gray background
-    white: '#FFFFFF',        // White background for cards
-} as const;
-
-/**
- * LOCAL STYLES - BudgetOverviewSection Component Styling
- *
- * These styles create the improved dashboard layout for budget overview information.
- * Uses visual hierarchy, progress indicators, and modern card design.
- */
-const styles = StyleSheet.create({
-    // Main container for the entire dashboard
-    dashboardContainer: {
-        gap: 15,
-    },
-
-    // === MAIN CARD STYLES ===
-
-    // Main card - Planned Budget (most prominent)
-    mainCard: {
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        padding: 24,
-
-        // Enhanced shadow for prominence
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        elevation: 10,
-        // TODO: Add tap interaction for detailed budget breakdown
-    },
-
-    mainCardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-
-    mainCardTitleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-
-    mainCardTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: colors.text,
-    },
-
-    period: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        fontWeight: '500',
-    },
-
-    mainCardContent: {
-        alignItems: 'center',
-    },
-
-    mainCardAmount: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    },
-
-    mainProgressContainer: {
-        width: '100%',
-        alignItems: 'center',
-    },
-
-    mainProgressBar: {
-        width: '100%',
-        height: 8,
-        backgroundColor: colors.planned + '20',
-        borderRadius: 4,
-        overflow: 'hidden',
-        marginBottom: 8,
-    },
-
-    mainProgressFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-
-    progressText: {
-        fontSize: 12,
-        color: colors.textSecondary,
-        fontWeight: '500',
-    },
-
-    // === SECONDARY CARDS STYLES ===
-
-    // Row containing the two smaller cards
-    secondaryCardsRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-
-    // Individual secondary card
-    secondaryCard: {
-        flex: 1,
-        backgroundColor: colors.white,
-        borderRadius: 16,
-        padding: 16,
-
-        // Subtle shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 4,
-        // TODO: Add tap interaction for detailed view
-    },
-
-    // Special styling for spent card
-    spentCard: {
-        backgroundColor: '#F0F8FF',
-        borderWidth: 1,
-        borderColor: colors.spent + '30',
-    },
-
-    // Special styling for remaining card
-    remainingCard: {
-        backgroundColor: '#F8FFFE',
-        borderWidth: 1,
-        borderColor: colors.remaining + '30',
-    },
-
-    // Special styling for over budget state
-    overBudgetCard: {
-        backgroundColor: '#FFF5F5',
-        borderWidth: 1,
-        borderColor: colors.spending + '30',
-    },
-
-    secondaryCardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 12,
-    },
-
-    secondaryCardLabel: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        fontWeight: '600',
-    },
-
-    secondaryCardAmount: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 12,
-        textAlign: 'center',
-    },
-
-    // Budget indicator for spent card
-    budgetIndicator: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-    },
-
-    budgetDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-    },
-
-    budgetText: {
-        fontSize: 12,
-        fontWeight: '600',
-    },
-
-    // Remaining progress for remaining card
-    remainingProgress: {
-        width: '100%',
-    },
-
-    remainingProgressBar: {
-        width: '100%',
-        height: 4,
-        backgroundColor: colors.remaining + '20',
-        borderRadius: 2,
-        overflow: 'hidden',
-    },
-
-    remainingProgressFill: {
-        height: '100%',
-        borderRadius: 2,
-    },
-});
-
