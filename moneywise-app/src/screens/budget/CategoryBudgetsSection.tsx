@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryBudgetApi } from '../../services/api';
-import { sectionStyles, budgetOverviewColors, categoryBudgetsSectionStyles, categoryBudgetCardStyles, categoryProgressBarStyles } from './styles';
+import { sectionStyles, budgetOverviewColors, categoryBudgetsSectionStyles, categoryBudgetCardStyles, categoryProgressBarStyles } from './styles/index';
 
 /**
  * Props for the CategoryBudgetsSection component
