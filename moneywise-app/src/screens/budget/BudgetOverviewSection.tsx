@@ -63,22 +63,29 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
     };
 
     return (
+        // Main container for the entire Budget Overview section.
         <View style={sectionStyles.container}>
-            {/* SECTION TITLE - Uses shared title styling across all budget sections */}
+            {/* SECTION TITLE - Displays the title for the budget overview. */}
             <Text style={sectionStyles.title}>Budget Overview</Text>
 
+            {/* DASHBOARD CONTAINER - Holds the main and secondary budget cards. */}
             <View style={budgetOverviewSectionStyles.dashboardContainer}>
-                {/* Main Card - Planned Budget (Most Important) */}
+                {/* MAIN CARD - Displays the "Planned Budget" as the most prominent information. */}
                 <View style={budgetOverviewSectionStyles.mainCard}>
+                    {/* Main Card Header - Contains the icon, title, and period. */}
                     <View style={budgetOverviewSectionStyles.mainCardHeader}>
+                        {/* Title Row - Groups the wallet icon and "Planned Budget" text. */}
                         <View style={budgetOverviewSectionStyles.mainCardTitleRow}>
                             <Ionicons name="wallet-outline" size={28} color={budgetOverviewColors.planned} />
                             <Text style={budgetOverviewSectionStyles.mainCardTitle}>Planned Budget</Text>
                         </View>
+                        {/* Period Text - Displays the current budget period (e.g., "This Month"). */}
                         <Text style={budgetOverviewSectionStyles.period}>{period}</Text>
                     </View>
 
+                    {/* Main Card Content - Displays the planned amount and spending progress. */}
                     <View style={budgetOverviewSectionStyles.mainCardContent}>
+                        {/* Planned Amount Display - Shows a loading indicator or the formatted planned amount. */}
                         {loading ? (
                             <ActivityIndicator size="large" color={budgetOverviewColors.planned} />
                         ) : (
@@ -87,19 +94,22 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                             </Text>
                         )}
 
-                        {/* Progress indicator for spending vs planned */}
+                        {/* Progress Indicator - Visual bar showing spending against the planned budget. */}
                         <View style={budgetOverviewSectionStyles.mainProgressContainer}>
                             <View style={budgetOverviewSectionStyles.mainProgressBar}>
                                 <View
                                     style={[
                                         budgetOverviewSectionStyles.mainProgressFill,
                                         {
+                                            // Fills the bar based on spent percentage, capped at 100%.
+                                            // Color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                                             width: `${Math.min(spentPercentage, 100)}%`,
                                             backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent
                                         }
                                     ]}
                                 />
                             </View>
+                            {/* Progress Text - Shows the percentage of budget spent or a "No budget planned" message. */}
                             <Text style={budgetOverviewSectionStyles.progressText}>
                                 {plannedNum > 0 ? `${Math.round(spentPercentage)}% spent` : 'No budget planned'} {/* TODO: Add more detailed budget progress text */}
                             </Text>
@@ -107,30 +117,52 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                     </View>
                 </View>
 
-                {/* Secondary Cards Row */}
+                {/* SECONDARY CARDS ROW - Contains the "Spent" and "Remaining" budget cards side-by-side. */}
                 <View style={budgetOverviewSectionStyles.secondaryCardsRow}>
-                    {/* Spent Card */}
-                    <View style={[budgetOverviewSectionStyles.secondaryCard, isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.spentCard]}>
+                    {/* SPENT CARD - Displays the total amount spent. */}
+                    <View style={[
+                        budgetOverviewSectionStyles.secondaryCard,
+                        // Applies 'overBudgetCard' style (red border) if over budget, otherwise 'spentCard' (light blue border).
+                        isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.spentCard
+                    ]}>
+                        {/* Secondary Card Header - Contains the icon and "Spent" label. */}
                         <View style={budgetOverviewSectionStyles.secondaryCardHeader}>
-                            <Ionicons name="trending-down-outline" size={20} color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent} />
+                            <Ionicons
+                                name="trending-down-outline"
+                                size={20}
+                                // Icon color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
+                                color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent}
+                            />
                             <Text style={budgetOverviewSectionStyles.secondaryCardLabel}>Spent</Text>
                         </View>
+                        {/* Spent Amount Display - Shows a loading indicator or the formatted spent amount. */}
                         {loading ? (
-                            <ActivityIndicator size="small" color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent} />
+                            <ActivityIndicator
+                                size="small"
+                                // Indicator color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
+                                color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent}
+                            />
                         ) : (
-                            <Text style={[budgetOverviewSectionStyles.secondaryCardAmount, { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent }]}>
+                            <Text style={[
+                                budgetOverviewSectionStyles.secondaryCardAmount,
+                                // Amount text color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
+                                { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent }
+                            ]}>
                                 {formatAmount(overview.spent)}
                             </Text>
                         )}
+                        {/* Budget Indicator - Shows a colored dot and text indicating budget status. */}
                         <View style={budgetOverviewSectionStyles.budgetIndicator}>
                             <View style={[
                                 budgetOverviewSectionStyles.budgetDot,
+                                // Dot color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                                 {
                                     backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent
                                 }
                             ]} />
                             <Text style={[
                                 budgetOverviewSectionStyles.budgetText,
+                                // Text color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                                 { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.spent }
                             ]}>
                                 {isOverBudget ? 'Over Budget' : 'On Track'} {/* TODO: Add more sophisticated budget health logic (e.g., warning at 80%, danger at 95%) */}
@@ -138,27 +170,49 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                         </View>
                     </View>
 
-                    {/* Remaining Card */}
-                    <View style={[budgetOverviewSectionStyles.secondaryCard, isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.remainingCard]}>
+                    {/* REMAINING CARD - Displays the amount left to spend or the overspend amount. */}
+                    <View style={[
+                        budgetOverviewSectionStyles.secondaryCard,
+                        // Applies 'overBudgetCard' style (red border) if over budget, otherwise 'remainingCard' (light green border).
+                        isOverBudget ? budgetOverviewSectionStyles.overBudgetCard : budgetOverviewSectionStyles.remainingCard
+                    ]}>
+                        {/* Secondary Card Header - Contains the icon and "Remaining" or "Over Budget" label. */}
                         <View style={budgetOverviewSectionStyles.secondaryCardHeader}>
-                            <Ionicons name="checkmark-circle-outline" size={20} color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining} />
+                            <Ionicons
+                                name="checkmark-circle-outline"
+                                size={20}
+                                // Icon color changes to 'spending' (red) if over budget, otherwise 'remaining' (teal).
+                                color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining}
+                            />
                             <Text style={budgetOverviewSectionStyles.secondaryCardLabel}>
                                 {isOverBudget ? 'Over Budget' : 'Remaining'}
                             </Text>
                         </View>
+                        {/* Remaining Amount Display - Shows a loading indicator or the formatted remaining amount. */}
                         {loading ? (
-                            <ActivityIndicator size="small" color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining} />
+                            <ActivityIndicator
+                                size="small"
+                                // Indicator color changes to 'spending' (red) if over budget, otherwise 'remaining' (teal).
+                                color={isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining}
+                            />
                         ) : (
-                            <Text style={[budgetOverviewSectionStyles.secondaryCardAmount, { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining }]}>
+                            <Text style={[
+                                budgetOverviewSectionStyles.secondaryCardAmount,
+                                // Amount text color changes to 'spending' (red) if over budget, otherwise 'remaining' (teal).
+                                { color: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining }
+                            ]}>
                                 {formatAmount(Math.abs(remainingNum))}
                             </Text>
                         )}
+                        {/* Remaining Progress - Visual bar showing remaining budget. */}
                         <View style={budgetOverviewSectionStyles.remainingProgress}>
                             <View style={budgetOverviewSectionStyles.remainingProgressBar}>
                                 <View
                                     style={[
                                         budgetOverviewSectionStyles.remainingProgressFill,
                                         {
+                                            // Fills the bar based on remaining percentage, capped at 100%.
+                                            // Color changes to 'spending' (red) if over budget, otherwise 'remaining' (teal).
                                             width: `${Math.min(Math.abs(remainingPercentage), 100)}%`,
                                             backgroundColor: isOverBudget ? budgetOverviewColors.spending : budgetOverviewColors.remaining
                                         }
