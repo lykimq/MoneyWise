@@ -1,9 +1,20 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { financialDashboardColors, financialDashboardCardStyles } from './styles/financialDashboardCardStyles';
+import { financialDashboardColors } from './styles/colors';
+import { dashboardContainer } from './styles/dashboardLayoutStyles';
+import { mainFinancialCardStyles } from './styles/mainFinancialCardStyles';
+import { secondaryFinancialCardStyles } from './styles/secondaryFinancialCardStyles';
+import { progressContainerBase, genericProgressBarBase, progressFillBase } from './styles/progressBarStyles';
 
-const styles = financialDashboardCardStyles;
+const styles = {
+    dashboardContainer,
+    ...mainFinancialCardStyles,
+    ...secondaryFinancialCardStyles,
+    progressContainer: progressContainerBase,
+    progressBar: genericProgressBarBase,
+    progressFill: progressFillBase,
+};
 const colors = financialDashboardColors;
 
 /**
