@@ -30,7 +30,7 @@ import { TimePeriodSelector } from './TimePeriodSelector';
 import { BudgetOverviewSection } from './BudgetOverviewSection';
 import { CategoryBudgetsSection } from './CategoryBudgetsSection';
 import { BudgetInsightsSection } from './BudgetInsightsSection';
-import { getCategoryIconName } from './utils';
+import { getCategoryIconName } from '../../utils/categoryUtils';
 import { colors, sectionStyles, buttonStyles } from '../../styles';
 
 /**
