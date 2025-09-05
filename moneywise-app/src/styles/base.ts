@@ -37,48 +37,6 @@ export const progressBarBase: ViewStyle = {
 };
 
 /**
- * Base text style for primary headings.
- */
-export const headingBase: TextStyle = {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-};
-
-/**
- * Base text style for secondary headings.
- */
-export const subheadingBase: TextStyle = {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text.primary,
-};
-
-/**
- * Base text style for body text.
- */
-export const bodyTextBase: TextStyle = {
-    fontSize: 14,
-    color: colors.text.primary,
-};
-
-/**
- * Base text style for secondary/caption text.
- */
-export const captionTextBase: TextStyle = {
-    fontSize: 12,
-    color: colors.text.secondary,
-};
-
-/**
- * Base container style for full-width sections.
- */
-export const sectionContainerBase: ViewStyle = {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-};
-
-/**
  * Base style for buttons with consistent padding and border radius.
  */
 export const buttonBase: ViewStyle = {

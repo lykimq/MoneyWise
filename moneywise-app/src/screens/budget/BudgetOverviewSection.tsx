@@ -76,7 +76,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                     <View style={mainCardStyles.header}>
                         {/* Title Row - Groups the wallet icon and "Planned Budget" text. */}
                         <View style={mainCardStyles.titleRow}>
-                            <Ionicons name="wallet-outline" size={28} color={colors.planned} />
+                            <Ionicons name="wallet-outline" size={28} color={colors.remaining} />
                             <Text style={mainCardStyles.title}>Planned Budget</Text>
                         </View>
                         {/* Period Text - Displays the current budget period (e.g., "This Month"). */}
@@ -87,16 +87,16 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                     <View style={mainCardStyles.content}>
                         {/* Planned Amount Display - Shows a loading indicator or the formatted planned amount. */}
                         {loading ? (
-                            <ActivityIndicator size="large" color={colors.planned} />
+                            <ActivityIndicator size="large" color={colors.remaining} />
                         ) : (
-                            <Text style={[mainCardStyles.amount, { color: colors.planned }]}>
+                            <Text style={[mainCardStyles.amount, { color: colors.remaining }]}>
                                 {formatAmount(overview.planned)}
                             </Text>
                         )}
 
                         {/* Progress Indicator - Visual bar showing spending against the planned budget. */}
                         <View style={mainCardStyles.progressContainer}>
-                            <View style={[mainCardStyles.progressBar, { backgroundColor: colors.planned + '20' }]}>
+                            <View style={[mainCardStyles.progressBar, { backgroundColor: colors.remaining + '20' }]}>
                                 <View
                                     style={[
                                         mainCardStyles.progressFill,
@@ -104,7 +104,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                                             // Fills the bar based on spent percentage, capped at 100%.
                                             // Color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                                             width: `${Math.min(spentPercentage, 100)}%`,
-                                            backgroundColor: isOverBudget ? colors.spending : colors.spent
+                                            backgroundColor: isOverBudget ? colors.spending : colors.savings
                                         }
                                     ]}
                                 />
@@ -131,7 +131,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                                 name="trending-down-outline"
                                 size={20}
                                 // Icon color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
-                                color={isOverBudget ? colors.spending : colors.spent}
+                                color={isOverBudget ? colors.spending : colors.savings}
                             />
                             <Text style={secondaryCardStyles.label}>Spent</Text>
                         </View>
@@ -140,13 +140,13 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                             <ActivityIndicator
                                 size="small"
                                 // Indicator color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
-                                color={isOverBudget ? colors.spending : colors.spent}
+                                color={isOverBudget ? colors.spending : colors.savings}
                             />
                         ) : (
                             <Text style={[
                                 secondaryCardStyles.amount,
                                 // Amount text color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
-                                { color: isOverBudget ? colors.spending : colors.spent }
+                                { color: isOverBudget ? colors.spending : colors.savings }
                             ]}>
                                 {formatAmount(overview.spent)}
                             </Text>
@@ -157,13 +157,13 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
                                 secondaryCardStyles.dot,
                                 // Dot color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                                 {
-                                    backgroundColor: isOverBudget ? colors.spending : colors.spent
+                                    backgroundColor: isOverBudget ? colors.spending : colors.savings
                                 }
                             ]} />
                             <Text style={[
                                 secondaryCardStyles.text,
                                 // Text color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
-                                { color: isOverBudget ? colors.spending : colors.spent }
+                                { color: isOverBudget ? colors.spending : colors.savings }
                             ]}>
                                 {isOverBudget ? 'Over Budget' : 'On Track'} {/* TODO: Add more sophisticated budget health logic (e.g., warning at 80%, danger at 95%) */}
                             </Text>

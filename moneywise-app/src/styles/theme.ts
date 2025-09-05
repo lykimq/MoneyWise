@@ -12,14 +12,11 @@
 export const colors = {
     // Primary brand colors
     primary: '#007AFF',      // iOS blue - Main brand color
-    secondary: '#4ECDC4',    // Teal - Secondary actions and highlights
 
     // Semantic colors for financial data
     spending: '#FF6B6B',     // Red for expenses and over-budget states
     remaining: '#4ECDC4',    // Teal for remaining budget and available funds
     savings: '#45B7D1',      // Blue for savings and positive amounts
-    planned: '#4ECDC4',      // Teal for planned budget (alias for remaining)
-    spent: '#45B7D1',        // Blue for spent amounts (alias for savings)
 
     // Text colors
     text: {
@@ -36,26 +33,11 @@ export const colors = {
         tertiary: '#F5F5F5', // Very light gray for subtle backgrounds
     },
 
-    // Status colors
-    status: {
-        success: '#4ECDC4',  // Teal for success states
-        warning: '#FFA726',  // Orange for warning states
-        error: '#FF6B6B',    // Red for error states
-        info: '#45B7D1',     // Blue for informational states
-    },
-
     // Card variant backgrounds (for special styling)
     card: {
         spent: '#F0F8FF',    // Very light blue
         remaining: '#F8FFFE', // Very light green
         overBudget: '#FFF5F5', // Very light red
-    },
-
-    // Transparent variants for borders and overlays
-    transparent: {
-        light: 'rgba(255, 255, 255, 0.1)',
-        medium: 'rgba(0, 0, 0, 0.1)',
-        dark: 'rgba(0, 0, 0, 0.2)',
     },
 } as const;
 
@@ -74,8 +56,6 @@ export const typography = {
         '4xl': 36,
     },
     weights: {
-        normal: '400',
-        medium: '500',
         semibold: '600',
         bold: '700',
     },
@@ -91,8 +71,6 @@ export const spacing = {
     lg: 16,
     xl: 20,
     '2xl': 24,
-    '3xl': 32,
-    '4xl': 40,
 } as const;
 
 /**
@@ -104,7 +82,6 @@ export const borderRadius = {
     lg: 12,
     xl: 16,
     '2xl': 20,
-    full: 9999,
 } as const;
 
 /**

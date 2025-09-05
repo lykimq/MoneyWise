@@ -37,7 +37,7 @@ export const mainCardStyles = StyleSheet.create({
     period: {
         fontSize: typography.sizes.sm,
         color: colors.text.secondary,
-        fontWeight: typography.weights.medium,
+        fontWeight: typography.weights.semibold,
     },
     content: {
         alignItems: 'center',
@@ -63,7 +63,7 @@ export const mainCardStyles = StyleSheet.create({
     progressText: {
         fontSize: typography.sizes.sm,
         color: colors.text.secondary,
-        fontWeight: typography.weights.medium,
+        fontWeight: typography.weights.semibold,
     },
 });
 
@@ -233,7 +233,7 @@ export const cardVariants = StyleSheet.create({
     spent: {
         backgroundColor: colors.card.spent,
         borderWidth: 1,
-        borderColor: colors.spent + '30',
+        borderColor: colors.savings + '30',
     },
     remaining: {
         backgroundColor: colors.card.remaining,
