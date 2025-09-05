@@ -1,7 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import apiService, { BudgetResponse } from '../services/api';
+import { useMemo } from 'react';
+import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
-import { buildDateParams } from '../utils/dateUtils';
+import { useApiParams, computeBudgetDataValues } from './utils';
+import type {
+    UseBudgetDataReturn,
+    BudgetQueryParams,
+    BudgetTimePeriod
+} from './types';
 
 /**
  * 📊 useBudgetData - Complete Budget Management Hook
@@ -25,71 +31,8 @@ import { buildDateParams } from '../utils/dateUtils';
  * on the dashboard while providing complete data for budget management.
  */
 
-/**
- * Time period options for budget data filtering
- */
-export type BudgetTimePeriod = 'Monthly' | 'Yearly';
-
-/**
- * Parameters for budget data query
- */
-interface BudgetQueryParams {
-    timePeriod: BudgetTimePeriod;
-    month?: string;
-    year?: string;
-    currency?: string;
-}
-
-/**
- * Return type for the budget data hook
- * Provides comprehensive state information for UI components
- */
-interface UseBudgetDataReturn {
-    // Core data
-    budgetData: BudgetResponse | undefined;
-
-    // Loading states
-    isLoading: boolean;          // Initial load
-    isFetching: boolean;         // Background updates
-
-    // Error handling
-    error: Error | null;
-
-    // Data freshness
-    isStale: boolean;            // Know if data might be outdated
-    dataUpdatedAt: number;       // When data was last updated
-
-    // Actions
-    refetch: () => Promise<any>; // Manual refresh
-
-    // Computed values for easier UI usage
-    hasData: boolean;
-    isEmpty: boolean;
-}
-
-/**
- * Convert hook parameters to API parameters based on selected time period
- */
-const buildApiParams = (params: BudgetQueryParams) => {
-    const dateParams = buildDateParams(params.month, params.year);
-    const apiParams: { month?: string; year?: string; currency?: string } = {};
-
-    // Monthly view: send both month and year for specific month data
-    if (params.timePeriod === 'Monthly') {
-        apiParams.month = dateParams.month;
-        apiParams.year = dateParams.year;
-    }
-    // Yearly view: send only year for annual aggregation
-    else if (params.timePeriod === 'Yearly') {
-        apiParams.year = dateParams.year;
-    }
-
-    if (params.currency) {
-        apiParams.currency = params.currency;
-    }
-
-    return apiParams;
-};
+// Re-export types for backward compatibility
+export type { BudgetTimePeriod, BudgetQueryParams, UseBudgetDataReturn };
 
 export const useBudgetData = (
     timePeriod: BudgetTimePeriod,
@@ -97,7 +40,7 @@ export const useBudgetData = (
     year?: string,
     currency?: string
 ): UseBudgetDataReturn => {
-
+    // Build query parameters
     const queryParams: BudgetQueryParams = {
         timePeriod,
         month,
@@ -106,7 +49,7 @@ export const useBudgetData = (
     };
 
     // Convert hook params to API format based on time period
-    const apiParams = buildApiParams(queryParams);
+    const apiParams = useApiParams(queryParams);
 
     // Fetch comprehensive budget data using centralized query configuration
     const {
@@ -123,16 +66,19 @@ export const useBudgetData = (
         enabled: Boolean(timePeriod),
     });
 
-    // Computed values for easier UI usage
-    const hasData = Boolean(budgetData);
-    const isEmpty = hasData && (!budgetData?.categories?.length && !budgetData?.overview);
+    // Memoized computed values using extracted function
+    const computedValues = useMemo(() =>
+        computeBudgetDataValues(budgetData),
+        [budgetData]
+    );
 
     return {
         // Core data
         budgetData,
 
         // Loading states
-        isLoading,
+        loading: isLoading,
+        isLoading, // Alias for backward compatibility
         isFetching,
 
         // Error handling
@@ -146,7 +92,6 @@ export const useBudgetData = (
         refetch,
 
         // Computed values
-        hasData,
-        isEmpty,
+        ...computedValues,
     };
 };

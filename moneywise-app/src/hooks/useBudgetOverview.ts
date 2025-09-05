@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import apiService, { BudgetOverviewApi } from '../services/api';
+import { useMemo } from 'react';
+import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
-import { buildDateParams } from '../utils/dateUtils';
+import { useQueryParams, computeOverviewDataValues } from './utils';
+import type { UseBudgetOverviewReturn, BaseQueryParams } from './types';
 
 /**
  * 🏠 useBudgetOverview - Dashboard Summary Hook
@@ -16,30 +18,14 @@ import { buildDateParams } from '../utils/dateUtils';
  * DESIGN DECISION: Separate from useBudgetData to optimize performance.
  * HomeScreen doesn't need category details, so we avoid fetching unnecessary data.
  */
-
-interface UseBudgetOverviewReturn {
-    overview: BudgetOverviewApi | undefined;
-    loading: boolean;
-    error: Error | null;
-    refetch: () => Promise<any>;
-    isStale: boolean;             // Know if data might be outdated
-    isFetching: boolean;          // Know if background update is happening
-    dataUpdatedAt: number;        // When data was last updated
-}
 export const useBudgetOverview = (
     month?: string,
     year?: string,
     currency?: string
 ): UseBudgetOverviewReturn => {
-
-    // Build date parameters with current month/year as fallbacks
-    const dateParams = buildDateParams(month, year);
-
-    const queryParams = {
-        month: dateParams.month,
-        year: dateParams.year,
-        currency: currency || 'USD', // TODO: Make default currency configurable via user settings or global app config
-    };
+    // Build base parameters
+    const baseParams: BaseQueryParams = { month, year, currency };
+    const queryParams = useQueryParams(baseParams);
 
     // Fetch overview data using centralized query configuration
     const {
@@ -53,8 +39,14 @@ export const useBudgetOverview = (
     } = useQuery({
         queryKey: queryKeys.budgets.overview(queryParams),
         queryFn: () => apiService.getBudgetOverview(queryParams),
-        enabled: Boolean(dateParams.month && dateParams.year),
+        enabled: Boolean(queryParams.month && queryParams.year),
     });
+
+    // Memoized computed values using extracted function
+    const computedValues = useMemo(() =>
+        computeOverviewDataValues(overview),
+        [overview]
+    );
 
     return {
         overview,
@@ -64,5 +56,6 @@ export const useBudgetOverview = (
         isStale,
         isFetching,
         dataUpdatedAt,
+        ...computedValues,
     };
 };

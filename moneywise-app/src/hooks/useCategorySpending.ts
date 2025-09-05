@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import apiService, { CategoryBudgetApi } from '../services/api';
+import { useMemo } from 'react';
+import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
-import { buildDateParams } from '../utils/dateUtils';
+import { useQueryParams, buildBudgetQueryParams, computeCategorySpendingValues } from './utils';
+import type { UseCategorySpendingReturn, BaseQueryParams } from './types';
 
 /**
  * 📊 useCategorySpending - Category Spending Data Hook
@@ -16,32 +18,17 @@ import { buildDateParams } from '../utils/dateUtils';
  * on the dashboard. This hook focuses only on category data needed for charts.
  */
 
-interface UseCategorySpendingReturn {
-    categories: CategoryBudgetApi[];
-    loading: boolean;
-    error: Error | null;
-    refetch: () => Promise<any>;
-    isStale: boolean;
-    isFetching: boolean;
-    dataUpdatedAt: number;
-    hasData: boolean;
-    isEmpty: boolean;
-}
-
 export const useCategorySpending = (
     month?: string,
     year?: string,
     currency?: string
 ): UseCategorySpendingReturn => {
+    // Build base parameters
+    const baseParams: BaseQueryParams = { month, year, currency };
+    const queryParams = useQueryParams(baseParams);
 
-    // Build date parameters with current month/year as fallbacks
-    const dateParams = buildDateParams(month, year);
-
-    const queryParams = {
-        month: dateParams.month,
-        year: dateParams.year,
-        currency: currency || 'USD', // TODO: Make default currency configurable via user settings or global app config
-    };
+    // Build query params for the comprehensive budget data query using extracted function
+    const budgetQueryParams = buildBudgetQueryParams(queryParams);
 
     // Fetch comprehensive budget data to get categories
     const {
@@ -53,34 +40,24 @@ export const useCategorySpending = (
         isFetching,
         dataUpdatedAt,
     } = useQuery({
-        queryKey: queryKeys.budgets.data({
-            timePeriod: 'Monthly', // TODO: Make timePeriod dynamic based on user selection or component props if other periods are supported
-            month: dateParams.month,
-            year: dateParams.year,
-            currency: queryParams.currency,
-        }),
+        queryKey: queryKeys.budgets.data(budgetQueryParams),
         queryFn: () => apiService.getBudgets(queryParams),
-        enabled: Boolean(dateParams.month && dateParams.year),
+        enabled: Boolean(queryParams.month && queryParams.year),
     });
 
-    // Extract categories and filter out those with no spending
-    const categories = budgetData?.categories?.filter(cat =>
-        parseFloat(cat.spent) > 0
-    ) || [];
-
-    // Computed values for easier UI usage
-    const hasData = Boolean(budgetData);
-    const isEmpty = hasData && categories.length === 0;
+    // Memoized computed values using extracted function
+    const computedValues = useMemo(() =>
+        computeCategorySpendingValues(budgetData),
+        [budgetData]
+    );
 
     return {
-        categories,
+        ...computedValues,
         loading,
         error,
         refetch,
         isStale,
         isFetching,
         dataUpdatedAt,
-        hasData,
-        isEmpty,
     };
 };
