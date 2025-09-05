@@ -53,16 +53,3 @@ export interface BudgetResponse {
     insights: BudgetInsight[];
 }
 
-/**
- * UNUSED TYPES REMOVED
- *
- * EDUCATIONAL NOTE:
- * We removed the following unused interfaces to keep the codebase clean:
- * - BudgetApi: Single budget row (not used by current read-only functionality)
- * - CreateBudgetRequest: Budget creation payload (no create functionality yet)
- * - UpdateBudgetRequest: Budget update payload (no update functionality yet)
- *
- * These can be added back when CRUD operations are implemented in the future.
- */
-
-

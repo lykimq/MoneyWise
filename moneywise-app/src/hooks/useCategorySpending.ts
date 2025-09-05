@@ -40,7 +40,7 @@ export const useCategorySpending = (
     const queryParams = {
         month: dateParams.month,
         year: dateParams.year,
-        currency: currency || 'USD',
+        currency: currency || 'USD', // TODO: Make default currency configurable via user settings or global app config
     };
 
     // Fetch comprehensive budget data to get categories
@@ -54,7 +54,7 @@ export const useCategorySpending = (
         dataUpdatedAt,
     } = useQuery({
         queryKey: queryKeys.budgets.data({
-            timePeriod: 'Monthly',
+            timePeriod: 'Monthly', // TODO: Make timePeriod dynamic based on user selection or component props if other periods are supported
             month: dateParams.month,
             year: dateParams.year,
             currency: queryParams.currency,
