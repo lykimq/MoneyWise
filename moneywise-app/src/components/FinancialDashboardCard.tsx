@@ -266,8 +266,8 @@ const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = ({
     // Calculate percentages for progress bars
     const spentPercentage = totalBudgetAmount > 0 ? (spentNum / totalBudgetAmount) * 100 : 0;
     const remainingPercentage = totalBudgetAmount > 0 ? (remainingNum / totalBudgetAmount) * 100 : 0;
-    // Savings percentage is a placeholder, assuming a goal of 1000 for now
     // TODO: Replace hardcoded $1000 with actual savings goal/target from API
+    // This is a placeholder calculation - backend needs to provide savings goals
     const savingsPercentage = Math.min(100, (savingsNum / 1000) * 100);
 
     return (

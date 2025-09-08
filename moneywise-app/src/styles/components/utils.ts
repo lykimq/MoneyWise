@@ -68,14 +68,5 @@ export const createRowStyle = (gap: keyof typeof spacing = 'md'): ViewStyle => (
     gap: spacing[gap],
 });
 
-/**
- * Creates a container layout with consistent gap spacing
- *
- * @param gap - Spacing between child elements: 'cardGap', 'rowGap', or theme spacing
- * @returns Container with vertical gap spacing
- *
- * Example: createContainerStyle('cardGap') → Container with standard card spacing
- */
-export const createContainerStyle = (gap: keyof typeof spacing = 'cardGap'): ViewStyle => ({
-    gap: spacing[gap],
-});
+// TODO: Implement createContainerStyle when needed for specific layouts
+// This function was created but never used - keeping for future use
