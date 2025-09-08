@@ -12,6 +12,7 @@ import type { BaseQueryParams, BudgetQueryParams, BudgetTimePeriod } from './typ
 /**
  * Default currency for the application
  * TODO: Make this configurable via user settings or global app config
+ * This should be moved to a user preferences system
  */
 const DEFAULT_CURRENCY = 'USD';
 

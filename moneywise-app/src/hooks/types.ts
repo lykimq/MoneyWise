@@ -45,7 +45,6 @@ export interface BaseHookReturn {
  */
 export interface UseBudgetDataReturn extends BaseHookReturn {
     budgetData: BudgetResponse | undefined;
-    isLoading: boolean; // Alias for loading for backward compatibility
 }
 
 export interface UseBudgetOverviewReturn extends BaseHookReturn {

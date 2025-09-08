@@ -33,7 +33,7 @@ export const useCategorySpending = (
     // Fetch comprehensive budget data to get categories
     const {
         data: budgetData,
-        isLoading: loading,
+        isLoading,
         error,
         refetch,
         isStale,
@@ -53,7 +53,7 @@ export const useCategorySpending = (
 
     return {
         ...computedValues,
-        loading,
+        loading: isLoading,
         error,
         refetch,
         isStale,

@@ -78,7 +78,6 @@ export const useBudgetData = (
 
         // Loading states
         loading: isLoading,
-        isLoading, // Alias for backward compatibility
         isFetching,
 
         // Error handling

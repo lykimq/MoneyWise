@@ -30,7 +30,7 @@ export const useBudgetOverview = (
     // Fetch overview data using centralized query configuration
     const {
         data: overview,
-        isLoading: loading,
+        isLoading,
         error,
         refetch,
         isStale,
@@ -50,7 +50,7 @@ export const useBudgetOverview = (
 
     return {
         overview,
-        loading,
+        loading: isLoading,
         error,
         refetch,
         isStale,
