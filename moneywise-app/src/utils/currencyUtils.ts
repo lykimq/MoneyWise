@@ -4,7 +4,10 @@
  * Centralized utility functions for currency formatting and number conversion.
  * These functions are used across multiple components to ensure consistency
  * and avoid code duplication.
+ *
+ * Security: All functions include input sanitization to prevent injection attacks.
  */
+import { sanitizeString, sanitizeNumber } from './sanitization';
 
 /**
  * Converts a value (string, number, or undefined) into a number.
@@ -15,12 +18,17 @@
  */
 export const toNumber = (value: string | number | undefined): number => {
     if (value === undefined) return 0;
+
+    // Sanitize input before processing
+    const sanitizedValue = sanitizeString(value);
+    if (!sanitizedValue) return 0;
+
     if (typeof value === 'string') {
         // Remove currency symbols and parse as float
-        const cleaned = value.replace(/[$,]/g, '');
-        return parseFloat(cleaned) || 0;
+        const cleaned = sanitizedValue.replace(/[$,]/g, '');
+        return sanitizeNumber(parseFloat(cleaned));
     }
-    return value;
+    return sanitizeNumber(value);
 };
 
 /**
@@ -31,7 +39,8 @@ export const toNumber = (value: string | number | undefined): number => {
  */
 export const formatAmount = (amount: string | number | undefined): string => {
     const numAmount = toNumber(amount);
-    return `$${numAmount.toLocaleString()}`;
+    const formatted = numAmount.toLocaleString();
+    return `$${sanitizeString(formatted)}`;
 };
 
 /**
@@ -48,8 +57,17 @@ export const formatCurrency = (
     locale: string = 'en-US'
 ): string => {
     const numAmount = toNumber(amount);
-    return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: currency,
-    }).format(numAmount);
+    const sanitizedCurrency = sanitizeString(currency);
+    const sanitizedLocale = sanitizeString(locale);
+
+    try {
+        const formatted = new Intl.NumberFormat(sanitizedLocale, {
+            style: 'currency',
+            currency: sanitizedCurrency,
+        }).format(numAmount);
+        return sanitizeString(formatted);
+    } catch (error) {
+        // Fallback to basic formatting if Intl fails
+        return `$${numAmount.toLocaleString()}`;
+    }
 };
