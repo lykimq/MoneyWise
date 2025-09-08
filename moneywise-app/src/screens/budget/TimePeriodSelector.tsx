@@ -61,7 +61,7 @@ export const TimePeriodSelector: React.FC<TimePeriodSelectorProps> = ({
                         <ActivityIndicator
                             size="small"
                             color="#FFFFFF"
-                            style={{ marginLeft: 8 }}  // Space between text and spinner
+                            style={styles.spinnerContainer}
                         />
                     )}
                 </TouchableOpacity>
@@ -127,5 +127,11 @@ const styles = StyleSheet.create({
     periodButtonTextActive: {
         color: colors.text.inverse,        // White text on blue background
         fontWeight: 'bold',      // Bold weight for emphasis
+    },
+
+    // SPINNER CONTAINER - Container for loading indicator
+    // Provides proper spacing between text and spinner
+    spinnerContainer: {
+        marginLeft: 8,           // Space between text and spinner
     },
 });

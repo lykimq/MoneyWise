@@ -44,7 +44,8 @@ const HomeScreen: React.FC = () => {
      * Primary action for adding transactions
      */
     const handleAddTransaction = () => {
-        console.log('Navigate to Add Transaction screen');
+        // TODO: Implement navigation to Add Transaction screen
+        // This is a placeholder - needs proper navigation implementation
         // navigation.navigate('AddTransaction');
     };
 
@@ -61,6 +62,7 @@ const HomeScreen: React.FC = () => {
                     spent={overviewLoading ? undefined : (overview?.spent || 0)}
                     remaining={overviewLoading ? undefined : (overview?.remaining || 0)}
                     savings={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
+                    // This is hardcoded data - backend needs to provide savings information
                     loading={overviewLoading}
                     period="This Month"
                 />
@@ -264,6 +266,7 @@ const RecentTransactionsSection: React.FC = () => (
     <View style={styles.section}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
         <View style={styles.transactionList}>
+            {/* TODO: Replace with actual transaction data from API */}
             <TransactionItem
                 iconName="restaurant-outline"
                 iconColor={colors.spending}
@@ -326,6 +329,7 @@ const UpcomingBillsSection: React.FC = () => (
     <View style={styles.section}>
         <Text style={styles.sectionTitle}>Upcoming Bills</Text>
         <View style={styles.billsList}>
+            {/* TODO: Replace with actual bills data from API */}
             <BillItem iconName="phone-portrait-outline" text="Phone Bill - $85 due in 3 days" />
             <BillItem iconName="flash-outline" text="Electricity - $120 due in 5 days" />
         </View>

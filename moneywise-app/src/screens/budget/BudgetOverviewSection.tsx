@@ -111,7 +111,7 @@ const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
                 </View>
                 {/* Progress Text - Shows the percentage of budget spent or a "No budget planned" message. */}
                 <Text style={mainCardStyles.progressText}>
-                    {spentPercentage > 0 ? `${Math.round(spentPercentage)}% spent` : 'No budget planned'} {/* TODO: Add more detailed budget progress text */}
+                    {spentPercentage > 0 ? `${Math.round(spentPercentage)}% spent` : 'No budget planned'} {/* TODO: Add more detailed budget progress text with warnings at 80%, danger at 95% */}
                 </Text>
             </View>
         </View>
@@ -173,7 +173,7 @@ const SpentCard: React.FC<SpentCardProps> = ({
                 // Text color changes to 'spending' (red) if over budget, otherwise 'spent' (blue).
                 { color: isOverBudget ? colors.spending : colors.savings }
             ]}>
-                {isOverBudget ? 'Over Budget' : 'On Track'} {/* TODO: Add more sophisticated budget health logic (e.g., warning at 80%, danger at 95%) */}
+                {isOverBudget ? 'Over Budget' : 'On Track'} {/* TODO: Add more sophisticated budget health logic with color coding: warning at 80%, danger at 95% */}
             </Text>
         </View>
     </View>
@@ -238,7 +238,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
                     ]}
                 />
             </View>
-            {/* TODO: Add remaining budget percentage text (e.g., "20% left") */}
+            {/* TODO: Add remaining budget percentage text (e.g., "20% left") and progress indicators */}
         </View>
     </View>
 );

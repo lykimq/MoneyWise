@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CategoryBudgetApi } from '../../services/api';
 import { colors, spacing, sectionStyles, categoryCardStyles, progressBarStyles, standardCardStyles } from '../../styles';
+import { sanitizeString, sanitizeNumber } from '../../utils/sanitization';
 
 /**
  * Props for the CategoryBudgetsSection component
@@ -69,7 +70,7 @@ const CategoryBudgetCardHeader: React.FC<CategoryBudgetCardHeaderProps> = ({
         <View style={categoryCardStyles.categoryInfo}>
             {/* CATEGORY NAME - Primary category identifier */}
             <Text style={categoryCardStyles.categoryName}>
-                {category.category_name}
+                {sanitizeString(category.category_name)}
             </Text>
 
             {/* AMOUNT COMPARISON - Shows spent vs planned amounts */}
@@ -178,11 +179,11 @@ export const CategoryBudgetsSection: React.FC<CategoryBudgetsSectionProps> = ({
  * @param iconName - Icon name to display for this category
  */
 const CategoryBudgetCard: React.FC<CategoryBudgetCardProps> = ({ category, iconName }) => {
-    // BUDGET CALCULATIONS - Convert string amounts to numbers for calculations
-    const spentAmount = Number(category.spent);
-    const plannedAmount = Number(category.planned);
-    const remainingAmount = Number(category.remaining);
-    const progressPercentage = Number(category.percentage);
+    // BUDGET CALCULATIONS - Convert string amounts to numbers for calculations with sanitization
+    const spentAmount = sanitizeNumber(category.spent);
+    const plannedAmount = sanitizeNumber(category.planned);
+    const remainingAmount = sanitizeNumber(category.remaining);
+    const progressPercentage = sanitizeNumber(category.percentage);
 
     // BUDGET STATUS LOGIC - Determines if category is over budget and appropriate colors
     const isOverBudget = remainingAmount < 0;
