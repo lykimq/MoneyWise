@@ -1,64 +1,61 @@
 /**
  * Input Sanitization Utilities
  *
- * Provides secure input sanitization functions to prevent XSS attacks
- * and ensure safe string interpolation throughout the application.
+ * Provides secure input sanitization functions to prevent XSS attacks and
+ * ensure safe string interpolation throughout the application.
  */
 
 /**
- * Sanitizes a string by removing potentially dangerous characters
- * @param input - The string to sanitize
- * @returns A sanitized string safe for display
+ * Sanitizes a string by removing potentially dangerous characters.
+ * @param input - The string to sanitize.
+ * @returns A sanitized string safe for display in UI components.
  */
 export const sanitizeString = (input: string | number | undefined | null): string => {
     if (input === null || input === undefined) return '';
 
     const str = String(input);
 
-    // Remove potentially dangerous characters
+    // Removes potentially dangerous characters to prevent injection attacks.
     return str
-        .replace(/[<>]/g, '') // Remove < and > to prevent HTML injection
-        .replace(/javascript:/gi, '') // Remove javascript: protocol
-        .replace(/on\w+=/gi, '') // Remove event handlers like onclick=
-        .replace(/script/gi, '') // Remove script tags
-        .replace(/iframe/gi, '') // Remove iframe tags
+        .replace(/[<>]/g, '')         // Removes < and > to prevent HTML injection.
+        .replace(/javascript:/gi, '') // Removes 'javascript:' protocol.
+        .replace(/on\w+=/gi, '')      // Removes event handlers like 'onclick='.
+        .replace(/script/gi, '')      // Removes 'script' tags.
+        .replace(/iframe/gi, '')      // Removes 'iframe' tags.
         .trim();
 };
 
 /**
- * Sanitizes a string for use in URLs or API endpoints
- * @param input - The string to sanitize
- * @returns A sanitized string safe for URL usage
+ * Sanitizes a string for safe use in URLs or API endpoints.
+ * @param input - The string to sanitize.
+ * @returns A sanitized string safe for URL usage.
  */
 export const sanitizeForUrl = (input: string | number | undefined | null): string => {
     if (input === null || input === undefined) return '';
 
     const str = String(input);
 
-    // Remove dangerous characters and encode special characters
+    // Removes dangerous characters and encodes special characters for URLs.
     return str
-        .replace(/[^a-zA-Z0-9\-_/?=&]/g, '') // Keep alphanumeric, hyphens, underscores, slashes, question marks, equals, and ampersands
-        .replace(/\.\./g, '') // Remove path traversal attempts
-        .replace(/\/+/g, '/') // Collapse multiple slashes
+        // Keeps alphanumeric, hyphens, underscores, slashes, question marks,
+        // equals, and ampersands.
+        .replace(/[^a-zA-Z0-9\-_/?=&]/g, '')
+        .replace(/\.\./g, '') // Removes path traversal attempts (e.g., '..').
+        .replace(/\/+/g, '/') // Collapses multiple slashes into a single slash.
         .trim();
 };
 
 /**
- * Sanitizes a string for display in UI components
- * @param input - The string to sanitize
- * @returns A sanitized string safe for UI display
- */
-/**
- * Sanitizes a number for safe mathematical operations
- * @param input - The input to sanitize
- * @returns A safe number or 0 if invalid
+ * Sanitizes a number for safe mathematical operations.
+ * @param input - The input to sanitize (string, number, undefined, or null).
+ * @returns A safe number, or 0 if the input is invalid or out of range.
  */
 export const sanitizeNumber = (input: string | number | undefined | null): number => {
     if (input === null || input === undefined) return 0;
 
     const num = typeof input === 'number' ? input : parseFloat(String(input));
 
-    // Check for valid number and reasonable range
+    // Checks for a valid number and a reasonable range to prevent issues.
     if (isNaN(num) || !isFinite(num)) return 0;
     if (Math.abs(num) > Number.MAX_SAFE_INTEGER) return 0;
 
@@ -66,9 +63,11 @@ export const sanitizeNumber = (input: string | number | undefined | null): numbe
 };
 
 /**
- * Sanitizes an object for safe JSON serialization
- * @param input - The object to sanitize
- * @returns A sanitized object safe for JSON operations
+ * Recursively sanitizes an object for safe JSON serialization and display.
+ * This function applies `sanitizeString` to string values and keys, and
+ * `sanitizeNumber` to number values.
+ * @param input - The object to sanitize.
+ * @returns A sanitized object safe for JSON operations.
  */
 export const sanitizeObject = (input: any): any => {
     if (input === null || input === undefined) return null;

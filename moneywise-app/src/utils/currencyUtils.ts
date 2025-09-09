@@ -5,7 +5,8 @@
  * These functions are used across multiple components to ensure consistency
  * and avoid code duplication.
  *
- * Security: All functions include input sanitization to prevent injection attacks.
+ * Security: All functions include input sanitization to prevent injection
+ * attacks.
  */
 import { sanitizeString, sanitizeNumber } from './sanitization';
 
@@ -13,18 +14,18 @@ import { sanitizeString, sanitizeNumber } from './sanitization';
  * Converts a value (string, number, or undefined) into a number.
  * Handles currency symbols and commas in strings.
  *
- * @param value - The input value to convert
- * @returns The converted number, or 0 if conversion fails or value is undefined
+ * @param value - The input value to convert.
+ * @returns The converted number, or 0 if conversion fails or value is undefined.
  */
 export const toNumber = (value: string | number | undefined): number => {
     if (value === undefined) return 0;
 
-    // Sanitize input before processing
+    // Sanitizes input before processing.
     const sanitizedValue = sanitizeString(value);
     if (!sanitizedValue) return 0;
 
     if (typeof value === 'string') {
-        // Remove currency symbols and parse as float
+        // Removes currency symbols and parses as a float.
         const cleaned = sanitizedValue.replace(/[$,]/g, '');
         return sanitizeNumber(parseFloat(cleaned));
     }
@@ -34,8 +35,8 @@ export const toNumber = (value: string | number | undefined): number => {
 /**
  * Formats a numerical amount into a currency string (e.g., "$1,234.56").
  *
- * @param amount - The amount to format
- * @returns The formatted currency string
+ * @param amount - The amount to format.
+ * @returns The formatted currency string.
  */
 export const formatAmount = (amount: string | number | undefined): string => {
     const numAmount = toNumber(amount);
@@ -46,10 +47,10 @@ export const formatAmount = (amount: string | number | undefined): string => {
 /**
  * Formats currency with proper locale support and currency symbol.
  *
- * @param amount - The amount to format
- * @param currency - The currency code (default: 'USD')
- * @param locale - The locale for formatting (default: 'en-US')
- * @returns The formatted currency string with proper locale formatting
+ * @param amount - The amount to format.
+ * @param currency - The currency code (default: 'USD').
+ * @param locale - The locale for formatting (default: 'en-US').
+ * @returns The formatted currency string with proper locale formatting.
  */
 export const formatCurrency = (
     amount: string | number | undefined,
@@ -67,7 +68,8 @@ export const formatCurrency = (
         }).format(numAmount);
         return sanitizeString(formatted);
     } catch (error) {
-        // Fallback to basic formatting if Intl fails
+        // Fallback to basic formatting if Intl fails.
+        // TODO: Log the error for better debugging in production.
         return `$${numAmount.toLocaleString()}`;
     }
 };
