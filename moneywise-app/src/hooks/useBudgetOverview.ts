@@ -6,28 +6,30 @@ import { useQueryParams, computeOverviewDataValues } from './utils';
 import type { UseBudgetOverviewReturn, BaseQueryParams } from './types';
 
 /**
- * 🏠 useBudgetOverview - Dashboard Summary Hook
+ * `useBudgetOverview` - Dashboard Summary Hook
  *
- * PURPOSE: Provides lightweight budget summary data for the HomeScreen dashboard.
- * Returns only essential overview metrics (planned, spent, remaining) without
- * heavy category breakdowns or insights.
+ * PURPOSE: Provides lightweight budget summary data specifically for the
+ * HomeScreen dashboard. It returns only essential overview metrics (planned,
+ * spent, remaining) without including heavy category breakdowns or insights.
  *
- * USED BY: HomeScreen component for dashboard cards and summary widgets
- * API ENDPOINT: GET /api/budgets/overview (lightweight response ~200 bytes)
+ * USED BY: The `HomeScreen` component for dashboard cards and summary widgets.
+ * API ENDPOINT: `GET /api/budgets/overview` (designed for a lightweight
+ * response, typically around 200 bytes).
  *
- * DESIGN DECISION: Separate from useBudgetData to optimize performance.
- * HomeScreen doesn't need category details, so we avoid fetching unnecessary data.
+ * DESIGN DECISION: This hook is separated from `useBudgetData` to optimize
+ * performance. The `HomeScreen` does not require detailed category information,
+ * thus avoiding the fetching of unnecessary data.
  */
 export const useBudgetOverview = (
     month?: string,
     year?: string,
     currency?: string
 ): UseBudgetOverviewReturn => {
-    // Build base parameters
+    // Constructs base parameters for the API request.
     const baseParams: BaseQueryParams = { month, year, currency };
     const queryParams = useQueryParams(baseParams);
 
-    // Fetch overview data using centralized query configuration
+    // Fetches overview data using a centralized query configuration.
     const {
         data: overview,
         isLoading,
@@ -42,7 +44,8 @@ export const useBudgetOverview = (
         enabled: Boolean(queryParams.month && queryParams.year),
     });
 
-    // Memoized computed values using extracted function
+    // Memoizes computed values using an extracted utility function to prevent
+    // unnecessary recalculations.
     const computedValues = useMemo(() =>
         computeOverviewDataValues(overview),
         [overview]

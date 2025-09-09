@@ -10,28 +10,32 @@ import type {
 } from './types';
 
 /**
- * 📊 useBudgetData - Complete Budget Management Hook
+ * `useBudgetData` - Complete Budget Management Hook
  *
- * PURPOSE: Provides comprehensive budget data for the BudgetsScreen where users
- * manage their detailed budget planning. Includes overview totals, category-by-category
- * breakdowns with progress tracking, and AI-generated insights.
+ * PURPOSE: Provides comprehensive budget data for the `BudgetsScreen` where
+ * users manage their detailed budget planning. This includes overview totals,
+ * category-by-category breakdowns with progress tracking, and AI-generated
+ * insights.
  *
- * USED BY: BudgetsScreen component for detailed budget management interface
- * API ENDPOINT: GET /api/budgets (comprehensive response ~2-5KB with all data)
+ * USED BY: The `BudgetsScreen` component for its detailed budget management
+ * interface.
+ * API ENDPOINT: `GET /api/budgets` (provides a comprehensive response,
+ * typically 2-5KB, with all necessary data).
  *
  * INCLUDES:
- * - Budget overview (planned, spent, remaining totals)
- * - Category breakdowns (each category's budget vs actual spending)
- * - Progress indicators (percentage spent per category)
- * - AI insights and recommendations
- * - Time period filtering (Monthly/Yearly views)
+ * - Budget overview (planned, spent, remaining totals).
+ * - Category breakdowns (each category's budget versus actual spending).
+ * - Progress indicators (percentage spent per category).
+ * - AI insights and recommendations.
+ * - Time period filtering (Monthly/Yearly views).
  *
- * DESIGN DECISION: Separate from useBudgetOverview because BudgetsScreen needs
- * full dataset while HomeScreen only needs summary. This prevents over-fetching
- * on the dashboard while providing complete data for budget management.
+ * DESIGN DECISION: This hook is separated from `useBudgetOverview` because
+ * `BudgetsScreen` requires a full dataset, whereas `HomeScreen` only needs
+ * a summary. This prevents over-fetching on the dashboard while providing
+ * complete data for budget management.
  */
 
-// Re-export types for backward compatibility
+// Re-exports types for backward compatibility and easier access.
 export type { BudgetTimePeriod, BudgetQueryParams, UseBudgetDataReturn };
 
 export const useBudgetData = (
@@ -40,7 +44,7 @@ export const useBudgetData = (
     year?: string,
     currency?: string
 ): UseBudgetDataReturn => {
-    // Build query parameters
+    // Constructs query parameters based on the provided arguments.
     const queryParams: BudgetQueryParams = {
         timePeriod,
         month,
@@ -48,10 +52,11 @@ export const useBudgetData = (
         currency,
     };
 
-    // Convert hook params to API format based on time period
+    // Converts hook parameters to the API-compatible format based on the
+    // selected time period.
     const apiParams = useApiParams(queryParams);
 
-    // Fetch comprehensive budget data using centralized query configuration
+    // Fetches comprehensive budget data using a centralized query configuration.
     const {
         data: budgetData,
         isLoading,
@@ -63,34 +68,35 @@ export const useBudgetData = (
     } = useQuery({
         queryKey: queryKeys.budgets.data(queryParams),
         queryFn: () => apiService.getBudgets(apiParams),
-        enabled: Boolean(timePeriod),
+        enabled: Boolean(timePeriod), // Ensures query only runs when timePeriod is defined.
     });
 
-    // Memoized computed values using extracted function
+    // Memoizes computed values using an extracted utility function to prevent
+    // unnecessary recalculations.
     const computedValues = useMemo(() =>
         computeBudgetDataValues(budgetData),
         [budgetData]
     );
 
     return {
-        // Core data
+        // Core budget data.
         budgetData,
 
-        // Loading states
+        // Loading states for data fetching.
         loading: isLoading,
         isFetching,
 
-        // Error handling
+        // Error handling.
         error,
 
-        // Data freshness
+        // Data freshness indicators.
         isStale,
         dataUpdatedAt,
 
-        // Actions
+        // Actions for data management.
         refetch,
 
-        // Computed values
+        // Computed values (e.g., hasData, isEmpty).
         ...computedValues,
     };
 };

@@ -1,8 +1,9 @@
 /**
- * 🛠️ Shared Utilities for Budget Hooks
+ * Shared Utilities for Budget Hooks
  *
- * Common utilities and helper functions used across all budget hooks.
- * This eliminates code duplication and ensures consistent behavior.
+ * This file contains common utilities and helper functions used across all
+ * budget-related hooks. This approach eliminates code duplication and ensures
+ * consistent behavior throughout the application.
  */
 
 import { useMemo } from 'react';
@@ -10,18 +11,19 @@ import { buildDateParams } from '../utils/dateUtils';
 import type { BaseQueryParams, BudgetQueryParams, BudgetTimePeriod } from './types';
 
 /**
- * Default currency for the application
- * TODO: Make this configurable via user settings or global app config
- * This should be moved to a user preferences system
+ * Default currency for the application.
+ * TODO: Make this configurable via user settings or a global app configuration.
+ * This value should ideally be managed by a user preferences system.
  */
 const DEFAULT_CURRENCY = 'USD';
 
 /**
- * Build standardized query parameters with proper defaults
- * Internal function used by useQueryParams hook
+ * Constructs standardized query parameters with appropriate default values.
+ * This is an internal function used by the `useQueryParams` hook.
  *
- * @param params - Base query parameters
- * @returns Normalized parameters with defaults applied
+ * @param params - The base query parameters provided.
+ * @returns Normalized parameters with defaults applied for month, year, and
+ *          currency.
  */
 const buildQueryParams = (params: BaseQueryParams): Required<BaseQueryParams> => {
     const dateParams = buildDateParams(params.month, params.year);
@@ -34,22 +36,23 @@ const buildQueryParams = (params: BaseQueryParams): Required<BaseQueryParams> =>
 };
 
 /**
- * Convert budget query parameters to API format based on time period
- * Internal function used by useApiParams hook
+ * Converts budget query parameters into an API-compatible format based on the
+ * selected time period. This is an internal function used by `useApiParams`.
  *
- * @param params - Budget query parameters including time period
- * @returns API parameters formatted for the specific time period
+ * @param params - Budget query parameters, including the time period.
+ * @returns API parameters formatted for the specific time period (monthly or
+ *          yearly aggregation).
  */
 const buildApiParams = (params: BudgetQueryParams) => {
     const dateParams = buildDateParams(params.month, params.year);
     const apiParams: { month?: string; year?: string; currency?: string } = {};
 
-    // Monthly view: send both month and year for specific month data
+    // For monthly view, both month and year are sent for specific month data.
     if (params.timePeriod === 'Monthly') {
         apiParams.month = dateParams.month;
         apiParams.year = dateParams.year;
     }
-    // Yearly view: send only year for annual aggregation
+    // For yearly view, only the year is sent for annual aggregation.
     else if (params.timePeriod === 'Yearly') {
         apiParams.year = dateParams.year;
     }
@@ -62,22 +65,22 @@ const buildApiParams = (params: BudgetQueryParams) => {
 };
 
 /**
- * Memoized hook for building query parameters
- * Prevents unnecessary recalculations on every render
+ * A memoized hook for constructing query parameters.
+ * This prevents unnecessary recalculations on every render, optimizing performance.
  *
- * @param params - Base query parameters
- * @returns Memoized query parameters
+ * @param params - The base query parameters.
+ * @returns Memoized query parameters.
  */
 export const useQueryParams = (params: BaseQueryParams) => {
     return useMemo(() => buildQueryParams(params), [params.month, params.year, params.currency]);
 };
 
 /**
- * Memoized hook for building API parameters
- * Prevents unnecessary recalculations on every render
+ * A memoized hook for constructing API parameters.
+ * This prevents unnecessary recalculations on every render, optimizing performance.
  *
- * @param params - Budget query parameters
- * @returns Memoized API parameters
+ * @param params - The budget query parameters.
+ * @returns Memoized API parameters.
  */
 export const useApiParams = (params: BudgetQueryParams) => {
     return useMemo(() => buildApiParams(params), [
@@ -89,11 +92,12 @@ export const useApiParams = (params: BudgetQueryParams) => {
 };
 
 /**
- * Check if data is empty based on different data structures
+ * Checks if the provided data is considered empty based on its structure type.
  *
- * @param data - The data to check
- * @param type - Type of data structure
- * @returns True if data is considered empty
+ * @param data - The data object to check.
+ * @param type - The type of data structure ('budget', 'overview', or
+ *               'categories').
+ * @returns True if the data is considered empty, false otherwise.
  */
 export const isDataEmpty = (data: any, type: 'budget' | 'overview' | 'categories'): boolean => {
     if (!data) return true;
@@ -111,20 +115,21 @@ export const isDataEmpty = (data: any, type: 'budget' | 'overview' | 'categories
 };
 
 /**
- * Filter categories with spending data
+ * Filters an array of categories, returning only those with spending data
+ * greater than zero.
  *
- * @param categories - Array of category budget data
- * @returns Filtered categories with spending > 0
+ * @param categories - An array of category budget data.
+ * @returns Filtered categories where `spent` amount is greater than 0.
  */
 export const filterCategoriesWithSpending = (categories: any[] = []) => {
     return categories.filter(cat => parseFloat(cat.spent || '0') > 0);
 };
 
 /**
- * Build budget query parameters for comprehensive data queries
+ * Constructs budget query parameters for comprehensive data queries.
  *
- * @param queryParams - Base query parameters
- * @returns Budget query parameters with time period
+ * @param queryParams - The base query parameters.
+ * @returns Budget query parameters including a default time period.
  */
 export const buildBudgetQueryParams = (queryParams: Required<BaseQueryParams>) => {
     return {
@@ -136,12 +141,12 @@ export const buildBudgetQueryParams = (queryParams: Required<BaseQueryParams>) =
 };
 
 /**
- * Compute common data validation values (hasData, isEmpty)
- * Helper function to eliminate duplicate logic
+ * Computes common data validation values (`hasData`, `isEmpty`).
+ * This helper function eliminates duplicate logic across different hooks.
  *
- * @param data - The data to validate
- * @param type - Type of data structure for empty check
- * @returns Object with hasData and isEmpty flags
+ * @param data - The data object to validate.
+ * @param type - The type of data structure for the empty check.
+ * @returns An object containing `hasData` and `isEmpty` flags.
  */
 const computeDataValidation = (data: any, type: 'budget' | 'overview' | 'categories') => {
     const hasData = Boolean(data);
@@ -151,30 +156,32 @@ const computeDataValidation = (data: any, type: 'budget' | 'overview' | 'categor
 };
 
 /**
- * Compute budget data values (hasData, isEmpty)
+ * Computes data validation values (`hasData`, `isEmpty`) for budget data.
  *
- * @param budgetData - Budget response data
- * @returns Computed values for budget data
+ * @param budgetData - The budget response data.
+ * @returns Computed validation flags for budget data.
  */
 export const computeBudgetDataValues = (budgetData: any) => {
     return computeDataValidation(budgetData, 'budget');
 };
 
 /**
- * Compute overview data values (hasData, isEmpty)
+ * Computes data validation values (`hasData`, `isEmpty`) for overview data.
  *
- * @param overview - Overview data
- * @returns Computed values for overview data
+ * @param overview - The overview data.
+ * @returns Computed validation flags for overview data.
  */
 export const computeOverviewDataValues = (overview: any) => {
     return computeDataValidation(overview, 'overview');
 };
 
 /**
- * Compute category spending values (categories, hasData, isEmpty)
+ * Computes category spending values, including filtered categories and
+ * validation flags.
  *
- * @param budgetData - Budget response data
- * @returns Computed values for category spending
+ * @param budgetData - The budget response data.
+ * @returns An object containing filtered categories, `hasData`, and `isEmpty`
+ *          flags for category spending.
  */
 export const computeCategorySpendingValues = (budgetData: any) => {
     const categories = filterCategoriesWithSpending(budgetData?.categories);
