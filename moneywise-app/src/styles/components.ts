@@ -19,5 +19,11 @@
  * - standardCardStyles.container → Consistent container spacing
  */
 
+/**
+ * @description Re-exports all component styles from the `components/index.ts`
+ * file. This acts as a central point for importing all component-related
+ * styles into other parts of the application.
+ * @usedIn `moneywise-app/src/styles/index.ts`
+ */
 // Re-export all component styles from the organized folder structure
 export * from './components/index';

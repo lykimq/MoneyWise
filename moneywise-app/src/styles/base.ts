@@ -9,8 +9,11 @@ import { ViewStyle, TextStyle } from 'react-native';
 import { colors, spacing, borderRadius, shadows } from './theme';
 
 /**
- * Base card style with common properties like background, border radius, padding, and shadow.
- * This is the foundation for all card components in the app.
+ * @description Base card style with common properties like background,
+ * border radius, padding, and shadow. This is the foundation for all card
+ * components in the app.
+ * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`,
+ * `moneywise-app/src/components/cards.ts`
  */
 export const cardBase: ViewStyle = {
     backgroundColor: colors.background.secondary,
@@ -20,7 +23,9 @@ export const cardBase: ViewStyle = {
 };
 
 /**
- * Base style for horizontal header rows, ensuring consistent alignment of items within headers.
+ * @description Base style for horizontal header rows, ensuring consistent
+ * alignment of items within headers.
+ * @usedIn `moneywise-app/src/components/layout.ts` (e.g., `headerRow` style)
  */
 export const headerRowBase: ViewStyle = {
     flexDirection: 'row',
@@ -28,7 +33,10 @@ export const headerRowBase: ViewStyle = {
 };
 
 /**
- * Base style for progress bars, defining common properties like width, border radius, and overflow behavior.
+ * @description Base style for progress bars, defining common properties like
+ * width, border radius, and overflow behavior.
+ * @usedIn `moneywise-app/src/components/progress.ts`
+ * (e.g., `progressBarContainer` style)
  */
 export const progressBarBase: ViewStyle = {
     width: '100%',
@@ -37,7 +45,10 @@ export const progressBarBase: ViewStyle = {
 };
 
 /**
- * Base style for buttons with consistent padding and border radius.
+ * @description Base style for buttons with consistent padding and border
+ * radius.
+ * @usedIn `moneywise-app/src/styles/components/buttons.ts`
+ * (e.g., `primaryButton`, `secondaryButton`)
  */
 export const buttonBase: ViewStyle = {
     paddingHorizontal: spacing['2xl'],

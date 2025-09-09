@@ -17,13 +17,19 @@ import { cardBase } from '../base';
 // ============================================================================
 
 /**
- * Creates a card style with customizable elevation and padding
+ * @description Creates a card style with customizable elevation (shadow depth)
+ * and padding. This function composes `cardBase` with dynamic shadow and
+ * padding values from the theme.
+ * @param elevation - Shadow depth: 'sm' (subtle), 'md' (standard),
+ * 'xl' (prominent). Defaults to 'md'.
+ * @param padding - Internal spacing: 'sm', 'md', 'lg', 'xl', '2xl'.
+ * Defaults to 'lg'.
+ * @returns A complete `ViewStyle` object for a card.
+ * @usedIn `moneywise-app/src/styles/components/cards.ts` (e.g.,
+ * `mainCardStyles.card`, `secondaryCardStyles.card`)
  *
- * @param elevation - Shadow depth: 'sm' (subtle), 'md' (standard), 'xl' (prominent)
- * @param padding - Internal spacing: 'sm', 'md', 'lg', 'xl', '2xl'
- * @returns Complete card style with background, border radius, padding, and shadow
- *
- * Example: createCardStyle('xl', '2xl') → Large card with prominent shadow
+ * Example: `createCardStyle('xl', '2xl')` → Large card with prominent shadow
+ * and extra-large padding.
  */
 export const createCardStyle = (
     elevation: 'sm' | 'md' | 'xl' = 'md',
@@ -35,14 +41,21 @@ export const createCardStyle = (
 });
 
 /**
- * Creates a text style with consistent typography from theme
+ * @description Creates a text style with consistent typography (size, weight,
+ * color) from the theme. This utility ensures all text elements adhere to the
+ * defined design system.
+ * @param size - Text size from typography scale: 'sm', 'lg', 'xl', '2xl',
+ * '3xl', '4xl'.
+ * @param weight - Font weight: 'semibold', 'bold'. Defaults to 'semibold'.
+ * @param color - Text color. Defaults to `colors.text.primary`.
+ * @returns A `TextStyle` object with consistent sizing and theming.
+ * @usedIn `moneywise-app/src/styles/components/buttons.ts`,
+ * `moneywise-app/src/styles/components/cards.ts`,
+ * `moneywise-app/src/styles/components/layout.ts`,
+ * `moneywise-app/src/styles/components/progress.ts`
  *
- * @param size - Text size from typography scale: 'sm', 'lg', 'xl', '2xl', '3xl', '4xl'
- * @param weight - Font weight: 'semibold', 'bold'
- * @param color - Text color (defaults to primary text color)
- * @returns Typography style with consistent sizing and theming
- *
- * Example: createTextStyle('3xl', 'bold', colors.primary) → Large bold primary text
+ * Example: `createTextStyle('3xl', 'bold', colors.primary)` → Large, bold text
+ * in the primary brand color.
  */
 export const createTextStyle = (
     size: keyof typeof typography.sizes,
@@ -55,18 +68,21 @@ export const createTextStyle = (
 });
 
 /**
- * Creates a horizontal flex layout with consistent gap spacing
+ * @description Creates a horizontal flex layout style with consistent gap
+ * spacing between items. This utility simplifies the creation of row-based
+ * layouts.
+ * @param gap - Spacing between items: 'xs', 'sm', 'md', 'lg', 'xl', '2xl'.
+ * Defaults to 'md'.
+ * @returns A `ViewStyle` object for a row layout with center alignment and
+ * specified gap.
+ * @usedIn `moneywise-app/src/styles/components/cards.ts` (e.g.,
+ * `mainCardStyles.header`, `secondaryCardStyles.header`)
  *
- * @param gap - Spacing between items: 'xs', 'sm', 'md', 'lg', 'xl', '2xl'
- * @returns Row layout with center alignment and specified gap
- *
- * Example: createRowStyle('lg') → Row with large gaps between items
+ * Example: `createRowStyle('lg')` → A horizontal row with large gaps between
+ * its child elements.
  */
 export const createRowStyle = (gap: keyof typeof spacing = 'md'): ViewStyle => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[gap],
 });
-
-// TODO: Implement createContainerStyle when needed for specific layouts
-// This function was created but never used - keeping for future use

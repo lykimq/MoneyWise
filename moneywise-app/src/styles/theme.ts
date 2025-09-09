@@ -6,8 +6,11 @@
  */
 
 /**
- * Primary color palette for the MoneyWise application.
- * These colors are used consistently across all components and screens.
+ * @description Primary color palette for the MoneyWise application.
+ * These colors are used consistently across all components and screens to
+ * maintain brand identity and semantic meaning.
+ * @usedIn Various components and style files across `moneywise-app/src/styles`
+ * and `moneywise-app/src/screens`
  */
 export const colors = {
     // Primary brand colors
@@ -41,7 +44,9 @@ export const colors = {
 } as const;
 
 /**
- * Typography scale for consistent text sizing across the app.
+ * @description Typography scale for consistent text sizing and weights across
+ * the app. Ensures a harmonious visual hierarchy for all textual content.
+ * @usedIn Various components and style files for text styling.
  */
 export const typography = {
     sizes: {
@@ -59,7 +64,9 @@ export const typography = {
 } as const;
 
 /**
- * Spacing scale for consistent spacing throughout the app.
+ * @description Spacing scale for consistent margins, paddings, and gaps
+ * throughout the app. Helps maintain a clean and organized layout.
+ * @usedIn Various components and style files for layout and spacing.
  */
 export const spacing = {
     xs: 4,
@@ -76,7 +83,9 @@ export const spacing = {
 } as const;
 
 /**
- * Border radius values for consistent rounded corners.
+ * @description Border radius values for consistent rounded corners on UI
+ * elements.
+ * @usedIn Various components and style files for rounded borders.
  */
 export const borderRadius = {
     sm: 4,
@@ -87,7 +96,10 @@ export const borderRadius = {
 } as const;
 
 /**
- * Shadow configurations for consistent elevation.
+ * @description Shadow configurations for consistent elevation and depth
+ * effects.
+ * @usedIn Various components and style files (e.g., `cardBase` in `base.ts`,
+ * `homeScreenStyles.fab`)
  */
 export const shadows = {
     sm: {
@@ -112,4 +124,3 @@ export const shadows = {
         elevation: 10,
     },
 } as const;
-

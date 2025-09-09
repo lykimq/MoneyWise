@@ -2,7 +2,6 @@ import React from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     ScrollView,
     SafeAreaView,
     TouchableOpacity,
@@ -17,6 +16,7 @@ import FinancialDashboardCard from '../components/FinancialDashboardCard';
 import { useBudgetOverview } from '../hooks/useBudgetOverview';
 import { useCategorySpending } from '../hooks/useCategorySpending';
 import { colors } from '../styles';
+import { homeScreenStyles } from '../styles/screens/homeScreenStyles';
 
 /**
  * HomeScreen Component
@@ -50,8 +50,8 @@ const HomeScreen: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView style={styles.scrollView}>
+        <SafeAreaView style={homeScreenStyles.container}>
+            <ScrollView style={homeScreenStyles.scrollView}>
 
                 {/* SECTION 1: Financial Dashboard Card */}
                 {/*
@@ -95,7 +95,7 @@ const HomeScreen: React.FC = () => {
  * Positioned absolutely in bottom-right corner
  */
 const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
-    <TouchableOpacity style={styles.fab} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={homeScreenStyles.fab} onPress={onPress} activeOpacity={0.8}>
         <Ionicons name="add" size={24} color={colors.text.inverse} />
     </TouchableOpacity>
 );
@@ -171,23 +171,23 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
     };
 
     return (
-        <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Spending by Category</Text>
+        <View style={homeScreenStyles.section}>
+            <Text style={homeScreenStyles.sectionTitle}>Spending by Category</Text>
 
-            <View style={styles.chartContainer}>
+            <View style={homeScreenStyles.chartContainer}>
                 {loading ? (
-                    <View style={styles.chartPlaceholder}>
+                    <View style={homeScreenStyles.chartPlaceholder}>
                         <ActivityIndicator size="large" color={colors.primary} />
-                        <Text style={styles.chartPlaceholderText}>Loading spending data...</Text>
+                        <Text style={homeScreenStyles.chartPlaceholderText}>Loading spending data...</Text>
                     </View>
                 ) : isEmpty ? (
-                    <View style={styles.chartPlaceholder}>
+                    <View style={homeScreenStyles.chartPlaceholder}>
                         <Ionicons name="pie-chart-outline" size={48} color={colors.text.secondary} />
-                        <Text style={styles.chartPlaceholderText}>No spending data available</Text>
+                        <Text style={homeScreenStyles.chartPlaceholderText}>No spending data available</Text>
                     </View>
                 ) : (
                     <>
-                        <View style={styles.pieChartWrapper}>
+                        <View style={homeScreenStyles.pieChartWrapper}>
                             <PieChart
                                 data={chartData}
                                 width={chartSize + 40}
@@ -205,7 +205,7 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
                         </View>
 
                         {/* Category Legend - Grid Layout */}
-                        <View style={styles.categoryLegendGrid}>
+                        <View style={homeScreenStyles.categoryLegendGrid}>
                             {sortedCategories.map((category, index) => {
                                 const spendingPercentage = totalSpending > 0
                                     ? ((parseFloat(category.spent) / totalSpending) * 100).toFixed(1)
@@ -239,11 +239,11 @@ const CategoryLegendItem: React.FC<{
     percentage: string;
     color: string;
 }> = ({ name, amount, percentage, color }) => (
-    <View style={styles.legendItem}>
-        <View style={[styles.legendColorIndicator, { backgroundColor: color }]} />
-        <Text style={styles.legendName}>{name}</Text>
-        <Text style={styles.legendAmount}>{amount}</Text>
-        <Text style={styles.legendPercentage}>{percentage}</Text>
+    <View style={homeScreenStyles.legendItem}>
+        <View style={[homeScreenStyles.legendColorIndicator, { backgroundColor: color }]} />
+        <Text style={homeScreenStyles.legendName}>{name}</Text>
+        <Text style={homeScreenStyles.legendAmount}>{amount}</Text>
+        <Text style={homeScreenStyles.legendPercentage}>{percentage}</Text>
     </View>
 );
 
@@ -252,9 +252,9 @@ const CategoryLegendItem: React.FC<{
  * Small reusable component for category display
  */
 const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
-    <View style={styles.categoryItem}>
+    <View style={homeScreenStyles.categoryItem}>
         <Ionicons name={iconName} size={20} color={colors.primary} />
-        <Text style={styles.categoryText}>{text}</Text>
+        <Text style={homeScreenStyles.categoryText}>{text}</Text>
     </View>
 );
 
@@ -263,9 +263,9 @@ const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: s
  * Shows recent transaction history
  */
 const RecentTransactionsSection: React.FC = () => (
-    <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
-        <View style={styles.transactionList}>
+    <View style={homeScreenStyles.section}>
+        <Text style={homeScreenStyles.sectionTitle}>Recent Transactions</Text>
+        <View style={homeScreenStyles.transactionList}>
             {/* TODO: Replace with actual transaction data from API */}
             <TransactionItem
                 iconName="restaurant-outline"
@@ -307,15 +307,15 @@ const TransactionItem: React.FC<{
     amount: string;
     amountColor: string;
 }> = ({ iconName, iconColor, title, time, amount, amountColor }) => (
-    <View style={styles.transactionItem}>
-        <View style={styles.transactionIcon}>
+    <View style={homeScreenStyles.transactionItem}>
+        <View style={homeScreenStyles.transactionIcon}>
             <Ionicons name={iconName} size={24} color={iconColor} />
         </View>
-        <View style={styles.transactionDetails}>
-            <Text style={styles.transactionTitle}>{title}</Text>
-            <Text style={styles.transactionTime}>{time}</Text>
+        <View style={homeScreenStyles.transactionDetails}>
+            <Text style={homeScreenStyles.transactionTitle}>{title}</Text>
+            <Text style={homeScreenStyles.transactionTime}>{time}</Text>
         </View>
-        <Text style={[styles.transactionAmount, { color: amountColor }]}>
+        <Text style={[homeScreenStyles.transactionAmount, { color: amountColor }]}>
             {amount}
         </Text>
     </View>
@@ -326,9 +326,9 @@ const TransactionItem: React.FC<{
  * Shows upcoming bill reminders
  */
 const UpcomingBillsSection: React.FC = () => (
-    <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Upcoming Bills</Text>
-        <View style={styles.billsList}>
+    <View style={homeScreenStyles.section}>
+        <Text style={homeScreenStyles.sectionTitle}>Upcoming Bills</Text>
+        <View style={homeScreenStyles.billsList}>
             {/* TODO: Replace with actual bills data from API */}
             <BillItem iconName="phone-portrait-outline" text="Phone Bill - $85 due in 3 days" />
             <BillItem iconName="flash-outline" text="Electricity - $120 due in 5 days" />
@@ -341,260 +341,10 @@ const UpcomingBillsSection: React.FC = () => (
  * Reusable component for individual bill display
  */
 const BillItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
-    <View style={styles.billItem}>
+    <View style={homeScreenStyles.billItem}>
         <Ionicons name={iconName} size={20} color={colors.spending} />
-        <Text style={styles.billText}>{text}</Text>
+        <Text style={homeScreenStyles.billText}>{text}</Text>
     </View>
 );
-
-/**
- * REUSABLE STYLE OBJECTS
- *
- * Extract common patterns into reusable objects
- * This prevents duplication and ensures consistency
- */
-const cardShadow = {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-};
-
-// Using centralized color definitions from theme system
-
-/**
- * STYLES ORGANIZATION
- *
- * Organized by hierarchy and purpose:
- * 1. Layout styles (container, sections)
- * 2. Component-specific styles (grouped by component)
- * 3. Text styles
- * 4. Interactive element styles
- *
- * NAMING CONVENTION:
- * - Descriptive names that indicate purpose
- * - Grouped by component/section
- * - Consistent naming patterns
- */
-const styles = StyleSheet.create({
-    // === LAYOUT STYLES ===
-
-    // Main container - defines overall screen layout
-    container: {
-        flex: 1,
-        backgroundColor: colors.background.primary, // Light gray background for entire screen
-    },
-
-    // Scrollable content area
-    scrollView: {
-        flex: 1,
-    },
-
-    // Generic section container - used for each major section
-    section: {
-        paddingHorizontal: 20,      // Consistent horizontal padding
-        paddingVertical: 15,        // Vertical spacing between sections
-    },
-
-
-    // === TEXT STYLES ===
-
-    // Section headers - consistent styling for all section titles
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.text.primary,
-        marginBottom: 15,
-    },
-
-    // === FLOATING ACTION BUTTON STYLES ===
-
-    // Floating Action Button - positioned absolutely in bottom-right
-    fab: {
-        position: 'absolute',
-        bottom: 20,
-        right: 20,
-        width: 56,                 // Standard FAB size
-        height: 56,
-        borderRadius: 28,          // Perfect circle
-        backgroundColor: colors.primary, // iOS blue for primary action
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...cardShadow,             // Reuse shadow for elevation
-        zIndex: 1000,              // Ensure it stays on top
-    },
-
-    // === CATEGORY SECTION STYLES ===
-
-    // Chart container with card styling
-    chartContainer: {
-        backgroundColor: colors.background.secondary,
-        borderRadius: 12,
-        padding: 30,
-        marginBottom: 15,
-        alignItems: 'center', // Center the chart
-        ...cardShadow, // Reusable shadow style (defined below)
-    },
-
-    // Wrapper for pie chart to ensure proper centering
-    pieChartWrapper: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 10,
-        width: '100%',
-        overflow: 'visible',
-    },
-
-    // Placeholder for actual chart component
-    chartPlaceholder: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 120,
-    },
-
-    chartPlaceholderText: {
-        marginTop: 10,
-        color: colors.text.secondary,
-        fontSize: 14,
-    },
-
-    // Category legend container - Grid layout
-    categoryLegendGrid: {
-        marginTop: 20,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        gap: 12,
-    },
-
-    // Individual legend item - Grid layout
-    legendItem: {
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        backgroundColor: colors.background.tertiary,
-        borderRadius: 8,
-        minWidth: 80,
-        maxWidth: 120,
-        flex: 1,
-    },
-
-    // Color indicator for legend
-    legendColorIndicator: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        marginBottom: 6,
-    },
-
-    // Category name in legend
-    legendName: {
-        fontSize: 12,
-        color: colors.text.primary,
-        fontWeight: '500',
-        textAlign: 'center',
-        marginBottom: 2,
-    },
-
-    // Amount in legend
-    legendAmount: {
-        fontSize: 11,
-        color: colors.text.secondary,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 2,
-    },
-
-    // Percentage in legend
-    legendPercentage: {
-        fontSize: 10,
-        color: colors.primary,
-        fontWeight: '600',
-        textAlign: 'center',
-    },
-
-    // List container for categories (legacy - keeping for other components)
-    categoryList: {
-        gap: 10, // Space between category items
-    },
-
-    // Individual category item layout (legacy - keeping for other components)
-    categoryItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-    },
-
-    categoryText: {
-        fontSize: 14,
-        color: colors.text.primary,
-    },
-
-    // === TRANSACTION SECTION STYLES ===
-
-    // List container for transactions
-    transactionList: {
-        gap: 10,
-    },
-
-    // Individual transaction item with card styling
-    transactionItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.background.secondary,
-        padding: 15,
-        borderRadius: 12,
-        ...cardShadow,
-    },
-
-    transactionIcon: {
-        marginRight: 15,
-    },
-
-    transactionDetails: {
-        flex: 1, // Take remaining space
-    },
-
-    transactionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: colors.text.primary,
-    },
-
-    transactionTime: {
-        fontSize: 12,
-        color: colors.text.secondary,
-        marginTop: 2,
-    },
-
-    transactionAmount: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        // Color is set dynamically
-    },
-
-    // === BILLS SECTION STYLES ===
-
-    billsList: {
-        gap: 10,
-    },
-
-    billItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.background.secondary,
-        padding: 15,
-        borderRadius: 12,
-        gap: 10,
-        ...cardShadow,
-    },
-
-    billText: {
-        fontSize: 14,
-        color: colors.text.primary,
-    },
-});
 
 export default HomeScreen;

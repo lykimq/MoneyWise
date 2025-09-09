@@ -26,12 +26,21 @@ import { createTextStyle } from './utils';
  * Usage: <View style={sectionStyles.container}> for screen sections
  */
 export const sectionStyles = StyleSheet.create({
-    // Section container with standard padding
+    /**
+     * @description Section container style with standard horizontal and
+     * vertical padding. Provides consistent spacing for major sections on
+     * various screens.
+     * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for main sections)
+     */
     container: {
         paddingHorizontal: spacing.xl,
         paddingVertical: spacing.lg,
     },
-    // Section title with bold typography
+    /**
+     * @description Text style for section titles.
+     * Applies a large, bold typography with bottom margin for spacing.
+     * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for section headers)
+     */
     title: {
         ...createTextStyle('xl', 'bold'),
         marginBottom: spacing.lg,
@@ -54,19 +63,34 @@ export const sectionStyles = StyleSheet.create({
  * Usage: <View style={[cardStyles.card, cardVariants.spent]}> for state styling
  */
 export const cardVariants = StyleSheet.create({
-    // Spent amount styling (light blue)
+    /**
+     * @description Style for cards indicating spent amounts.
+     * Applies a light blue background and a subtle blue border.
+     * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
+     * (for "Spent" card)
+     */
     spent: {
         backgroundColor: colors.card.spent,
         borderWidth: 1,
         borderColor: colors.savings + '30',  // 30% opacity blue border
     },
-    // Remaining budget styling (light green)
+    /**
+     * @description Style for cards indicating remaining budget.
+     * Applies a light green background and a subtle teal border.
+     * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
+     * (for "Remaining" card)
+     */
     remaining: {
         backgroundColor: colors.card.remaining,
         borderWidth: 1,
         borderColor: colors.remaining + '30',  // 30% opacity teal border
     },
-    // Over budget styling (light red)
+    /**
+     * @description Style for cards indicating an over-budget state.
+     * Applies a light red background and a subtle red border.
+     * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
+     * (for "Over Budget" state)
+     */
     overBudget: {
         backgroundColor: colors.card.overBudget,
         borderWidth: 1,
