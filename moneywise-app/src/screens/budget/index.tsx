@@ -32,7 +32,7 @@ import { CategoryBudgetsSection } from './CategoryBudgetsSection';
 import { BudgetInsightsSection } from './BudgetInsightsSection';
 import { getCategoryIconName } from '../../utils/categoryUtils';
 import { colors, sectionStyles, buttonStyles } from '../../styles';
-import { budgetScreenStyles } from './styles';
+import { budgetScreenStyles } from '../../styles/screens/budgetScreenStyles';
 
 /**
  * Main Budget Screen Component
