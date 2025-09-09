@@ -10,6 +10,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+/**
+ * SettingsScreen Component
+ *
+ * This screen provides a comprehensive interface for managing application
+ * settings, including general preferences, budget configurations, data
+ * management options, and support information.
+ */
 const SettingsScreen: React.FC = () => {
     const [darkMode, setDarkMode] = React.useState(false);
     const [notifications, setNotifications] = React.useState(true);
@@ -19,7 +26,7 @@ const SettingsScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
-                {/* General Settings */}
+                {/* General Settings Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>General Settings</Text>
                     <View style={styles.settingsList}>
@@ -70,7 +77,7 @@ const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Budget Settings */}
+                {/* Budget Settings Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Budget Settings</Text>
                     <View style={styles.settingsList}>
@@ -111,7 +118,7 @@ const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Data Management */}
+                {/* Data Management Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Data Management</Text>
                     <View style={styles.settingsList}>
@@ -139,7 +146,7 @@ const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* About & Support */}
+                {/* About & Support Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>About & Support</Text>
                     <View style={styles.settingsList}>
@@ -167,7 +174,7 @@ const SettingsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Danger Zone */}
+                {/* Danger Zone Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Danger Zone</Text>
                     <View style={styles.settingsList}>

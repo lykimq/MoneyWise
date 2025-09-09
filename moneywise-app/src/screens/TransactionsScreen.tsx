@@ -10,13 +10,20 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+/**
+ * TransactionsScreen Component
+ *
+ * This screen allows users to view, search, filter, and manage their financial
+ * transactions. It includes a search bar, filter/sort options, a list of
+ * transactions, and a summary of income and expenses.
+ */
 const TransactionsScreen: React.FC = () => {
     const [searchText, setSearchText] = useState('');
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
-                {/* Search & Filters */}
+                {/* Search & Filters Section */}
                 <View style={styles.section}>
                     <View style={styles.searchContainer}>
                         <View style={styles.searchInputContainer}>
@@ -39,7 +46,7 @@ const TransactionsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Transaction List */}
+                {/* Transaction List Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Transaction List</Text>
 
@@ -49,7 +56,7 @@ const TransactionsScreen: React.FC = () => {
                     </TouchableOpacity>
 
                     <View style={styles.transactionList}>
-                        {/* Dining Out */}
+                        {/* Dining Out Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="restaurant-outline" size={24} color="#FF6B6B" />
@@ -69,7 +76,7 @@ const TransactionsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Rent Payment */}
+                        {/* Rent Payment Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="home-outline" size={24} color="#4ECDC4" />
@@ -89,7 +96,7 @@ const TransactionsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Salary */}
+                        {/* Salary Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="cash-outline" size={24} color="#45B7D1" />
@@ -109,7 +116,7 @@ const TransactionsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Gas Station */}
+                        {/* Gas Station Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="car-outline" size={24} color="#96CEB4" />
@@ -129,7 +136,7 @@ const TransactionsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Groceries */}
+                        {/* Groceries Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="bag-outline" size={24} color="#FFA726" />
@@ -149,7 +156,7 @@ const TransactionsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Savings Contribution */}
+                        {/* Savings Contribution Transaction */}
                         <View style={styles.transactionItem}>
                             <View style={styles.transactionIcon}>
                                 <Ionicons name="wallet-outline" size={24} color="#AB47BC" />
@@ -171,7 +178,7 @@ const TransactionsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Summary */}
+                {/* Summary Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Summary</Text>
                     <View style={styles.summaryContainer}>

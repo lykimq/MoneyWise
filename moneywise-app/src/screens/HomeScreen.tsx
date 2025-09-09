@@ -22,9 +22,9 @@ import { homeScreenStyles } from '../styles/screens/homeScreenStyles';
  * HomeScreen Component
  *
  * ARCHITECTURE PATTERN:
- * - Custom Hook (useBudgetOverview): Handles data fetching and state
- * - Presentational Components: Focus only on rendering UI
- * - Container Component (this): Orchestrates data and UI components
+ * - Custom Hook (`useBudgetOverview`): Handles data fetching and state.
+ * - Presentational Components: Focus only on rendering UI.
+ * - Container Component (this): Orchestrates data and UI components.
  */
 
 const HomeScreen: React.FC = () => {
@@ -41,11 +41,11 @@ const HomeScreen: React.FC = () => {
 
     /**
      * FAB Action Handler
-     * Primary action for adding transactions
+     * Primary action for adding new transactions.
      */
     const handleAddTransaction = () => {
-        // TODO: Implement navigation to Add Transaction screen
-        // This is a placeholder - needs proper navigation implementation
+        // TODO: Implement navigation to the Add Transaction screen.
+        // This is a placeholder and requires proper navigation implementation.
         // navigation.navigate('AddTransaction');
     };
 
@@ -55,14 +55,15 @@ const HomeScreen: React.FC = () => {
 
                 {/* SECTION 1: Financial Dashboard Card */}
                 {/*
-                 * Single large dashboard card that combines all three key metrics
-                 * with visual elements, progress indicators, and clear hierarchy
+                 * A single large dashboard card that combines all three key metrics
+                 * with visual elements, progress indicators, and a clear hierarchy.
                  */}
                 <FinancialDashboardCard
                     spent={overviewLoading ? undefined : (overview?.spent || 0)}
                     remaining={overviewLoading ? undefined : (overview?.remaining || 0)}
-                    savings={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it
-                    // This is hardcoded data - backend needs to provide savings information
+                    savings={1200} // TODO: Add savings to BudgetOverviewApi when backend supports it.
+                    // This is hardcoded data; the backend needs to provide savings
+                    // information for accurate representation.
                     loading={overviewLoading}
                     period="This Month"
                 />
@@ -91,8 +92,8 @@ const HomeScreen: React.FC = () => {
 /**
  * FloatingActionButton Component
  *
- * Modern FAB design for primary action (Add Transaction)
- * Positioned absolutely in bottom-right corner
+ * A modern FAB design for the primary action (Add Transaction), positioned
+ * absolutely in the bottom-right corner of the screen.
  */
 const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
     <TouchableOpacity style={homeScreenStyles.fab} onPress={onPress} activeOpacity={0.8}>
@@ -103,7 +104,7 @@ const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) =>
 /**
  * CategorySpendingSection Component
  *
- * Displays spending breakdown by category using a pie chart and legend.
+ * Displays a spending breakdown by category using a pie chart and a legend.
  * Shows loading state, empty state, and actual data visualization.
  */
 interface CategorySpendingSectionProps {
@@ -123,45 +124,47 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
     loading,
     isEmpty
 }) => {
-    // Screen dimensions for chart sizing
+    // Screen dimensions for chart sizing.
     const screenWidth = Dimensions.get('window').width;
-    const chartSize = Math.min(screenWidth - 120, 250); // Even more padding to prevent cutoff
+    const chartSize = Math.min(screenWidth - 120, 250); // More padding to prevent cutoff.
 
-    // Get default colors for categories - distinct, easy-to-distinguish colors
+    // Retrieves default colors for categories, ensuring distinct and
+    // easy-to-distinguish colors.
     const getDefaultColor = (index: number) => {
         const defaultColors = [
-            '#FF6B6B', // Red - highest spending
-            '#4ECDC4', // Teal
-            '#45B7D1', // Blue
-            '#96CEB4', // Green
-            '#FFEAA7', // Yellow
-            '#DDA0DD', // Purple
-            '#FF8A80', // Light Red
-            '#81C784', // Light Green
-            '#FFB74D', // Orange
-            '#BA68C8', // Light Purple
-            '#4DB6AC', // Dark Teal
-            '#FF7043'  // Deep Orange
+            '#FF6B6B', // Red - typically for highest spending.
+            '#4ECDC4', // Teal.
+            '#45B7D1', // Blue.
+            '#96CEB4', // Green.
+            '#FFEAA7', // Yellow.
+            '#DDA0DD', // Purple.
+            '#FF8A80', // Light Red.
+            '#81C784', // Light Green.
+            '#FFB74D', // Orange.
+            '#BA68C8', // Light Purple.
+            '#4DB6AC', // Dark Teal.
+            '#FF7043'  // Deep Orange.
         ];
         return defaultColors[index % defaultColors.length];
     };
 
-    // Calculate total spending for percentage calculations
+    // Calculates total spending for percentage calculations.
     const totalSpending = categories.reduce((sum, category) => sum + parseFloat(category.spent), 0);
 
-    // Sort categories by spending amount (highest to lowest) for better visual hierarchy
+    // Sorts categories by spending amount (highest to lowest) for better
+    // visual hierarchy in the chart.
     const sortedCategories = [...categories].sort((a, b) => parseFloat(b.spent) - parseFloat(a.spent));
 
-    // Prepare data for pie chart
+    // Prepares data for the pie chart.
     const chartData = sortedCategories.map((category, index) => ({
         name: category.category_name,
         population: parseFloat(category.spent),
-        color: getDefaultColor(index), // Use our improved color palette
+        color: getDefaultColor(index), // Uses the improved color palette.
         legendFontColor: colors.text.primary,
         legendFontSize: 12,
     }));
 
-    // Format currency for display
+    // Formats currency for display.
     const formatCurrency = (amount: string, currency: string) => {
         const num = parseFloat(amount);
         return new Intl.NumberFormat('en-US', {
@@ -178,12 +181,16 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
                 {loading ? (
                     <View style={homeScreenStyles.chartPlaceholder}>
                         <ActivityIndicator size="large" color={colors.primary} />
-                        <Text style={homeScreenStyles.chartPlaceholderText}>Loading spending data...</Text>
+                        <Text style={homeScreenStyles.chartPlaceholderText}>
+                            Loading spending data...
+                        </Text>
                     </View>
                 ) : isEmpty ? (
                     <View style={homeScreenStyles.chartPlaceholder}>
                         <Ionicons name="pie-chart-outline" size={48} color={colors.text.secondary} />
-                        <Text style={homeScreenStyles.chartPlaceholderText}>No spending data available</Text>
+                        <Text style={homeScreenStyles.chartPlaceholderText}>
+                            No spending data available.
+                        </Text>
                     </View>
                 ) : (
                     <>
@@ -204,7 +211,7 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
                             />
                         </View>
 
-                        {/* Category Legend - Grid Layout */}
+                        {/* Category Legend - Grid Layout. */}
                         <View style={homeScreenStyles.categoryLegendGrid}>
                             {sortedCategories.map((category, index) => {
                                 const spendingPercentage = totalSpending > 0
@@ -231,7 +238,9 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
 
 /**
  * CategoryLegendItem Component
- * Displays individual category in the legend with color indicator, amount, and percentage
+ *
+ * Displays an individual category in the legend with a color indicator,
+ * amount, and percentage.
  */
 const CategoryLegendItem: React.FC<{
     name: string;
@@ -249,7 +258,8 @@ const CategoryLegendItem: React.FC<{
 
 /**
  * CategoryItem Component
- * Small reusable component for category display
+ *
+ * A small, reusable component for displaying a category with an icon and text.
  */
 const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
     <View style={homeScreenStyles.categoryItem}>
@@ -260,13 +270,14 @@ const CategoryItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: s
 
 /**
  * RecentTransactionsSection Component
- * Shows recent transaction history
+ *
+ * Displays a list of recent transaction history.
  */
 const RecentTransactionsSection: React.FC = () => (
     <View style={homeScreenStyles.section}>
         <Text style={homeScreenStyles.sectionTitle}>Recent Transactions</Text>
         <View style={homeScreenStyles.transactionList}>
-            {/* TODO: Replace with actual transaction data from API */}
+            {/* TODO: Replace with actual transaction data from the API. */}
             <TransactionItem
                 iconName="restaurant-outline"
                 iconColor={colors.spending}
@@ -297,7 +308,8 @@ const RecentTransactionsSection: React.FC = () => (
 
 /**
  * TransactionItem Component
- * Reusable component for individual transaction display
+ *
+ * A reusable component for displaying an individual transaction.
  */
 const TransactionItem: React.FC<{
     iconName: keyof typeof Ionicons.glyphMap;
@@ -323,13 +335,14 @@ const TransactionItem: React.FC<{
 
 /**
  * UpcomingBillsSection Component
- * Shows upcoming bill reminders
+ *
+ * Displays a list of upcoming bill reminders.
  */
 const UpcomingBillsSection: React.FC = () => (
     <View style={homeScreenStyles.section}>
         <Text style={homeScreenStyles.sectionTitle}>Upcoming Bills</Text>
         <View style={homeScreenStyles.billsList}>
-            {/* TODO: Replace with actual bills data from API */}
+            {/* TODO: Replace with actual bills data from the API. */}
             <BillItem iconName="phone-portrait-outline" text="Phone Bill - $85 due in 3 days" />
             <BillItem iconName="flash-outline" text="Electricity - $120 due in 5 days" />
         </View>
@@ -338,7 +351,8 @@ const UpcomingBillsSection: React.FC = () => (
 
 /**
  * BillItem Component
- * Reusable component for individual bill display
+ *
+ * A reusable component for displaying an individual bill.
  */
 const BillItem: React.FC<{ iconName: keyof typeof Ionicons.glyphMap; text: string }> = ({ iconName, text }) => (
     <View style={homeScreenStyles.billItem}>

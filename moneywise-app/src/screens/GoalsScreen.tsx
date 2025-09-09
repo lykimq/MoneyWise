@@ -9,11 +9,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+/**
+ * GoalsScreen Component
+ *
+ * This screen displays a comprehensive overview of user-defined financial
+ * goals, including total progress, individual goal tracking, and insights.
+ */
 const GoalsScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
-                {/* Goals Overview */}
+                {/* Goals Overview Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Goals Overview</Text>
                     <View style={styles.overviewContainer}>
@@ -32,11 +38,11 @@ const GoalsScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Active Goals */}
+                {/* Active Goals Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Active Goals</Text>
                     <View style={styles.goalsList}>
-                        {/* Emergency Fund */}
+                        {/* Emergency Fund Goal */}
                         <View style={styles.goalItem}>
                             <View style={styles.goalHeader}>
                                 <Ionicons name="home-outline" size={24} color="#007AFF" />
@@ -61,7 +67,7 @@ const GoalsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Vacation Fund */}
+                        {/* Vacation Fund Goal */}
                         <View style={styles.goalItem}>
                             <View style={styles.goalHeader}>
                                 <Ionicons name="airplane-outline" size={24} color="#FF6B6B" />
@@ -86,7 +92,7 @@ const GoalsScreen: React.FC = () => {
                             </View>
                         </View>
 
-                        {/* Car Down Payment */}
+                        {/* Car Down Payment Goal */}
                         <View style={styles.goalItem}>
                             <View style={styles.goalHeader}>
                                 <Ionicons name="car-outline" size={24} color="#4ECDC4" />
@@ -118,21 +124,27 @@ const GoalsScreen: React.FC = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Goal Insights */}
+                {/* Goal Insights Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Goal Insights</Text>
                     <View style={styles.insightsContainer}>
                         <View style={styles.insightItem}>
                             <Ionicons name="calculator-outline" size={20} color="#007AFF" />
-                            <Text style={styles.insightText}>You need to save $520/month to reach all goals</Text>
+                            <Text style={styles.insightText}>
+                                You need to save $520/month to reach all goals.
+                            </Text>
                         </View>
                         <View style={styles.insightItem}>
                             <Ionicons name="checkmark-circle-outline" size={20} color="#4ECDC4" />
-                            <Text style={styles.insightText}>Emergency fund will be complete in 2 months</Text>
+                            <Text style={styles.insightText}>
+                                Emergency fund will be complete in 2 months.
+                            </Text>
                         </View>
                         <View style={styles.insightItem}>
                             <Ionicons name="bulb-outline" size={20} color="#FF6B6B" />
-                            <Text style={styles.insightText}>Consider prioritizing goals based on urgency</Text>
+                            <Text style={styles.insightText}>
+                                Consider prioritizing goals based on urgency.
+                            </Text>
                         </View>
                     </View>
                 </View>
