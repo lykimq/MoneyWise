@@ -10,7 +10,8 @@ import {
     progressBarStyles,
     standardCardStyles
 } from '../../styles';
-import { sanitizeString, sanitizeNumber } from '../../utils/sanitization';
+import { sanitizeString } from '../../utils/sanitization';
+import { toNumber } from '../../utils/currencyUtils';
 
 /**
  * Props for the CategoryBudgetsSection component.
@@ -191,10 +192,10 @@ export const CategoryBudgetsSection: React.FC<CategoryBudgetsSectionProps> = ({
 const CategoryBudgetCard: React.FC<CategoryBudgetCardProps> = ({ category, iconName }) => {
     // BUDGET CALCULATIONS - Converts string amounts to numbers for calculations
     // with sanitization.
-    const spentAmount = sanitizeNumber(category.spent);
-    const plannedAmount = sanitizeNumber(category.planned);
-    const remainingAmount = sanitizeNumber(category.remaining);
-    const progressPercentage = sanitizeNumber(category.percentage);
+    const spentAmount = toNumber(category.spent);
+    const plannedAmount = toNumber(category.planned);
+    const remainingAmount = toNumber(category.remaining);
+    const progressPercentage = toNumber(category.percentage);
 
     // BUDGET STATUS LOGIC - Determines if the category is over budget and
     // selects appropriate colors.
