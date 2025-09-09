@@ -18,38 +18,39 @@
  */
 
 module.exports = {
-    // TEST ENVIRONMENT
-    // 'node' environment is faster and suitable for logic testing
-    // Alternative: 'jsdom' for DOM-heavy React components
-    testEnvironment: 'node',
+    // Use the jest-expo preset for React Native projects
+    preset: 'jest-expo',
 
     // SETUP FILES
     // These files run AFTER Jest environment is set up, BEFORE each test file
     // Perfect place to configure mocks, global utilities, and test helpers
-    // Currently no setup files needed since tests are standalone
-    setupFilesAfterEnv: [],
+    setupFilesAfterEnv: ["<rootDir>/jest-setup.ts"], // Setup file for React Native Testing Library
 
     // FILE TRANSFORMATIONS
     // Jest doesn't understand TypeScript by default, so we need to transform it
     // ts-jest converts TypeScript files to JavaScript before running tests
     transform: {
-        '^.+\\.(ts|tsx)$': 'ts-jest',  // Transform all .ts and .tsx files using ts-jest
+        '^.+\\.(ts|tsx)$': ['ts-jest', {
+            tsconfig: 'tsconfig.json',
+            babelConfig: true, // Use babel.config.js for transformation
+        }],
     },
 
     // TRANSFORM IGNORE PATTERNS
     // By default, Jest ignores node_modules, but some packages need transformation
-    // MSW (Mock Service Worker) is written in modern JS and needs to be transformed
+    // For React Native, many modules need to be transformed.
     transformIgnorePatterns: [
-        'node_modules/(?!(msw)/)',  // Transform everything in node_modules EXCEPT msw
+        'node_modules/(?!(jest-)?react-native|@react-native|@react-navigation|expo(nent)?|@expo(nent)?/.*|msw)',
     ],
 
     // TEST MATCHING PATTERNS
     // These patterns tell Jest which files contain tests
     // Jest will ONLY run files that match these patterns
     testMatch: [
-        '<rootDir>/src/**/*demo*.integration.test.ts',         // Demo tests (learning examples)
-        '<rootDir>/src/**/*calculations*.integration.test.ts', // Business logic tests
-        '<rootDir>/src/utils/**/*.integration.test.ts',        // Utility function tests
+        '<rootDir>/src/__tests__/**/*.integration.test.{ts,tsx}',    // Integration tests in __tests__ directory
+        '<rootDir>/src/**/*demo*.integration.test.{ts,tsx}',         // Demo tests (learning examples)
+        '<rootDir>/src/**/*calculations*.integration.test.{ts,tsx}', // Business logic tests
+        '<rootDir>/src/utils/**/*.integration.test.{ts,tsx}',        // Utility function tests
     ],
 
     // TEST PATH IGNORE PATTERNS
