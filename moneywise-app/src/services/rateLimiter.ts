@@ -1,14 +1,16 @@
 /**
  * Client-Side Rate Limiting Service
  *
- * This service provides client-side request throttling to prevent accidental API abuse
- * and improve application performance by limiting the frequency of requests from the frontend.
+ * This service provides client-side request throttling to prevent accidental
+ * API abuse and improve application performance by limiting the frequency of
+ * requests from the frontend.
  *
  * IMPORTANT SECURITY NOTE:
- * This is a CLIENT-SIDE rate limiter and DOES NOT provide security against malicious actors.
- * Malicious users can bypass client-side controls. For robust security, a comprehensive
- * BACKEND RATE LIMITER is essential to protect the API from denial-of-service attacks,
- * brute-force attempts, and other forms of abuse.
+ * This is a CLIENT-SIDE rate limiter and DOES NOT provide security against
+ * malicious actors. Malicious users can bypass client-side controls. For
+ * robust security, a comprehensive BACKEND RATE LIMITER is essential to
+ * protect the API from denial-of-service attacks, brute-force attempts, and
+ * other forms of abuse.
  */
 
 interface RateLimitConfig {
@@ -23,9 +25,10 @@ interface RequestRecord {
 }
 
 /**
- * Manages rate limiting for specific endpoints based on a configured window and maximum requests.
- * This helps in preventing excessive requests from the client, improving user experience
- * and reducing load on the backend from legitimate, but overly frequent, actions.
+ * Manages rate limiting for specific endpoints based on a configured window
+ * and maximum requests. This helps in preventing excessive requests from the
+ * client, improving user experience and reducing load on the backend from
+ * legitimate, but overly frequent, actions.
  */
 class RateLimiter {
     private requests: Map<string, RequestRecord[]> = new Map();
@@ -36,27 +39,27 @@ class RateLimiter {
     }
 
     /**
-     * Checks if a request is allowed based on rate limiting rules
-     * @param endpoint - The API endpoint being requested
-     * @returns True if the request is allowed, false if rate limited
+     * Checks if a request is allowed based on rate limiting rules.
+     * @param endpoint - The API endpoint being requested.
+     * @returns True if the request is allowed, false if rate limited.
      */
     isAllowed(endpoint: string): boolean {
         const key = this.getKey(endpoint);
         const now = Date.now();
         const windowStart = now - this.config.windowMs;
 
-        // Get existing requests for this endpoint
+        // Retrieves existing requests for this endpoint.
         let requests = this.requests.get(key) || [];
 
-        // Remove old requests outside the window
+        // Removes old requests that are outside the current window.
         requests = requests.filter(req => req.timestamp > windowStart);
 
-        // Check if we're within the rate limit
+        // Checks if the number of requests is within the rate limit.
         if (requests.length >= this.config.maxRequests) {
             return false;
         }
 
-        // Add the new request
+        // Adds the new request to the record.
         requests.push({ timestamp: now, count: 1 });
         this.requests.set(key, requests);
 
@@ -64,9 +67,9 @@ class RateLimiter {
     }
 
     /**
-     * Gets the time until the next request is allowed
-     * @param endpoint - The API endpoint
-     * @returns Milliseconds until next request is allowed, or 0 if allowed now
+     * Gets the time until the next request is allowed for a given endpoint.
+     * @param endpoint - The API endpoint.
+     * @returns Milliseconds until the next request is allowed, or 0 if allowed now.
      */
     getTimeUntilReset(endpoint: string): number {
         const key = this.getKey(endpoint);
@@ -77,18 +80,18 @@ class RateLimiter {
         const validRequests = requests.filter(req => req.timestamp > windowStart);
 
         if (validRequests.length < this.config.maxRequests) {
-            return 0; // Request is allowed now
+            return 0; // Request is allowed immediately.
         }
 
-        // Find the oldest request in the current window
+        // Finds the timestamp of the oldest request within the current window.
         const oldestRequest = Math.min(...validRequests.map(req => req.timestamp));
         return (oldestRequest + this.config.windowMs) - now;
     }
 
     /**
-     * Gets the number of remaining requests in the current window
-     * @param endpoint - The API endpoint
-     * @returns Number of remaining requests allowed
+     * Gets the number of remaining requests allowed in the current window.
+     * @param endpoint - The API endpoint.
+     * @returns The number of remaining requests allowed.
      */
     getRemainingRequests(endpoint: string): number {
         const key = this.getKey(endpoint);
@@ -102,9 +105,9 @@ class RateLimiter {
     }
 
     /**
-     * Generates a key for the endpoint (can be customized)
-     * @param endpoint - The API endpoint
-     * @returns A unique key for rate limiting
+     * Generates a unique key for the endpoint, which can be customized.
+     * @param endpoint - The API endpoint.
+     * @returns A unique key for rate limiting purposes.
      */
     private getKey(endpoint: string): string {
         if (this.config.keyGenerator) {
@@ -115,24 +118,24 @@ class RateLimiter {
 }
 
 export const rateLimitConfigs = {
-    // Budget data requests - allow more frequent updates
+    // Budget data requests - allows for more frequent updates.
     budget: {
-        maxRequests: 30, // 30 requests
-        windowMs: 60 * 1000, // per minute
+        maxRequests: 30, // 30 requests.
+        windowMs: 60 * 1000, // Per minute.
         keyGenerator: (endpoint: string) => `budget:${endpoint}`,
     },
 
-    // General API requests - more conservative
+    // General API requests - more conservative rate limiting.
     general: {
-        maxRequests: 60, // 60 requests
-        windowMs: 60 * 1000, // per minute
+        maxRequests: 60, // 60 requests.
+        windowMs: 60 * 1000, // Per minute.
         keyGenerator: (endpoint: string) => `general:${endpoint}`,
     },
 
 } as const;
 
 /**
- * Rate limiter instances for different request types
+ * Rate limiter instances for different request types.
  */
 export const rateLimiters = {
     budget: new RateLimiter(rateLimitConfigs.budget),
@@ -140,9 +143,9 @@ export const rateLimiters = {
 };
 
 /**
- * Determines which rate limiter to use based on the endpoint
- * @param endpoint - The API endpoint
- * @returns The appropriate rate limiter
+ * Determines which rate limiter to use based on the provided endpoint.
+ * @param endpoint - The API endpoint.
+ * @returns The appropriate `RateLimiter` instance.
  */
 export const getRateLimiter = (endpoint: string): RateLimiter => {
     if (endpoint.includes('/budgets') || endpoint.includes('/budget')) {
@@ -152,9 +155,9 @@ export const getRateLimiter = (endpoint: string): RateLimiter => {
 };
 
 /**
- * Utility function to check rate limit status without making a request
- * @param endpoint - The API endpoint
- * @returns Object with rate limit status information
+ * Utility function to check rate limit status without making a request.
+ * @param endpoint - The API endpoint.
+ * @returns An object containing rate limit status information.
  */
 export const getRateLimitStatus = (endpoint: string) => {
     const limiter = getRateLimiter(endpoint);
