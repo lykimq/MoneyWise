@@ -60,20 +60,9 @@ The app includes educational integration tests covering:
 # Run all tests
 npm test
 
-# Run specific test types
-npm test demo           # Basic Jest learning examples
-npm test calculations   # Business logic testing
-npm test dateUtils      # Utility function testing
-
 # Coverage report
 npm run test:coverage
 ```
-
-**Test Structure:**
-- `src/__tests__/` - Main integration tests
-- `src/utils/__tests__/` - Utility function tests
-
-See `TESTING_GUIDE.md` for detailed testing documentation.
 
 ## 📁 Code Organization
 
