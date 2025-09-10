@@ -47,10 +47,10 @@ module.exports = {
     // These patterns tell Jest which files contain tests
     // Jest will ONLY run files that match these patterns
     testMatch: [
-        '<rootDir>/src/__tests__/**/*.integration.test.{ts,tsx}',    // Integration tests in __tests__ directory
-        '<rootDir>/src/**/*demo*.integration.test.{ts,tsx}',         // Demo tests (learning examples)
-        '<rootDir>/src/**/*calculations*.integration.test.{ts,tsx}', // Business logic tests
-        '<rootDir>/src/utils/**/*.integration.test.{ts,tsx}',        // Utility function tests
+        '<rootDir>/src/__tests__/**/*.{test,integration.test}.{ts,tsx}',  // All test files in __tests__ directory
+        '<rootDir>/src/**/*demo*.integration.test.{ts,tsx}',              // Demo tests (learning examples)
+        '<rootDir>/src/**/*calculations*.integration.test.{ts,tsx}',      // Business logic tests
+        '<rootDir>/src/utils/**/*.integration.test.{ts,tsx}',             // Utility function tests
     ],
 
     // TEST PATH IGNORE PATTERNS

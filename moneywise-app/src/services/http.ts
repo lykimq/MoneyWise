@@ -28,6 +28,12 @@ export class HttpClient {
         }
 
         this.baseUrl = baseUrl || apiConfig.baseUrl;
+
+        // Validates the base URL if provided
+        if (baseUrl && !this.isValidUrl(baseUrl)) {
+            throw new Error(`Invalid base URL provided: ${baseUrl}`);
+        }
+
         this.timeout = apiConfig.timeout;
         this.retryAttempts = apiConfig.retryAttempts;
         this.retryDelay = apiConfig.retryDelay;
@@ -67,7 +73,16 @@ export class HttpClient {
         // Retries on network errors, timeouts, and 5xx server errors.
         if (error.name === 'AbortError') return true; // Timeout.
         if (error.message?.includes('Network request failed')) return true; // Network error.
-        if (error.message?.includes('5')) return true; // 5xx server errors.
+
+        // More precise 5xx server error detection
+        if (error.message?.includes('API request failed:')) {
+            const statusMatch = error.message.match(/API request failed: (\d{3})/);
+            if (statusMatch) {
+                const statusCode = parseInt(statusMatch[1], 10);
+                return statusCode >= 500 && statusCode < 600; // 5xx server errors
+            }
+        }
+
         return false;
     }
 
@@ -83,6 +98,7 @@ export class HttpClient {
                 return await csrfService.getHeaders();
             } catch (error) {
                 // If CSRF token retrieval fails, proceeds without it.
+                // This ensures the application continues to function even if CSRF service is unavailable.
                 console.warn('CSRF token retrieval failed:', error);
                 return {};
             }
@@ -144,6 +160,11 @@ export class HttpClient {
      * @throws Error if the request fails after all retry attempts or is rate-limited.
      */
     async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+        // Validates input parameters
+        if (!endpoint || typeof endpoint !== 'string') {
+            throw new Error('Endpoint must be a non-empty string');
+        }
+
         // Checks rate limiting status before proceeding with the request.
         const rateLimitStatus = getRateLimitStatus(endpoint);
         if (!rateLimitStatus.isAllowed) {

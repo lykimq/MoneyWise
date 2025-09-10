@@ -53,8 +53,17 @@ export const sanitizeForUrl = (input: string | number | undefined | null): strin
     }
 
     // Handle path traversal attacks more precisely
-    str = str.replace(/\/\.\.\/|\.\.\//g, '/');
-    str = str.replace(/^\.\.\//, '/');
+    // Remove all instances of ../ and ..\ patterns (including multiple dots)
+    str = str.replace(/\.+\.\//g, '/');
+    str = str.replace(/\.+\.\\/g, '/');
+    str = str.replace(/\.+\.%2f/gi, '/');
+    str = str.replace(/\.+\.%5c/gi, '/');
+    str = str.replace(/\.+\.%252f/gi, '/');
+    str = str.replace(/\.+\.%255c/gi, '/');
+
+    // Remove leading ../ patterns (including multiple dots)
+    str = str.replace(/^\.+\.\//, '/');
+    str = str.replace(/^\.+\.\\/, '/');
 
     // Handle multiple slashes while preserving protocol
     str = str.replace(/([^:])\/+/g, '$1/');
