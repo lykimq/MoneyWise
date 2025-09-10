@@ -13,16 +13,29 @@
 export const sanitizeString = (input: string | number | undefined | null): string => {
     if (input === null || input === undefined) return '';
 
-    const str = String(input);
+    let str = String(input);
 
-    // Removes potentially dangerous characters to prevent injection attacks.
-    return str
-        .replace(/[<>]/g, '')         // Removes < and > to prevent HTML injection.
-        .replace(/javascript:/gi, '') // Removes 'javascript:' protocol.
-        .replace(/on\w+=/gi, '')      // Removes event handlers like 'onclick='.
-        .replace(/script/gi, '')      // Removes 'script' tags.
-        .replace(/iframe/gi, '')      // Removes 'iframe' tags.
-        .trim();
+    // Extract content from script tags before removing them
+    str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, (match) => {
+        const content = match.replace(/<\/?script>/gi, '');
+        return content;
+    });
+
+    // Remove iframe tags but keep content
+    str = str.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+
+    // Remove event handlers but keep their values
+    str = str.replace(/\s(on\w+)=["']?([^"']*)["']?/gi, (_, __, value) => value);
+
+    // Remove HTML tags but keep their content
+    str = str.replace(/<[^>]+>/g, '');
+
+    // Remove javascript: protocol but keep the rest
+    str = str.replace(/javascript:/gi, '');
+
+    str = str.trim();
+
+    return str;
 };
 
 /**
@@ -33,16 +46,30 @@ export const sanitizeString = (input: string | number | undefined | null): strin
 export const sanitizeForUrl = (input: string | number | undefined | null): string => {
     if (input === null || input === undefined) return '';
 
-    const str = String(input);
+    let str = String(input);
 
-    // Removes dangerous characters and encodes special characters for URLs.
-    return str
-        // Keeps alphanumeric, hyphens, underscores, slashes, question marks,
-        // equals, and ampersands.
-        .replace(/[^a-zA-Z0-9\-_/?=&]/g, '')
-        .replace(/\.\./g, '') // Removes path traversal attempts (e.g., '..').
-        .replace(/\/+/g, '/') // Collapses multiple slashes into a single slash.
-        .trim();
+    // Decode URI components first to catch encoded malicious content
+    try {
+        str = decodeURIComponent(str);
+    } catch (e) {
+        console.warn('Failed to decode URI component in sanitizeForUrl:', e);
+    }
+
+    // Handle path traversal while preserving structure
+    str = str.replace(/\/\.\.\/|\.\.\//g, '/');
+
+    // Handle multiple slashes while preserving protocol
+    str = str.replace(/([^:])\/+/g, '$1/');
+
+    // Keep more URL-safe characters including encoded characters
+    str = str.replace(/[^a-zA-Z0-9\-_.:/?=&%+\s]/g, '');
+
+    // Remove javascript: protocol as a final check
+    str = str.replace(/javascript:/gi, '');
+
+    str = str.trim();
+
+    return str;
 };
 
 /**
@@ -53,7 +80,20 @@ export const sanitizeForUrl = (input: string | number | undefined | null): strin
 export const sanitizeNumber = (input: string | number | undefined | null): number => {
     if (input === null || input === undefined) return 0;
 
-    const num = typeof input === 'number' ? input : parseFloat(String(input));
+    const strInput = String(input).trim();
+
+    if (typeof input === 'number') {
+        const num = input;
+        if (isNaN(num) || !isFinite(num) || Math.abs(num) > Number.MAX_SAFE_INTEGER) return 0;
+        return num;
+    }
+
+    // If it's a string, check if it contains only a valid number.
+    if (!/^-?\d+(\.\d+)?$/.test(strInput)) {
+        return 0; // Not a purely numeric string
+    }
+
+    const num = parseFloat(strInput);
 
     // Checks for a valid number and a reasonable range to prevent issues.
     if (isNaN(num) || !isFinite(num)) return 0;
@@ -73,6 +113,11 @@ export const sanitizeObject = (input: any): any => {
     if (input === null || input === undefined) return null;
 
     if (typeof input === 'string') {
+        // If the string is purely numeric, sanitize it as a number
+        if (/^-?\d+(\.\d+)?$/.test(input.trim())) {
+            return sanitizeNumber(input);
+        }
+        // Otherwise, sanitize as a string
         return sanitizeString(input);
     }
 
@@ -87,7 +132,8 @@ export const sanitizeObject = (input: any): any => {
     if (typeof input === 'object') {
         const sanitized: any = {};
         for (const [key, value] of Object.entries(input)) {
-            const sanitizedKey = sanitizeString(key);
+            // Sanitize key by removing HTML and dangerous characters
+            const sanitizedKey = key.replace(/<[^>]+>|[<>]/g, '');
             if (sanitizedKey) {
                 sanitized[sanitizedKey] = sanitizeObject(value);
             }
