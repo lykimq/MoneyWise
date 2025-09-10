@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react-native';
-import { BudgetOverviewSection } from '../screens/budget/BudgetOverviewSection';
+import { BudgetOverviewSection } from '../BudgetOverviewSection';
 
 // Mock the currencyUtils to ensure consistent formatting in tests
-jest.mock('../utils/currencyUtils', () => ({
+jest.mock('../../../utils/currencyUtils', () => ({
     toNumber: jest.fn((amount: string) => parseFloat(amount)),
     formatAmount: jest.fn((amount: string) => `$${parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`),
 }));

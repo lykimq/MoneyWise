@@ -3,7 +3,7 @@ import {
     sanitizeForUrl,
     sanitizeNumber,
     sanitizeObject
-} from '../utils/sanitization';
+} from '../sanitization';
 import fc from 'fast-check';
 
 /**

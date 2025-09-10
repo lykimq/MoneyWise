@@ -21,13 +21,13 @@
  * 6. Response Processing
  */
 
-import { HttpClient } from '../services/http';
-import { csrfService } from '../services/csrf';
-import { getRateLimitStatus } from '../services/rateLimiter';
+import { HttpClient } from '../http';
+import { csrfService } from '../csrf';
+import { getRateLimitStatus } from '../rateLimiter';
 
 // Mock Dependencies
 // We mock all external services to isolate HttpClient behavior and avoid real network calls
-jest.mock('../config/api', () => {
+jest.mock('../../config/api', () => {
     const mockValidateApiConfig = jest.fn().mockReturnValue(true);
     return {
         apiConfig: {
@@ -40,13 +40,13 @@ jest.mock('../config/api', () => {
     };
 });
 
-jest.mock('../services/csrf', () => ({
+jest.mock('../csrf', () => ({
     csrfService: {
         getHeaders: jest.fn().mockResolvedValue({ 'X-CSRF-Token': 'test-token' }),
     },
 }));
 
-jest.mock('../services/rateLimiter', () => ({
+jest.mock('../rateLimiter', () => ({
     getRateLimitStatus: jest.fn().mockReturnValue({ isAllowed: true, timeUntilReset: 0 }),
 }));
 
@@ -98,7 +98,7 @@ describe('HttpClient', () => {
         });
 
         it('should throw error when API config is invalid', () => {
-            const { validateApiConfig } = require('../config/api');
+            const { validateApiConfig } = require('../../config/api');
             (validateApiConfig as jest.Mock).mockReturnValueOnce(false);
             expect(() => new HttpClient()).toThrow('Invalid API configuration detected');
         });
