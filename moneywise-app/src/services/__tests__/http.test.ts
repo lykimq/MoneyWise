@@ -1,32 +1,15 @@
 /**
  * Unit Tests for HttpClient Service
  *
- * Purpose:
- * These tests verify the HttpClient implementation in isolation, ensuring it correctly
- * handles HTTP requests, security measures, error cases, and retry logic without making
- * actual network calls.
- *
- * Test Type: Unit Tests
- * - Tests individual components in isolation
- * - Uses mocks for all external dependencies
- * - No real network calls or side effects
- * - Fast and deterministic execution
- *
- * Key Areas Tested:
- * 1. URL Validation & Sanitization
- * 2. CSRF Protection
- * 3. Rate Limiting
- * 4. Request Retry Logic
- * 5. Error Handling
- * 6. Response Processing
+ * Tests HTTP client functionality in isolation with mocked dependencies.
+ * Verifies URL validation, CSRF protection, rate limiting, retry logic, and error handling.
  */
 
 import { HttpClient } from '../http';
 import { csrfService } from '../csrf';
 import { getRateLimitStatus } from '../rateLimiter';
 
-// Mock Dependencies
-// We mock all external services to isolate HttpClient behavior and avoid real network calls
+// Mock external dependencies to isolate HttpClient behavior
 jest.mock('../../config/api', () => {
     const mockValidateApiConfig = jest.fn().mockReturnValue(true);
     return {
@@ -50,22 +33,14 @@ jest.mock('../rateLimiter', () => ({
     getRateLimitStatus: jest.fn().mockReturnValue({ isAllowed: true, timeUntilReset: 0 }),
 }));
 
-/**
- * Main test suite for HttpClient class
- * Groups all related test suites that verify different aspects of the HTTP client
- */
+// Main test suite for HttpClient class
 describe('HttpClient', () => {
     let httpClient: HttpClient;
     let originalFetch: typeof global.fetch;
 
     beforeEach(() => {
-        // Store the original fetch
         originalFetch = global.fetch;
-
-        // Create a new instance for each test
         httpClient = new HttpClient();
-
-        // Mock fetch globally
         global.fetch = jest.fn().mockResolvedValue({
             ok: true,
             json: () => Promise.resolve({ data: 'test' }),
@@ -73,20 +48,11 @@ describe('HttpClient', () => {
     });
 
     afterEach(() => {
-        // Restore the original fetch
         global.fetch = originalFetch;
         jest.clearAllMocks();
     });
 
-    /**
-     * Test Suite: Constructor and Initialization
-     * Purpose: Verify that the HttpClient is properly initialized and validates its configuration
-     *
-     * Why these tests:
-     * - Ensure proper initialization prevents invalid configurations from being used
-     * - Validate URL safety checks are working
-     * - Confirm configuration validation is enforced
-     */
+    // Tests HttpClient initialization and configuration validation
     describe('Constructor and Initialization', () => {
         it('should initialize with default baseUrl when not provided', async () => {
             const client = new HttpClient();
@@ -104,16 +70,7 @@ describe('HttpClient', () => {
         });
     });
 
-    /**
-     * Test Suite: URL and Endpoint Handling
-     * Purpose: Verify that URLs and endpoints are properly sanitized and validated
-     *
-     * Why these tests:
-     * - Prevent security vulnerabilities from malformed URLs
-     * - Ensure consistent URL formatting
-     * - Protect against path traversal attacks
-     * - Validate endpoint requirements
-     */
+    // Tests URL sanitization and endpoint validation for security
     describe('URL and Endpoint Handling', () => {
         it('should properly sanitize endpoints', async () => {
             await httpClient.request('/test-endpoint');
@@ -136,16 +93,7 @@ describe('HttpClient', () => {
         });
     });
 
-    /**
-     * Test Suite: CSRF Protection
-     * Purpose: Verify Cross-Site Request Forgery (CSRF) protection mechanisms
-     *
-     * Why these tests:
-     * - Critical security feature to prevent CSRF attacks
-     * - Ensure CSRF tokens are properly included in state-changing requests
-     * - Verify graceful handling of CSRF service failures
-     * - Confirm CSRF protection is only applied to appropriate HTTP methods
-     */
+    // Tests CSRF protection for state-changing requests
     describe('CSRF Protection', () => {
         it('should include CSRF headers for POST requests', async () => {
             await httpClient.request('/test', { method: 'POST' });
@@ -171,15 +119,7 @@ describe('HttpClient', () => {
         });
     });
 
-    /**
-     * Test Suite: Rate Limiting
-     * Purpose: Verify rate limiting protection to prevent API abuse
-     *
-     * Why these tests:
-     * - Protect backend services from excessive requests
-     * - Ensure proper error handling when limits are exceeded
-     * - Verify rate limit status checking
-     */
+    // Tests rate limiting to prevent API abuse
     describe('Rate Limiting', () => {
         it('should throw error when rate limited', async () => {
             (getRateLimitStatus as jest.Mock).mockReturnValueOnce({
@@ -191,16 +131,7 @@ describe('HttpClient', () => {
         });
     });
 
-    /**
-     * Test Suite: Request Retry Logic
-     * Purpose: Verify automatic retry behavior for transient failures
-     *
-     * Why these tests:
-     * - Ensure resilience against temporary network issues
-     * - Verify exponential backoff retry strategy
-     * - Confirm proper handling of different error types
-     * - Validate maximum retry attempts enforcement
-     */
+    // Tests retry logic for network failures and server errors
     describe('Request Retry Logic', () => {
         it('should retry on network failure', async () => {
             const networkError = new Error('Network request failed');
@@ -254,20 +185,11 @@ describe('HttpClient', () => {
             global.fetch = jest.fn().mockRejectedValue(networkError);
 
             await expect(httpClient.request('/test')).rejects.toThrow('Network request failed');
-            expect(global.fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
+            expect(global.fetch).toHaveBeenCalledTimes(3);
         });
     });
 
-    /**
-     * Test Suite: Response Handling
-     * Purpose: Verify proper handling of different API response types
-     *
-     * Why these tests:
-     * - Ensure correct parsing of successful responses
-     * - Verify proper error handling for failed requests
-     * - Validate handling of malformed responses
-     * - Confirm appropriate error messages for different scenarios
-     */
+    // Tests response parsing and error handling
     describe('Response Handling', () => {
         it('should handle successful JSON response', async () => {
             const testData = { message: 'success' };

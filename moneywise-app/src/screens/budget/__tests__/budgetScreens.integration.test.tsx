@@ -8,14 +8,15 @@ jest.mock('../../../utils/currencyUtils', () => ({
     formatAmount: jest.fn((amount: string) => `$${parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`),
 }));
 
+/**
+ * Integration Tests for Budget Screens
+ *
+ * Tests React Native component rendering and data display for budget overview.
+ * Verifies component integration with mocked utilities and proper data formatting.
+ */
+
 describe('BudgetOverviewSection Integration Tests', () => {
-    /**
-     * Test Case: Initial render with valid data
-     * Purpose: Verifies that the BudgetOverviewSection component correctly displays
-     *          planned, spent, and remaining amounts, along with calculated percentages,
-     *          when provided with valid and realistic budget data.
-     *          This ensures the core display logic and data transformations are working as expected.
-     */
+    // Tests component rendering with valid budget data
     test('should display correct planned, spent, and remaining amounts with valid data', async () => {
         const mockOverview = {
             planned: "1000.00",
@@ -26,23 +27,21 @@ describe('BudgetOverviewSection Integration Tests', () => {
 
         render(<BudgetOverviewSection overview={mockOverview} period={mockPeriod} />);
 
-        // Use waitFor to ensure all asynchronous updates (like icon loading) have completed
-        // before making assertions, which helps resolve the "not wrapped in act(...)" warning.
         await waitFor(() => {
             // Verify Planned Budget Card
             expect(screen.getByText('Planned Budget')).toBeTruthy();
             expect(screen.getByText(mockPeriod)).toBeTruthy();
-            expect(screen.getByText('$1,000.00')).toBeTruthy(); // Formatted amount
-            expect(screen.getByText('30% spent')).toBeTruthy(); // (300/1000)*100 = 30%
+            expect(screen.getByText('$1,000.00')).toBeTruthy();
+            expect(screen.getByText('30% spent')).toBeTruthy();
 
             // Verify Spent Card
             expect(screen.getByText('Spent')).toBeTruthy();
-            expect(screen.getByText('$300.00')).toBeTruthy(); // Formatted amount
+            expect(screen.getByText('$300.00')).toBeTruthy();
             expect(screen.getByText('On Track')).toBeTruthy();
 
             // Verify Remaining Card
             expect(screen.getByText('Remaining')).toBeTruthy();
-            expect(screen.getByText('$700.00')).toBeTruthy(); // Formatted amount
+            expect(screen.getByText('$700.00')).toBeTruthy();
         });
     });
 });
