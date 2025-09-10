@@ -80,24 +80,53 @@ See `TESTING_GUIDE.md` for detailed testing documentation.
 ```
 src/
 ├── components/         # Reusable UI components
-│   ├── OverviewCard.tsx
-│   └── QuickActionButton.tsx
+│   └── FinancialDashboardCard.tsx
+├── config/            # App configuration
+│   └── api.ts         # API configuration and validation
 ├── hooks/             # Custom React hooks
 │   ├── useBudgetData.ts
-│   └── useBudgetOverview.ts
+│   ├── useBudgetOverview.ts
+│   ├── useCategorySpending.ts
+│   ├── types.ts       # Hook type definitions
+│   ├── utils.ts       # Hook utility functions
+│   └── index.ts       # Hook exports
 ├── screens/           # Screen components
 │   ├── budget/        # Budget screen components
 │   │   ├── BudgetOverviewSection.tsx
 │   │   ├── CategoryBudgetsSection.tsx
 │   │   ├── BudgetInsightsSection.tsx
-│   │   └── TimePeriodSelector.tsx
-│   └── [Other screens - basic placeholders]
+│   │   ├── TimePeriodSelector.tsx
+│   │   ├── index.tsx  # Budget screen main component
+│   │   └── __tests__/ # Budget screen integration tests
+│   ├── BudgetsScreen.tsx
+│   ├── GoalsScreen.tsx
+│   ├── HomeScreen.tsx
+│   ├── SettingsScreen.tsx
+│   └── TransactionsScreen.tsx
 ├── services/          # API and data services
 │   ├── budget/        # Budget-specific API client
-│   ├── http.ts        # HTTP client configuration
-│   └── queryClient.ts # TanStack Query setup
+│   │   ├── client.ts  # Budget API client
+│   │   ├── types.ts   # Budget API types
+│   │   └── index.ts   # Budget service exports
+│   ├── __tests__/     # Service integration tests
+│   ├── api.ts         # General API utilities
+│   ├── csrf.ts        # CSRF protection service
+│   ├── http.ts        # Secure HTTP client
+│   ├── queryClient.ts # TanStack Query setup
+│   └── rateLimiter.ts # Rate limiting service
+├── styles/            # Styling system
+│   ├── components/    # Component-specific styles
+│   ├── screens/       # Screen-specific styles
+│   ├── base.ts        # Base style definitions
+│   ├── components.ts  # Component style exports
+│   ├── theme.ts       # Theme configuration
+│   └── index.ts       # Style exports
 └── utils/             # Utility functions
-    └── dateUtils.ts   # Date formatting and manipulation
+    ├── __tests__/     # Utility function tests
+    ├── categoryUtils.ts
+    ├── currencyUtils.ts
+    ├── dateUtils.ts
+    └── sanitization.ts
 ```
 
 ## 🔌 API Integration
