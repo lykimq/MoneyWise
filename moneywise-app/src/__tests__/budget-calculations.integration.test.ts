@@ -50,7 +50,7 @@ describe('Budget Calculations Integration Tests', () => {
      * REAL-WORLD SCENARIO:
      * User has $1000 budget, spent $750.50, should have $249.50 remaining.
      */
-    it('should handle basic money calculations correctly', () => {
+    it('should handle basic money calculations correctly', async () => {
         // ARRANGE: Set up test data (strings like from API).
         const planned = '1000.00';  // Budget amount planned.
         const spent = '750.50';     // Amount spent so far.

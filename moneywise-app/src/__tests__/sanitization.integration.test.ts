@@ -14,7 +14,7 @@ import fc from 'fast-check';
  * before displaying it in UI components.
  */
 describe('sanitizeString', () => {
-    it('should handle null and undefined inputs', () => {
+    it('should handle null and undefined inputs', async () => {
         // Prevents runtime errors when sanitizing potentially missing data
         // Ensures graceful handling of null/undefined values from APIs or user input
         expect(sanitizeString(null)).toBe('');

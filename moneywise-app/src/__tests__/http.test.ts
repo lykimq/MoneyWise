@@ -88,12 +88,12 @@ describe('HttpClient', () => {
      * - Confirm configuration validation is enforced
      */
     describe('Constructor and Initialization', () => {
-        it('should initialize with default baseUrl when not provided', () => {
+        it('should initialize with default baseUrl when not provided', async () => {
             const client = new HttpClient();
             expect(client).toBeDefined();
         });
 
-        it('should throw error for invalid base URL', () => {
+        it('should throw error for invalid base URL', async () => {
             expect(() => new HttpClient('invalid-url')).toThrow('Invalid base URL provided');
         });
 
@@ -166,7 +166,8 @@ describe('HttpClient', () => {
 
         it('should continue request if CSRF service fails', async () => {
             (csrfService.getHeaders as jest.Mock).mockRejectedValueOnce(new Error('CSRF Error'));
-            await expect(httpClient.request('/test', { method: 'POST' })).resolves.toBeDefined();
+            const response = await httpClient.request('/test', { method: 'POST' });
+            expect(response).toBeDefined();
         });
     });
 
