@@ -21,14 +21,14 @@ describe('sanitizeString', () => {
         expect(sanitizeString(undefined)).toBe('');
     });
 
-    it('should remove script tags but preserve content', () => {
-        // Script tags can execute malicious JavaScript, but their text content might be legitimate
-        // Tests that <script> tags are stripped while keeping the text inside for display
+    it('should remove script tags completely', () => {
+        // Script tags can execute malicious JavaScript and should be completely removed
+        // Tests that <script> tags and their content are stripped for security
         const input = '<script>alert("test")</script>';
-        expect(sanitizeString(input)).toBe('alert("test")');
+        expect(sanitizeString(input)).toBe('');
 
         const complexInput = 'Hello <script type="text/javascript">console.log("world")</script>!';
-        expect(sanitizeString(complexInput)).toBe('Hello console.log("world")!');
+        expect(sanitizeString(complexInput)).toBe('Hello !');
     });
 
     it('should remove iframe tags completely', () => {
@@ -43,6 +43,16 @@ describe('sanitizeString', () => {
         // Tests that event handler attributes are stripped completely for security
         const input = '<div onclick="maliciousFunction()">Click me</div>';
         expect(sanitizeString(input)).toBe('Click me');
+    });
+
+    it('should remove various event handlers', () => {
+        // Different event handlers can all execute malicious code
+        // Tests that various event handler types are properly removed
+        const input = '<div onload="evil()" onerror="bad()" onmouseover="attack()">Content</div>';
+        expect(sanitizeString(input)).toBe('Content');
+
+        const input2 = '<img onload="malicious()" onerror="hack()" src="test.jpg">';
+        expect(sanitizeString(input2)).toBe('');
     });
 
     it('should handle nested HTML and multiple sanitization needs', () => {
@@ -175,6 +185,15 @@ describe('sanitizeNumber', () => {
         expect(sanitizeNumber('  123  ')).toBe(123);
         expect(sanitizeNumber('  -456.789  ')).toBe(-456.789);
     });
+
+    it('should handle scientific notation', () => {
+        // Scientific notation is a valid number format that should be supported
+        // Tests that scientific notation strings are properly converted to numbers
+        expect(sanitizeNumber('1e5')).toBe(100000);
+        expect(sanitizeNumber('1.5e-3')).toBe(0.0015);
+        expect(sanitizeNumber('2E+4')).toBe(20000);
+        expect(sanitizeNumber('-3.2e-2')).toBe(-0.032);
+    });
 });
 
 /**
@@ -206,7 +225,7 @@ describe('sanitizeObject', () => {
         };
 
         const expected = {
-            name: 'alert("name")John',
+            name: 'John',
             age: 25,
             profile: {
                 bio: 'Bio text',
@@ -228,7 +247,7 @@ describe('sanitizeObject', () => {
         ];
 
         const expected = [
-            'alert(1)',
+            '',
             123,
             { text: 'Hello' }
         ];
@@ -266,7 +285,7 @@ describe('sanitizeObject', () => {
         };
 
         const expected = {
-            string: 'Hello World',
+            string: 'Hello',
             number: 123.456,
             array: ['Item', 789],
             nested: {

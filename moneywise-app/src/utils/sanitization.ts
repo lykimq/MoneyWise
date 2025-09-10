@@ -15,17 +15,14 @@ export const sanitizeString = (input: string | number | undefined | null): strin
 
     let str = String(input);
 
-    // Extract content from script tags before removing them
-    str = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, (match) => {
-        const content = match.replace(/<\/?script>/gi, '');
-        return content;
-    });
+    // Remove script tags completely (they can execute malicious code)
+    str = str.replace(/<script\b[^>]*>.*?<\/script>/gi, '');
 
     // Remove iframe tags but keep content
     str = str.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
 
-    // Remove event handlers but keep their values
-    str = str.replace(/\s(on\w+)=["']?([^"']*)["']?/gi, (_, __, value) => value);
+    // Remove event handlers completely (they can execute malicious code)
+    str = str.replace(/\s*(on\w+)\s*=\s*["']?[^"']*["']?/gi, '');
 
     // Remove HTML tags but keep their content
     str = str.replace(/<[^>]+>/g, '');
@@ -55,8 +52,9 @@ export const sanitizeForUrl = (input: string | number | undefined | null): strin
         console.warn('Failed to decode URI component in sanitizeForUrl:', e);
     }
 
-    // Handle path traversal while preserving structure
+    // Handle path traversal attacks more precisely
     str = str.replace(/\/\.\.\/|\.\.\//g, '/');
+    str = str.replace(/^\.\.\//, '/');
 
     // Handle multiple slashes while preserving protocol
     str = str.replace(/([^:])\/+/g, '$1/');
@@ -88,8 +86,8 @@ export const sanitizeNumber = (input: string | number | undefined | null): numbe
         return num;
     }
 
-    // If it's a string, check if it contains only a valid number.
-    if (!/^-?\d+(\.\d+)?$/.test(strInput)) {
+    // If it's a string, check if it contains only a valid number (including scientific notation).
+    if (!/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(strInput)) {
         return 0; // Not a purely numeric string
     }
 
@@ -132,8 +130,12 @@ export const sanitizeObject = (input: any): any => {
     if (typeof input === 'object') {
         const sanitized: any = {};
         for (const [key, value] of Object.entries(input)) {
-            // Sanitize key by removing HTML and dangerous characters
-            const sanitizedKey = key.replace(/<[^>]+>|[<>]/g, '');
+            // Sanitize key by removing HTML, dangerous characters, and control characters
+            const sanitizedKey = key
+                .replace(/<[^>]+>|[<>]/g, '') // Remove HTML tags
+                .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+                .replace(/[^\w\-_.]/g, '') // Keep only alphanumeric, hyphens, underscores, and dots
+                .trim();
             if (sanitizedKey) {
                 sanitized[sanitizedKey] = sanitizeObject(value);
             }
