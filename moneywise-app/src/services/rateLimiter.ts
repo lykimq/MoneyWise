@@ -164,22 +164,59 @@ class RateLimiter {
     private getKey(endpoint: string): string {
         return this.config.keyGenerator ? this.config.keyGenerator(endpoint) : endpoint;
     }
+
+    /**
+ * Records a request in the rate limiter.
+ *  @param endpoint - The API endpoint
+ */
+    public recordRequest = (endpoint: string): void => {
+        const key = this.config.keyGenerator ? this.config.keyGenerator(endpoint) : endpoint;
+
+        const now = Date.now();
+
+        // Get existing requests for this endpoint
+        const requests = this.requests.get(key) || [];
+
+        // Add new request
+        requests.push({ timestamp: now });
+
+        // Store updated requests
+        this.requests.set(key, requests);
+
+        // Cleanup old requests
+        this.cleanup();
+    };
 }
 
 /**
  * Rate limiting configurations for different types of API operations.
- * Budget operations have more lenient limits as they're frequently accessed.
+ *
+ * Two separate rate limit configurations are defined:
+ * 1. Budget Operations (30 req/min):
+ *    - Lower limit because budget operations are more resource-intensive
+ *    - Applies to all /budget and /budgets endpoints
+ *    - Example: fetching budget overviews, updating budget items
+ *
+ * 2. General Operations (60 req/min):
+ *    - Higher limit for standard API operations
+ *    - Applies to all non-budget related endpoints
+ *    - Example: user settings, general app operations
+ *
+ * Each configuration includes:
+ * - maxRequests: Maximum number of requests allowed in the time window
+ * - windowMs: Time window in milliseconds (both use 1-minute windows)
+ * - keyGenerator: Function to create unique keys for rate limit tracking
  */
 export const rateLimitConfigs = {
     budget: {
-        maxRequests: 30,
-        windowMs: 60 * 1000, // 1 minute
-        keyGenerator: (endpoint: string) => `budget:${endpoint}`,
+        maxRequests: 30,    // 30 requests per minute for budget operations
+        windowMs: 60 * 1000, // 1 minute window
+        keyGenerator: (endpoint: string) => `budgets:${endpoint}`, // Prefixes budget endpoints for tracking (using plural form to match API endpoints)
     },
     general: {
-        maxRequests: 60,
-        windowMs: 60 * 1000, // 1 minute
-        keyGenerator: (endpoint: string) => `general:${endpoint}`,
+        maxRequests: 60,    // 60 requests per minute for general operations
+        windowMs: 60 * 1000, // 1 minute window
+        keyGenerator: (endpoint: string) => `general:${endpoint}`, // Prefixes general endpoints for tracking
     },
 } as const;
 
@@ -195,13 +232,24 @@ export const rateLimiters = {
 /**
  * Determines which rate limiter to use based on the endpoint path.
  *
+ * This function routes requests to the appropriate rate limiter:
+ * - Budget endpoints (/budgets): 30 requests/minute limit
+ * - All other endpoints: 60 requests/minute limit
+ *
+ * Example routing:
+ * - /budgets/overview → budget rate limiter (30 req/min)
+ * - /budgets/123 → budget rate limiter (30 req/min)
+ * - /settings → general rate limiter (60 req/min)
+ *
  * @param endpoint - The API endpoint path
  * @returns The appropriate RateLimiter instance
  */
 export const getRateLimiter = (endpoint: string): RateLimiter => {
-    if (endpoint.includes('/budgets') || endpoint.includes('/budget')) {
+    // Route to budget rate limiter (30 req/min) for budget-related endpoints
+    if (endpoint.includes('/budgets')) {
         return rateLimiters.budget;
     }
+    // All other endpoints use general rate limiter (60 req/min)
     return rateLimiters.general;
 };
 
@@ -220,3 +268,4 @@ export const getRateLimitStatus = (endpoint: string) => {
         userStatus: limiter.getUserStatus(endpoint),
     };
 };
+

@@ -13,6 +13,7 @@ import BudgetsScreen from './src/screens/BudgetsScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen';
 import GoalsScreen from './src/screens/GoalsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import { httpClient } from './src/services/http';
 
 const Tab = createBottomTabNavigator();
 

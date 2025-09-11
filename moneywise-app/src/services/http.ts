@@ -12,14 +12,16 @@
  */
 import { apiConfig, validateApiConfig } from '../config/api';
 import { csrfService } from './csrf';
-import { getRateLimitStatus } from './rateLimiter';
+import { getRateLimitStatus, rateLimiters } from './rateLimiter';
 import { sanitizeForUrl } from '../utils/sanitization';
+import { Platform, AppState } from 'react-native';
 
 export class HttpClient {
     private baseUrl: string;
     private timeout: number;
     private retryAttempts: number;
     private retryDelay: number;
+    private cleanupListener: any;
 
     constructor(baseUrl?: string) {
         // Validates API configuration upon instantiation.
@@ -37,6 +39,18 @@ export class HttpClient {
         this.timeout = apiConfig.timeout;
         this.retryAttempts = apiConfig.retryAttempts;
         this.retryDelay = apiConfig.retryDelay;
+
+        // Setup auto-cleanup based on platform
+        if (Platform.OS === 'web') {
+            this.cleanupListener = this.cleanupRateLimiter.bind(this);
+        } else {
+            this.cleanupListener = (nextAppState: string) => {
+                if (nextAppState === 'background') {
+                    this.cleanupRateLimiter();
+                }
+            };
+            AppState.addEventListener('change', this.cleanupListener);
+        }
     }
 
     /**
@@ -171,6 +185,9 @@ export class HttpClient {
             throw new Error(rateLimitStatus.userStatus);
         }
 
+        // Record the request in the rate limiter.
+        rateLimiters.general.recordRequest(endpoint);
+
         // Sanitizes the endpoint to prevent path traversal attacks.
         const sanitizedEndpoint = this.sanitizeEndpoint(endpoint);
         const url = `${this.baseUrl}${sanitizedEndpoint}`;
@@ -181,6 +198,21 @@ export class HttpClient {
         }
 
         return this.requestWithRetry<T>(url, options);
+    }
+
+    /**
+     * Cleanup method to be called when the app is unloaded.
+     * This prevents memory leaks by destroying the rate limiters.
+     */
+    public cleanupRateLimiter(): void {
+        // Remove platform-specific cleanup listener
+        if (Platform.OS === 'web') {
+            window.removeEventListener('beforeunload', this.cleanupListener);
+        } else {
+            this.cleanupListener();
+        }
+
+        Object.values(rateLimiters).forEach(limiter => limiter.destroy());
     }
 }
 
