@@ -168,8 +168,7 @@ export class HttpClient {
         // Checks rate limiting status before proceeding with the request.
         const rateLimitStatus = getRateLimitStatus(endpoint);
         if (!rateLimitStatus.isAllowed) {
-            throw new Error(`Rate limit exceeded. Try again in ` +
-                `${Math.ceil(rateLimitStatus.timeUntilReset / 1000)} seconds.`);
+            throw new Error(rateLimitStatus.userStatus);
         }
 
         // Sanitizes the endpoint to prevent path traversal attacks.
