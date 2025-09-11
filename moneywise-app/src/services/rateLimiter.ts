@@ -166,7 +166,25 @@ class RateLimiter {
     }
 
     /**
- * Records a request in the rate limiter.
+     * Checks if there has been any recent activity for an endpoint
+     * within the current time window.
+     *
+     * @param endpoint - The API endpoint to check
+     * @returns True if there are any requests in the current time window
+     */
+    hasRecentActivity(endpoint: string): boolean {
+        const key = this.getKey(endpoint);
+        const now = Date.now();
+        const windowStart = now - this.config.windowMs;
+
+        const requests = this.requests.get(key) || [];
+        const validRequests = requests.filter(req => req.timestamp > windowStart);
+
+        return validRequests.length > 0;
+    }
+
+    /**
+     * Records a request in the rate limiter.
  *  @param endpoint - The API endpoint
  */
     public recordRequest = (endpoint: string): void => {
