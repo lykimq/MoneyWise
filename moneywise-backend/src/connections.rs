@@ -5,18 +5,24 @@
 use crate::cache::connection::init_cache;
 use crate::database::connection::init_database;
 use crate::server::config::init_server_config;
+use crate::rate_limiter::{RateLimitService, RateLimitConfig};
 use sqlx::PgPool;
 use tracing;
 
-/// Initialize all connections (database, cache, and server configuration)
-/// Returns a tuple containing the database pool, cache service, and server config
-pub async fn init_connections() -> Result<(PgPool, crate::cache::domains::budget::BudgetCache, crate::server::config::ServerConfig), Box<dyn std::error::Error>> {
+/// Initialize all connections (database, cache, rate limiter, and server configuration)
+/// Returns a tuple containing the database pool, cache service, rate limiter, and server config
+pub async fn init_connections() -> Result<(PgPool, crate::cache::domains::budget::BudgetCache, RateLimitService, crate::server::config::ServerConfig), Box<dyn std::error::Error>> {
     tracing::info!("Initializing all connections and configurations");
 
     let pool = init_database().await?;
     let cache_service = init_cache().await?;
     let server_config = init_server_config()?;
 
+    // Initialize rate limiter
+    let rate_limiter_config = RateLimitConfig::default();
+    let rate_limiter = RateLimitService::new(rate_limiter_config).await
+        .map_err(|e| format!("Failed to initialize rate limiter: {}", e))?;
+
     tracing::info!("All connections and configurations initialized successfully");
-    Ok((pool, cache_service, server_config))
+    Ok((pool, cache_service, rate_limiter, server_config))
 }

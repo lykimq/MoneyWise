@@ -1,6 +1,7 @@
 // Import necessary modules from axum for web framework functionality
 use axum::{
     Router,
+    middleware,
 };
 // Import CORS layer for handling Cross-Origin Resource Sharing
 use tower_http::cors::{Any, CorsLayer};
@@ -14,11 +15,14 @@ mod connections;
 mod database;
 mod error;
 mod models;
+mod rate_limiter;
 mod server;
 
 // Import specific functions from local modules
 use api::create_api_router;
 use connections::init_connections;
+use rate_limiter::middleware::rate_limit_middleware;
+use std::sync::Arc;
 
 /// Main entry point for the MoneyWise backend server
 /// This function initializes the application, sets up logging, database connection,
@@ -43,9 +47,9 @@ async fn main() {
     // This allows configuration through environment variables
     dotenv::dotenv().ok();
 
-    // Initialize database, Redis connections, and server configuration
+    // Initialize database, Redis connections, rate limiter, and server configuration
     // This establishes connection pools and server settings from environment variables
-    let (pool, cache_service, server_config) = init_connections().await
+    let (pool, cache_service, rate_limiter, server_config) = init_connections().await
         .expect("Failed to initialize connections and configuration");
 
     // Configure CORS (Cross-Origin Resource Sharing) settings
@@ -58,6 +62,10 @@ async fn main() {
     // Build the application router with routes and middleware
     let app = Router::new()
         .nest("/api", create_api_router())  // Mount all API routes under /api path
+        .layer(middleware::from_fn_with_state(
+            Arc::new(rate_limiter),
+            rate_limit_middleware,
+        ))                                  // Apply rate limiting middleware
         .layer(cors)                        // Apply CORS middleware
         .with_state((pool, cache_service)); // Inject database pool and cache service as application state
 

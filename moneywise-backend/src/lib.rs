@@ -7,6 +7,7 @@ pub mod cache;
 pub mod database;
 pub mod error;
 pub mod models;
+pub mod rate_limiter;
 
 // Re-export main types for convenience
 pub use error::*;
