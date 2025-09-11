@@ -7,7 +7,6 @@
 
 import { HttpClient } from '../http';
 import { csrfService } from '../csrf';
-import { getRateLimitStatus } from '../rateLimiter';
 
 // Mock external dependencies to isolate HttpClient behavior
 jest.mock('../../config/api', () => {
@@ -30,15 +29,10 @@ jest.mock('../csrf', () => ({
 }));
 
 jest.mock('../rateLimiter', () => ({
-    getRateLimitStatus: jest.fn().mockReturnValue({ isAllowed: true, timeUntilReset: 0 }),
-    rateLimiters: {
-        general: {
-            recordRequest: jest.fn(),
-        },
-        budget: {
-            recordRequest: jest.fn(),
-        },
-    },
+    getRateLimiter: jest.fn().mockReturnValue({
+        isAllowed: jest.fn().mockReturnValue(true),
+        getTimeUntilReset: jest.fn().mockReturnValue(0),
+    }),
 }));
 
 // Main test suite for HttpClient class
@@ -130,11 +124,12 @@ describe('HttpClient', () => {
     // Tests rate limiting to prevent API abuse
     describe('Rate Limiting', () => {
         it('should throw error when rate limited', async () => {
-            (getRateLimitStatus as jest.Mock).mockReturnValueOnce({
-                isAllowed: false,
-                timeUntilReset: 5000,
-                userStatus: 'Rate limit exceeded. Try again in 5 seconds',
-            });
+            const { getRateLimiter } = require('../rateLimiter');
+            const mockLimiter = {
+                isAllowed: jest.fn().mockReturnValue(false),
+                getTimeUntilReset: jest.fn().mockReturnValue(5000),
+            };
+            (getRateLimiter as jest.Mock).mockReturnValueOnce(mockLimiter);
 
             await expect(httpClient.request('/test')).rejects.toThrow('Rate limit exceeded');
         });

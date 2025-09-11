@@ -12,7 +12,7 @@
  */
 import { apiConfig, validateApiConfig } from '../config/api';
 import { csrfService } from './csrf';
-import { getRateLimitStatus, rateLimiters } from './rateLimiter';
+import { getRateLimiter } from './rateLimiter';
 import { sanitizeForUrl } from '../utils/sanitization';
 import { Platform, AppState } from 'react-native';
 
@@ -179,14 +179,13 @@ export class HttpClient {
             throw new Error('Endpoint must be a non-empty string');
         }
 
-        // Checks rate limiting status before proceeding with the request.
-        const rateLimitStatus = getRateLimitStatus(endpoint);
-        if (!rateLimitStatus.isAllowed) {
-            throw new Error(rateLimitStatus.userStatus);
+        // Check rate limiting and record the request in one operation.
+        const limiter = getRateLimiter(endpoint);
+        if (!limiter.isAllowed(endpoint)) {
+            const timeUntilReset = limiter.getTimeUntilReset(endpoint);
+            const seconds = Math.ceil(timeUntilReset / 1000);
+            throw new Error(`Rate limit exceeded. Try again in ${seconds} seconds`);
         }
-
-        // Record the request in the rate limiter.
-        rateLimiters.general.recordRequest(endpoint);
 
         // Sanitizes the endpoint to prevent path traversal attacks.
         const sanitizedEndpoint = this.sanitizeEndpoint(endpoint);
@@ -212,7 +211,9 @@ export class HttpClient {
             this.cleanupListener();
         }
 
-        Object.values(rateLimiters).forEach(limiter => limiter.destroy());
+        // Import rateLimiters for cleanup
+        const { rateLimiters } = require('./rateLimiter');
+        Object.values(rateLimiters).forEach((limiter: any) => limiter.destroy());
     }
 }
 

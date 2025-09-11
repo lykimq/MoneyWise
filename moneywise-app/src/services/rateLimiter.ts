@@ -165,45 +165,7 @@ class RateLimiter {
         return this.config.keyGenerator ? this.config.keyGenerator(endpoint) : endpoint;
     }
 
-    /**
-     * Checks if there has been any recent activity for an endpoint
-     * within the current time window.
-     *
-     * @param endpoint - The API endpoint to check
-     * @returns True if there are any requests in the current time window
-     */
-    hasRecentActivity(endpoint: string): boolean {
-        const key = this.getKey(endpoint);
-        const now = Date.now();
-        const windowStart = now - this.config.windowMs;
 
-        const requests = this.requests.get(key) || [];
-        const validRequests = requests.filter(req => req.timestamp > windowStart);
-
-        return validRequests.length > 0;
-    }
-
-    /**
-     * Records a request in the rate limiter.
- *  @param endpoint - The API endpoint
- */
-    public recordRequest = (endpoint: string): void => {
-        const key = this.config.keyGenerator ? this.config.keyGenerator(endpoint) : endpoint;
-
-        const now = Date.now();
-
-        // Get existing requests for this endpoint
-        const requests = this.requests.get(key) || [];
-
-        // Add new request
-        requests.push({ timestamp: now });
-
-        // Store updated requests
-        this.requests.set(key, requests);
-
-        // Cleanup old requests
-        this.cleanup();
-    };
 }
 
 /**
@@ -271,19 +233,4 @@ export const getRateLimiter = (endpoint: string): RateLimiter => {
     return rateLimiters.general;
 };
 
-/**
- * Gets comprehensive rate limit status for an endpoint without recording a request.
- *
- * @param endpoint - The API endpoint
- * @returns Object containing rate limit status information
- */
-export const getRateLimitStatus = (endpoint: string) => {
-    const limiter = getRateLimiter(endpoint);
-    return {
-        isAllowed: limiter.isAllowed(endpoint),
-        remainingRequests: limiter.getRemainingRequests(endpoint),
-        timeUntilReset: limiter.getTimeUntilReset(endpoint),
-        userStatus: limiter.getUserStatus(endpoint),
-    };
-};
 
