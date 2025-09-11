@@ -28,7 +28,7 @@ export const RateLimitProvider: React.FC<RateLimitProviderProps> = ({ children }
                 pointerEvents: 'none'
             }}>
                 <RateLimitIndicator endpoint="/budgets" />
-                <RateLimitIndicator endpoint="/transactions" />
+                {/* TODO: other endpoints */}
             </View>
         </View>
     );
