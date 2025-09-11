@@ -31,6 +31,14 @@ jest.mock('../csrf', () => ({
 
 jest.mock('../rateLimiter', () => ({
     getRateLimitStatus: jest.fn().mockReturnValue({ isAllowed: true, timeUntilReset: 0 }),
+    rateLimiters: {
+        general: {
+            recordRequest: jest.fn(),
+        },
+        budget: {
+            recordRequest: jest.fn(),
+        },
+    },
 }));
 
 // Main test suite for HttpClient class
@@ -125,6 +133,7 @@ describe('HttpClient', () => {
             (getRateLimitStatus as jest.Mock).mockReturnValueOnce({
                 isAllowed: false,
                 timeUntilReset: 5000,
+                userStatus: 'Rate limit exceeded. Try again in 5 seconds',
             });
 
             await expect(httpClient.request('/test')).rejects.toThrow('Rate limit exceeded');
