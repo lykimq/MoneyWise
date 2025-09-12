@@ -208,7 +208,8 @@ export class HttpClient {
         if (Platform.OS === 'web') {
             window.removeEventListener('beforeunload', this.cleanupListener);
         } else {
-            this.cleanupListener();
+            // AppState cleanup is handled automatically in React Native
+            // No need to manually remove the listener
         }
 
         // Import rateLimiters for cleanup

@@ -3,32 +3,32 @@
  *
  * Provides request throttling to prevent accidental API abuse and improve
  * application performance by limiting request frequency from the frontend.
+ * Uses static configuration optimized for budget mobile application.
  *
  * SECURITY NOTE: This is client-side only and does not provide security against
  * malicious actors. Backend rate limiting is essential for API protection.
  */
 
-interface RateLimitConfig {
-    maxRequests: number;
-    windowMs: number;
-    keyGenerator?: (endpoint: string) => string;
-}
+// Static configuration for budget operations - simple and reliable
+const BUDGET_RATE_LIMIT_CONFIG = {
+    maxRequests: 30,
+    windowMs: 60000, // 1 minute
+    keyPrefix: "budget_modification"
+};
 
 interface RequestRecord {
     timestamp: number;
 }
 
 /**
- * Manages rate limiting for API endpoints with automatic memory cleanup
- * and comprehensive error handling to prevent memory leaks and improve reliability.
+ * Manages rate limiting for API endpoints with automatic memory cleanup.
+ * Uses static configuration for simplicity and reliability.
  */
 class RateLimiter {
     private requests: Map<string, RequestRecord[]> = new Map();
-    private config: RateLimitConfig;
     private cleanupInterval: NodeJS.Timeout | null = null;
 
-    constructor(config: RateLimitConfig) {
-        this.config = config;
+    constructor() {
         this.startCleanupTimer();
     }
 
@@ -37,82 +37,56 @@ class RateLimiter {
      * Automatically cleans up old records to prevent memory leaks.
      *
      * @param endpoint - The API endpoint being requested
-     * @returns True if request is allowed, false if rate limited
+     * @returns boolean - True if request is allowed, false if rate limited
      */
     isAllowed(endpoint: string): boolean {
         this.cleanup();
 
-        const key = this.getKey(endpoint);
-        const now = Date.now();
-        const windowStart = now - this.config.windowMs;
+        const { validRequests, now } = this.getValidRequests(endpoint);
 
-        const requests = this.requests.get(key) || [];
-        const validRequests = requests.filter(req => req.timestamp > windowStart);
-
-        if (validRequests.length >= this.config.maxRequests) {
+        if (validRequests.length >= BUDGET_RATE_LIMIT_CONFIG.maxRequests) {
             return false;
         }
 
         validRequests.push({ timestamp: now });
-        this.requests.set(key, validRequests);
+        this.requests.set(this.getKey(endpoint), validRequests);
         return true;
     }
 
     /**
      * Gets the time until the next request is allowed for an endpoint.
+     * Used by http.ts to show user-friendly error messages.
      *
      * @param endpoint - The API endpoint
-     * @returns Milliseconds until next request allowed, or 0 if allowed now
+     * @returns number - Milliseconds until next request allowed, or 0 if allowed now
      */
     getTimeUntilReset(endpoint: string): number {
-        const key = this.getKey(endpoint);
-        const now = Date.now();
-        const windowStart = now - this.config.windowMs;
+        const { validRequests } = this.getValidRequests(endpoint);
 
-        const requests = this.requests.get(key) || [];
-        const validRequests = requests.filter(req => req.timestamp > windowStart);
-
-        if (validRequests.length < this.config.maxRequests) {
+        if (validRequests.length < BUDGET_RATE_LIMIT_CONFIG.maxRequests) {
             return 0;
         }
 
         const oldestRequest = Math.min(...validRequests.map(req => req.timestamp));
-        return Math.max(0, (oldestRequest + this.config.windowMs) - now);
+        return Math.max(0, (oldestRequest + BUDGET_RATE_LIMIT_CONFIG.windowMs) - Date.now());
     }
 
     /**
-     * Gets the number of remaining requests allowed in the current window.
+     * Common logic to get valid requests for an endpoint.
+     * Filters out expired requests to prevent memory leaks.
      *
      * @param endpoint - The API endpoint
-     * @returns Number of remaining requests allowed
+     * @returns Object with validRequests array and current timestamp
      */
-    getRemainingRequests(endpoint: string): number {
+    private getValidRequests(endpoint: string): { validRequests: RequestRecord[], now: number } {
         const key = this.getKey(endpoint);
         const now = Date.now();
-        const windowStart = now - this.config.windowMs;
+        const windowStart = now - BUDGET_RATE_LIMIT_CONFIG.windowMs;
 
         const requests = this.requests.get(key) || [];
         const validRequests = requests.filter(req => req.timestamp > windowStart);
 
-        return Math.max(0, this.config.maxRequests - validRequests.length);
-    }
-
-    /**
-     * Gets user-friendly status information for an endpoint.
-     *
-     * @param endpoint - The API endpoint
-     * @returns User-friendly status message
-     */
-    getUserStatus(endpoint: string): string {
-        const remaining = this.getRemainingRequests(endpoint);
-        const timeUntilReset = this.getTimeUntilReset(endpoint);
-
-        if (remaining > 0) {
-            return `Requests remaining: ${remaining}`;
-        }
-
-        const seconds = Math.ceil(timeUntilReset / 1000);
-        return `Rate limit exceeded. Try again in ${seconds} seconds`;
+        return { validRequests, now };
     }
 
     /**
@@ -121,7 +95,9 @@ class RateLimiter {
      */
     private cleanup(): void {
         const now = Date.now();
-        const windowStart = now - this.config.windowMs;
+        // Use 2-minute cleanup window to handle edge cases
+        const cleanupWindow = 2 * 60 * 1000; // 2 minutes
+        const windowStart = now - cleanupWindow;
 
         for (const [key, requests] of this.requests.entries()) {
             const validRequests = requests.filter(req => req.timestamp > windowStart);
@@ -145,7 +121,7 @@ class RateLimiter {
 
     /**
      * Stops the cleanup timer and cleans up resources.
-     * Should be called when the rate limiter is no longer needed.
+     * Called when the rate limiter is no longer needed.
      */
     destroy(): void {
         if (this.cleanupInterval) {
@@ -156,87 +132,43 @@ class RateLimiter {
     }
 
     /**
-     * Generates a unique key for the endpoint using the configured key generator.
+     * Generates a unique key for the endpoint.
      *
      * @param endpoint - The API endpoint
      * @returns Unique key for rate limiting purposes
      */
     private getKey(endpoint: string): string {
-        return this.config.keyGenerator ? this.config.keyGenerator(endpoint) : endpoint;
+        return `${BUDGET_RATE_LIMIT_CONFIG.keyPrefix}:${endpoint}`;
     }
-
 
 }
 
 /**
- * Rate limiting configurations for different types of API operations.
- *
- * Two separate rate limit configurations are defined:
- * 1. Budget Modification Operations (30 req/min):
- *    - Lower limit because budget operations are more resource-intensive
- *    - Applies to all /budgets endpoints
- *    - Example: fetching budget overviews, updating budget items
- *
- * 2. Query Operations (60 req/min):
- *    - Higher limit for standard API operations
- *    - Applies to all non-budget related endpoints
- *    - Example: user settings, general app operations
- *
- * Each configuration includes:
- * - maxRequests: Maximum number of requests allowed in the time window
- * - windowMs: Time window in milliseconds (both use 1-minute windows)
- * - keyGenerator: Function to create unique keys for rate limit tracking
+ * Rate limiter instance for budget operations.
  */
-export const rateLimitConfigs = {
-    budgetModification: {
-        maxRequests: 30,    // 30 requests per minute for budget operations
-        windowMs: 60 * 1000, // 1 minute window
-        keyGenerator: (endpoint: string) => `budget_modification:${endpoint}`, // Prefixes budget endpoints for tracking
-    },
-    query: {
-        maxRequests: 60,    // 60 requests per minute for general operations
-        windowMs: 60 * 1000, // 1 minute window
-        keyGenerator: (endpoint: string) => `query:${endpoint}`, // Prefixes general endpoints for tracking
-    },
-} as const;
+const budgetRateLimiter = new RateLimiter();
 
 /**
- * Rate limiter instances for different request types.
- * Each instance manages its own request history and cleanup.
+ * Get the appropriate rate limiter for an endpoint.
+ * All endpoints currently use the same budget rate limiter.
+ *
+ * @param endpoint - The API endpoint path
+ * @returns RateLimiter instance for the endpoint type
  */
-export const rateLimiters = {
-    budgetModification: new RateLimiter(rateLimitConfigs.budgetModification),
-    query: new RateLimiter(rateLimitConfigs.query),
+export const getRateLimiter = (endpoint: string): RateLimiter => {
+    // TODO: Implement specific rate limiters for different endpoint types
+    // - User management endpoints (registration, profile)
+    // - Reporting endpoints (analytics, exports)
+    // - Settings endpoints (configuration, preferences)
+    // All endpoints currently use the same budget rate limiter
+    return budgetRateLimiter;
 };
 
 /**
- * Determines which rate limiter to use based on the endpoint path.
- *
- * This function routes requests to the appropriate rate limiter:
- * - Budget endpoints (/budgets): 30 requests/minute limit (budgetModification)
- * - All other endpoints: 60 requests/minute limit (query)
- *
- * Example routing:
- * - /budgets/overview → budgetModification rate limiter (30 req/min)
- * - /budgets/123 → budgetModification rate limiter (30 req/min)
- * - /settings → query rate limiter (60 req/min)
- * - /user-budgets → query rate limiter (60 req/min) - NOT a budget endpoint
- *
- * @param endpoint - The API endpoint path
- * @returns The appropriate RateLimiter instance
+ * Collection of all rate limiters for cleanup purposes.
  */
-export const getRateLimiter = (endpoint: string): RateLimiter => {
-    // Use regex to match exact budget endpoints: /budgets followed by / or end of string
-    // This prevents false positives like /user-budgets or /my-budgets
-    // Note: This matches the backend regex pattern in middleware.rs
-    const budgetEndpointRegex = /^\/budgets(\/|$)/;
-
-    // Route to budgetModification rate limiter (30 req/min) for budget-related endpoints
-    if (budgetEndpointRegex.test(endpoint)) {
-        return rateLimiters.budgetModification;
-    }
-    // All other endpoints use query rate limiter (60 req/min)
-    return rateLimiters.query;
+export const rateLimiters = {
+    budget: budgetRateLimiter
 };
 
 
