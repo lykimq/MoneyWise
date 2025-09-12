@@ -3,39 +3,39 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// Different types of financial transactions with specific rate limits
+/// Transaction type for budget operations with specific rate limits
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TransactionType {
-    /// Read-only operations (queries, overviews)
-    Query,
-    /// Budget modifications (create, update, delete budgets)
+    /// Budget operations (create, update, delete, view budgets)
     BudgetModification,
+    // TODO: Add other transaction types as needed:
+    // - UserManagement (user registration, profile updates)
+    // - Reporting (analytics, reports generation)
+    // - Settings (app configuration, preferences)
 }
 
 impl TransactionType {
-    /// Get the rate limit for this transaction type
+    /// Get the rate limit for budget operations
     pub fn get_limit(&self) -> u32 {
         match self {
-            Self::Query => 60,              // 60 requests per minute
-            Self::BudgetModification => 30, // 30 requests per minute
+            Self::BudgetModification => 30, // 30 requests per minute for budget operations
         }
     }
 
     /// Get the time window in seconds
     pub fn get_window_seconds(&self) -> u64 {
-        60 // All use 1-minute windows
+        60 // 1-minute window
     }
 }
 
 /// Display implementation for stable Redis keys.
 ///
 /// Uses explicit string representation instead of `as u8` to avoid fragility
-/// from enum reordering. Redis keys become readable: "rate_limit:ip:device:query"
+/// from enum reordering. Redis keys become readable: "rate_limit:ip:device:budget_modification"
 /// instead of "rate_limit:ip:device:0".
 impl fmt::Display for TransactionType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Query => write!(f, "query"),
             Self::BudgetModification => write!(f, "budget_modification"),
         }
     }
@@ -66,7 +66,7 @@ impl RateLimitKey {
     /// Convert to Redis key for main rate limit.
     ///
     /// Uses Display trait for stable string representation.
-    /// Example: "rate_limit:192.168.1.1:device123:query"
+    /// Example: "rate_limit:192.168.1.1:device123:budget_modification"
     pub fn to_redis_key(&self) -> String {
         let device_part = self.device_id.as_deref().unwrap_or("unknown");
         format!(

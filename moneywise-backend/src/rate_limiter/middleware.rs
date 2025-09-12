@@ -30,22 +30,25 @@ pub fn extract_rate_limit_info(req: &axum::http::Request<axum::body::Body>) -> R
         .and_then(|h| h.to_str().ok())
         .and_then(|s| validate_device_id(s).then_some(s.to_string()));
 
-    // Determine transaction type from path using precise matching
+    // Determine transaction type from path
     let path = req.uri().path();
-    // Use regex to match exact budget endpoints: /budgets followed by / or end of string
+    // Use regex to match budget endpoints: /budgets followed by / or end of string
     // This prevents false positives like /user-budgets or /my-budgets
     let transaction_type = match regex::Regex::new(r"^/budgets(/|$)") {
         Ok(budget_endpoint_regex) => {
             if budget_endpoint_regex.is_match(path) {
                 TransactionType::BudgetModification
             } else {
-                TransactionType::Query
+                // TODO: Implement rate limiting for non-budget endpoints
+                // For now, log warning and use budget rate limiting as fallback
+                tracing::warn!("Non-budget endpoint '{}' using budget rate limiting - implement specific rate limiting", path);
+                TransactionType::BudgetModification
             }
         }
         Err(e) => {
             tracing::error!("Failed to compile budget endpoint regex: {}", e);
-            // Fallback to query type if regex compilation fails
-            TransactionType::Query
+            // Fallback to budget type if regex compilation fails
+            TransactionType::BudgetModification
         }
     };
 
