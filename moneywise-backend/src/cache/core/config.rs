@@ -5,6 +5,7 @@
 //! but can be overridden via environment variables.
 
 use std::time::Duration;
+use tracing::warn;
 
 /// Cache configuration with TTL settings and Redis connection parameters.
 /// Different data types have different cache durations based on update frequency.
@@ -28,34 +29,22 @@ pub struct CacheConfig {
 
 impl Default for CacheConfig {
     /// Build a configuration from environment variables with sensible defaults.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if environment variables contain invalid values
+    /// that cannot be parsed as the expected types. This is intentional for
+    /// configuration errors that should be caught at startup.
     fn default() -> Self {
         let redis_url =
             std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".to_string());
 
-        let overview_ttl = std::env::var("CACHE_OVERVIEW_TTL_SECS")
-            .unwrap_or_else(|_| "900".to_string())
-            .parse::<u64>()
-            .unwrap_or(900);
-        let categories_ttl = std::env::var("CACHE_CATEGORIES_TTL_SECS")
-            .unwrap_or_else(|_| "300".to_string())
-            .parse::<u64>()
-            .unwrap_or(300);
-        let budget_ttl = std::env::var("CACHE_BUDGET_TTL_SECS")
-            .unwrap_or_else(|_| "600".to_string())
-            .parse::<u64>()
-            .unwrap_or(600);
-        let max_connections = std::env::var("REDIS_MAX_CONNECTIONS")
-            .unwrap_or_else(|_| "10".to_string())
-            .parse::<usize>()
-            .unwrap_or(10);
-        let connection_timeout = std::env::var("REDIS_CONNECTION_TIMEOUT_SECS")
-            .unwrap_or_else(|_| "5".to_string())
-            .parse::<u64>()
-            .unwrap_or(5);
-        let retry_attempts = std::env::var("REDIS_RETRY_ATTEMPTS")
-            .unwrap_or_else(|_| "3".to_string())
-            .parse::<u32>()
-            .unwrap_or(3);
+        let overview_ttl = parse_env_with_default("CACHE_OVERVIEW_TTL_SECS", 900);
+        let categories_ttl = parse_env_with_default("CACHE_CATEGORIES_TTL_SECS", 300);
+        let budget_ttl = parse_env_with_default("CACHE_BUDGET_TTL_SECS", 600);
+        let max_connections = parse_env_with_default("REDIS_MAX_CONNECTIONS", 10);
+        let connection_timeout = parse_env_with_default("REDIS_CONNECTION_TIMEOUT_SECS", 5);
+        let retry_attempts = parse_env_with_default("REDIS_RETRY_ATTEMPTS", 3);
 
         Self {
             redis_url,
@@ -66,5 +55,29 @@ impl Default for CacheConfig {
             connection_timeout: Duration::from_secs(connection_timeout),
             retry_attempts,
         }
+    }
+}
+
+/// Parse an environment variable with a default value, logging warnings for invalid values.
+///
+/// This function provides better error visibility than `unwrap_or()` by logging
+/// when environment variables contain invalid values that cannot be parsed.
+fn parse_env_with_default<T>(var_name: &str, default_value: T) -> T
+where
+    T: std::str::FromStr + std::fmt::Display + Clone,
+    T::Err: std::fmt::Display,
+{
+    match std::env::var(var_name) {
+        Ok(value) => match value.parse::<T>() {
+            Ok(parsed) => parsed,
+            Err(e) => {
+                warn!(
+                    "Invalid value '{}' for environment variable '{}': {}. Using default: {}",
+                    value, var_name, e, default_value
+                );
+                default_value
+            }
+        },
+        Err(_) => default_value,
     }
 }

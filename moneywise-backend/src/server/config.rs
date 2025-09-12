@@ -24,10 +24,8 @@ pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>> 
 
     // Default to 3000 if PORT is not set
     // Parse the port from the environment variable and convert it to a u16
-    let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string())
-        .parse::<u16>()
-        .expect("PORT must be a valid u16");
+    let port = parse_port_env_with_default("PORT", 3000)
+        .map_err(|e| format!("Port configuration error: {}", e))?;
 
     // Parse the address string into a SocketAddr for binding
     let addr = format!("{}:{}", host, port)
@@ -42,4 +40,36 @@ pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>> 
         config.port
     );
     Ok(config)
+}
+
+/// Parse a port environment variable with validation.
+///
+/// Validates that the port is within valid range (1-65535) and returns proper errors
+/// for invalid values.
+fn parse_port_env_with_default(var_name: &str, default_value: u16) -> Result<u16, String> {
+    match std::env::var(var_name) {
+        Ok(value) => match value.parse::<u16>() {
+            Ok(parsed) => {
+                if parsed == 0 {
+                    let error_msg = format!(
+                        "Invalid port value '{}' for environment variable '{}': port cannot be 0",
+                        value, var_name
+                    );
+                    tracing::error!("{}", error_msg);
+                    Err(error_msg)
+                } else {
+                    Ok(parsed)
+                }
+            }
+            Err(e) => {
+                let error_msg = format!(
+                    "Invalid port value '{}' for environment variable '{}': {}",
+                    value, var_name, e
+                );
+                tracing::error!("{}", error_msg);
+                Err(error_msg)
+            }
+        },
+        Err(_) => Ok(default_value),
+    }
 }

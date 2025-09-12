@@ -34,11 +34,19 @@ pub fn extract_rate_limit_info(req: &axum::http::Request<axum::body::Body>) -> R
     let path = req.uri().path();
     // Use regex to match exact budget endpoints: /budgets followed by / or end of string
     // This prevents false positives like /user-budgets or /my-budgets
-    let budget_endpoint_regex = regex::Regex::new(r"^/budgets(/|$)").unwrap();
-    let transaction_type = if budget_endpoint_regex.is_match(path) {
-        TransactionType::BudgetModification
-    } else {
-        TransactionType::Query
+    let transaction_type = match regex::Regex::new(r"^/budgets(/|$)") {
+        Ok(budget_endpoint_regex) => {
+            if budget_endpoint_regex.is_match(path) {
+                TransactionType::BudgetModification
+            } else {
+                TransactionType::Query
+            }
+        }
+        Err(e) => {
+            tracing::error!("Failed to compile budget endpoint regex: {}", e);
+            // Fallback to query type if regex compilation fails
+            TransactionType::Query
+        }
     };
 
     RateLimitKey::new(ip, device_id, transaction_type)

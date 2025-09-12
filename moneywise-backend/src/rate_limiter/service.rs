@@ -65,24 +65,39 @@ impl RateLimitService {
 
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .map_err(|e| {
+                error!("Failed to get current time: {}", e);
+                RateLimitError::RedisError(redis::RedisError::from((redis::ErrorKind::IoError, "SystemTime error")))
+            })?
             .as_secs();
 
         let main_key = key.to_redis_key();
         let window_seconds = tx_type.get_window_seconds();
 
         // Atomically increment and get the new count
-        let current_count: u32 = conn
-            .incr(&main_key, 1)
-            .await
-            .unwrap_or(0);
+        let current_count: u32 = match conn.incr(&main_key, 1).await {
+            Ok(count) => count,
+            Err(e) => {
+                error!("Failed to increment rate limit counter for key {}: {}", main_key, e);
+                if self.config.graceful_degradation {
+                    warn!("Allowing request due to graceful degradation mode");
+                    // Return allowed result with conservative remaining count
+                    return Ok(RateLimitResult::allowed(
+                        main_limit - 1, // Assume one request used
+                        now + window_seconds,
+                        tx_type,
+                    ));
+                }
+                return Err(RateLimitError::RedisError(e));
+            }
+        };
 
         // Set expiry for automatic cleanup (only on first increment)
         if current_count == 1 {
-            let _: () = conn
-                .expire(&main_key, (window_seconds + 60) as i64) // Extra 60s buffer
-                .await
-                .unwrap_or_default();
+            if let Err(e) = conn.expire::<&str, i64>(&main_key, (window_seconds + 60) as i64).await {
+                // Log the error but don't fail the request - Redis will eventually clean up
+                warn!("Failed to set expiry for rate limit key {}: {}", main_key, e);
+            }
         }
 
         if current_count >= main_limit {
