@@ -1,6 +1,7 @@
 //! Rate limiting types and enums
 
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// Different types of financial transactions with specific rate limits
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -26,6 +27,20 @@ impl TransactionType {
     }
 }
 
+/// Display implementation for stable Redis keys.
+///
+/// Uses explicit string representation instead of `as u8` to avoid fragility
+/// from enum reordering. Redis keys become readable: "rate_limit:ip:device:query"
+/// instead of "rate_limit:ip:device:0".
+impl fmt::Display for TransactionType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Query => write!(f, "query"),
+            Self::BudgetModification => write!(f, "budget_modification"),
+        }
+    }
+}
+
 /// Rate limit key components for Redis storage
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RateLimitKey {
@@ -48,12 +63,15 @@ impl RateLimitKey {
         }
     }
 
-    /// Convert to Redis key for main rate limit
+    /// Convert to Redis key for main rate limit.
+    ///
+    /// Uses Display trait for stable string representation.
+    /// Example: "rate_limit:192.168.1.1:device123:query"
     pub fn to_redis_key(&self) -> String {
         let device_part = self.device_id.as_deref().unwrap_or("unknown");
         format!(
             "rate_limit:{}:{}:{}",
-            self.ip_address, device_part, self.transaction_type as u8
+            self.ip_address, device_part, self.transaction_type
         )
     }
 }
