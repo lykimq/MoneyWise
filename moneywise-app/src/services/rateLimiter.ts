@@ -10,9 +10,12 @@
  */
 
 // Static configuration for budget operations - simple and reliable
+// IMPORTANT: These limits MUST match the backend rate limiting configuration
+// Backend: 30 requests per minute for BudgetModification (see backend/src/rate_limiter/types.rs)
+// Backend: 60-second window (see backend/src/rate_limiter/types.rs)
 const BUDGET_RATE_LIMIT_CONFIG = {
-    maxRequests: 30,
-    windowMs: 60000, // 1 minute
+    maxRequests: 30, // Matches backend TransactionType::BudgetModification.get_limit()
+    windowMs: 60000, // 1 minute - matches backend TransactionType::BudgetModification.get_window_seconds()
     keyPrefix: "budget_modification"
 };
 
@@ -161,6 +164,10 @@ export const getRateLimiter = (endpoint: string): RateLimiter => {
     // - Reporting endpoints (analytics, exports)
     // - Settings endpoints (configuration, preferences)
     // All endpoints currently use the same budget rate limiter
+    //
+    // NOTE: When adding new rate limiters, ensure they match backend limits:
+    // - Backend rate limits are defined in backend/src/rate_limiter/types.rs
+    // - Backend headers are set in backend/src/rate_limiter/middleware.rs
     return budgetRateLimiter;
 };
 

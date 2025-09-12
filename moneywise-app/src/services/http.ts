@@ -180,6 +180,8 @@ export class HttpClient {
         }
 
         // Check rate limiting and record the request in one operation.
+        // NOTE: Client-side rate limiting matches backend limits (30 req/min for budget operations)
+        // Backend rate limiting is the authoritative source - see backend/src/rate_limiter/
         const limiter = getRateLimiter(endpoint);
         if (!limiter.isAllowed(endpoint)) {
             const timeUntilReset = limiter.getTimeUntilReset(endpoint);
