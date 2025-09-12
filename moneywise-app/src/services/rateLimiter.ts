@@ -172,12 +172,12 @@ class RateLimiter {
  * Rate limiting configurations for different types of API operations.
  *
  * Two separate rate limit configurations are defined:
- * 1. Budget Operations (30 req/min):
+ * 1. Budget Modification Operations (30 req/min):
  *    - Lower limit because budget operations are more resource-intensive
- *    - Applies to all /budget and /budgets endpoints
+ *    - Applies to all /budgets endpoints
  *    - Example: fetching budget overviews, updating budget items
  *
- * 2. General Operations (60 req/min):
+ * 2. Query Operations (60 req/min):
  *    - Higher limit for standard API operations
  *    - Applies to all non-budget related endpoints
  *    - Example: user settings, general app operations
@@ -188,15 +188,15 @@ class RateLimiter {
  * - keyGenerator: Function to create unique keys for rate limit tracking
  */
 export const rateLimitConfigs = {
-    budget: {
+    budgetModification: {
         maxRequests: 30,    // 30 requests per minute for budget operations
         windowMs: 60 * 1000, // 1 minute window
-        keyGenerator: (endpoint: string) => `budgets:${endpoint}`, // Prefixes budget endpoints for tracking (using plural form to match API endpoints)
+        keyGenerator: (endpoint: string) => `budget_modification:${endpoint}`, // Prefixes budget endpoints for tracking
     },
-    general: {
+    query: {
         maxRequests: 60,    // 60 requests per minute for general operations
         windowMs: 60 * 1000, // 1 minute window
-        keyGenerator: (endpoint: string) => `general:${endpoint}`, // Prefixes general endpoints for tracking
+        keyGenerator: (endpoint: string) => `query:${endpoint}`, // Prefixes general endpoints for tracking
     },
 } as const;
 
@@ -205,22 +205,22 @@ export const rateLimitConfigs = {
  * Each instance manages its own request history and cleanup.
  */
 export const rateLimiters = {
-    budget: new RateLimiter(rateLimitConfigs.budget),
-    general: new RateLimiter(rateLimitConfigs.general),
+    budgetModification: new RateLimiter(rateLimitConfigs.budgetModification),
+    query: new RateLimiter(rateLimitConfigs.query),
 };
 
 /**
  * Determines which rate limiter to use based on the endpoint path.
  *
  * This function routes requests to the appropriate rate limiter:
- * - Budget endpoints (/budgets): 30 requests/minute limit
- * - All other endpoints: 60 requests/minute limit
+ * - Budget endpoints (/budgets): 30 requests/minute limit (budgetModification)
+ * - All other endpoints: 60 requests/minute limit (query)
  *
  * Example routing:
- * - /budgets/overview → budget rate limiter (30 req/min)
- * - /budgets/123 → budget rate limiter (30 req/min)
- * - /settings → general rate limiter (60 req/min)
- * - /user-budgets → general rate limiter (60 req/min) - NOT a budget endpoint
+ * - /budgets/overview → budgetModification rate limiter (30 req/min)
+ * - /budgets/123 → budgetModification rate limiter (30 req/min)
+ * - /settings → query rate limiter (60 req/min)
+ * - /user-budgets → query rate limiter (60 req/min) - NOT a budget endpoint
  *
  * @param endpoint - The API endpoint path
  * @returns The appropriate RateLimiter instance
@@ -228,14 +228,15 @@ export const rateLimiters = {
 export const getRateLimiter = (endpoint: string): RateLimiter => {
     // Use regex to match exact budget endpoints: /budgets followed by / or end of string
     // This prevents false positives like /user-budgets or /my-budgets
+    // Note: This matches the backend regex pattern in middleware.rs
     const budgetEndpointRegex = /^\/budgets(\/|$)/;
 
-    // Route to budget rate limiter (30 req/min) for budget-related endpoints
+    // Route to budgetModification rate limiter (30 req/min) for budget-related endpoints
     if (budgetEndpointRegex.test(endpoint)) {
-        return rateLimiters.budget;
+        return rateLimiters.budgetModification;
     }
-    // All other endpoints use general rate limiter (60 req/min)
-    return rateLimiters.general;
+    // All other endpoints use query rate limiter (60 req/min)
+    return rateLimiters.query;
 };
 
 
