@@ -220,13 +220,18 @@ export const rateLimiters = {
  * - /budgets/overview → budget rate limiter (30 req/min)
  * - /budgets/123 → budget rate limiter (30 req/min)
  * - /settings → general rate limiter (60 req/min)
+ * - /user-budgets → general rate limiter (60 req/min) - NOT a budget endpoint
  *
  * @param endpoint - The API endpoint path
  * @returns The appropriate RateLimiter instance
  */
 export const getRateLimiter = (endpoint: string): RateLimiter => {
+    // Use regex to match exact budget endpoints: /budgets followed by / or end of string
+    // This prevents false positives like /user-budgets or /my-budgets
+    const budgetEndpointRegex = /^\/budgets(\/|$)/;
+
     // Route to budget rate limiter (30 req/min) for budget-related endpoints
-    if (endpoint.includes('/budgets')) {
+    if (budgetEndpointRegex.test(endpoint)) {
         return rateLimiters.budget;
     }
     // All other endpoints use general rate limiter (60 req/min)

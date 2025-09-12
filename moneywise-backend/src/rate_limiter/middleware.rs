@@ -30,9 +30,12 @@ pub fn extract_rate_limit_info(req: &axum::http::Request<axum::body::Body>) -> R
         .and_then(|h| h.to_str().ok())
         .and_then(|s| validate_device_id(s).then_some(s.to_string()));
 
-    // Determine transaction type from path
+    // Determine transaction type from path using precise matching
     let path = req.uri().path();
-    let transaction_type = if path.contains("/budgets") {
+    // Use regex to match exact budget endpoints: /budgets followed by / or end of string
+    // This prevents false positives like /user-budgets or /my-budgets
+    let budget_endpoint_regex = regex::Regex::new(r"^/budgets(/|$)").unwrap();
+    let transaction_type = if budget_endpoint_regex.is_match(path) {
         TransactionType::BudgetModification
     } else {
         TransactionType::Query

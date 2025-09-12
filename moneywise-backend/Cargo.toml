@@ -48,3 +48,6 @@ config = "0.14"
 
 # Pin ring to avoid symbol issues with SQLx 0.6
 ring = "0.16"
+
+# Regex for precise path matching
+regex = "1.0"
