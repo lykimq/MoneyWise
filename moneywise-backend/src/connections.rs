@@ -7,6 +7,7 @@ use crate::database::connection::init_database;
 use crate::server::config::init_server_config;
 use crate::rate_limiter::{RateLimitService, RateLimitConfig};
 use sqlx::PgPool;
+// Removed unused Arc import
 use tracing;
 
 /// Initialize all connections (database, cache, rate limiter, and server configuration)
