@@ -13,8 +13,8 @@ use tracing;
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
     // Get the database URL from the environment variable
     // This is required for the connection to the database
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    let database_url =
+        std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     // Get the maximum number of connections from the environment variable
     let max_connections = std::env::var("DATABASE_MAX_CONNECTIONS")
@@ -22,7 +22,10 @@ pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
         .parse::<u32>()
         .map_err(|e| {
             tracing::error!("Invalid DATABASE_MAX_CONNECTIONS value: {}", e);
-            sqlx::Error::Configuration(format!("DATABASE_MAX_CONNECTIONS must be a valid u32: {}", e).into())
+            sqlx::Error::Configuration(
+                format!("DATABASE_MAX_CONNECTIONS must be a valid u32: {}", e)
+                    .into(),
+            )
         })?;
 
     // Create a connection pool with the specified settings

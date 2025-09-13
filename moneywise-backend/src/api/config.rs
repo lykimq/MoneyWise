@@ -59,9 +59,9 @@ pub async fn get_rate_limits() -> Json<Value> {
 }
 
 /// Create configuration API routes
-pub fn create_config_routes() -> Router<(sqlx::PgPool, crate::cache::domains::budget::BudgetCache)> {
+pub fn create_config_routes(
+) -> Router<(sqlx::PgPool, crate::cache::domains::budget::BudgetCache)> {
     Router::new()
         .route("/", get(get_config_summary))
         .route("/rate-limits", get(get_rate_limits))
 }
-

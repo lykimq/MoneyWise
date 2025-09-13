@@ -34,8 +34,8 @@ pub struct Budget {
     pub category_id: Uuid,
     pub planned: Decimal,
     pub spent: Decimal,
-    pub carryover: Decimal,        // NOT NULL DEFAULT 0 in database
-    pub currency: String,          // character(3) in PostgreSQL - Bpchar maps to String
+    pub carryover: Decimal, // NOT NULL DEFAULT 0 in database
+    pub currency: String, // character(3) in PostgreSQL - Bpchar maps to String
     pub created_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
     pub updated_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
 }

@@ -7,10 +7,10 @@
 // Style
 // - Each test includes short notes on intent (Test), reason (Why), and production value (Impact).
 
-use std::time::Duration;
-use moneywise_backend::{CacheConfig, cache::core::service::CacheService};
 use moneywise_backend::database;
+use moneywise_backend::{cache::core::service::CacheService, CacheConfig};
 use std::env;
+use std::time::Duration;
 
 #[test]
 fn test_cache_config_usage() {

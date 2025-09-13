@@ -9,9 +9,9 @@ use axum::{
     Router,
 };
 use chrono::Datelike;
+use rust_decimal::Decimal;
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
-use rust_decimal::Decimal;
 use uuid::Uuid;
 
 use crate::{
@@ -40,7 +40,6 @@ pub fn budget_routes() -> Router<AppState> {
         .route("/:id", put(update_budget))
         .route("/:id", get(get_budget_by_id))
 }
-
 
 // ================================================================
 // 2) Public HTTP handlers
@@ -71,7 +70,9 @@ async fn get_budget_overview(
     State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
-    let month = query.month.unwrap_or_else(|| chrono::Utc::now().month() as i16);
+    let month = query
+        .month
+        .unwrap_or_else(|| chrono::Utc::now().month() as i16);
     let year = query.year.unwrap_or_else(|| chrono::Utc::now().year());
 
     // Convert to strings for cache keys
@@ -81,20 +82,25 @@ async fn get_budget_overview(
     let currency_filter = query.currency.as_deref();
 
     // Try to get data from cache first
-    if let Some(cached_overview) =
-        cache
-            .get_cached_budget_overview(&month_str, &year_str, currency_filter)
-            .await?
+    if let Some(cached_overview) = cache
+        .get_cached_budget_overview(&month_str, &year_str, currency_filter)
+        .await?
     {
         return Ok(Json(cached_overview));
     }
 
     // Cache miss - fetch from database and cache the result
-    let overview = get_budget_overview_data(&pool, month, year, currency_filter).await?;
+    let overview =
+        get_budget_overview_data(&pool, month, year, currency_filter).await?;
 
     // Cache the result for future requests (don't block on cache write)
     let _ = cache
-        .cache_budget_overview(&month_str, &year_str, currency_filter, &overview)
+        .cache_budget_overview(
+            &month_str,
+            &year_str,
+            currency_filter,
+            &overview,
+        )
         .await;
 
     Ok(Json(overview))
@@ -146,12 +152,10 @@ async fn get_budgets(
 ) -> Result<Json<BudgetResponse>> {
     // Default to current month/year if not provided
     // This provides a better UX by showing relevant data immediately
-    let month = query.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as i16
-    });
-    let year = query.year.unwrap_or_else(|| {
-        chrono::Utc::now().year()
-    });
+    let month = query
+        .month
+        .unwrap_or_else(|| chrono::Utc::now().month() as i16);
+    let year = query.year.unwrap_or_else(|| chrono::Utc::now().year());
 
     // Convert to strings for cache keys
     let month_str = month.to_string();
@@ -159,8 +163,12 @@ async fn get_budgets(
 
     // Try to get cached data first
     let currency_filter = query.currency.as_deref();
-    let cached_overview = cache.get_cached_budget_overview(&month_str, &year_str, currency_filter).await?;
-    let cached_categories = cache.get_cached_category_budgets(&month_str, &year_str, currency_filter).await?;
+    let cached_overview = cache
+        .get_cached_budget_overview(&month_str, &year_str, currency_filter)
+        .await?;
+    let cached_categories = cache
+        .get_cached_category_budgets(&month_str, &year_str, currency_filter)
+        .await?;
 
     let (overview, categories) = match (cached_overview, cached_categories) {
         (Some(overview), Some(categories)) => {
@@ -175,8 +183,22 @@ async fn get_budgets(
             )?;
 
             // Cache the results for future requests (don't block on cache writes)
-            let _ = cache.cache_budget_overview(&month_str, &year_str, currency_filter, &overview).await;
-            let _ = cache.cache_category_budgets(&month_str, &year_str, currency_filter, &categories).await;
+            let _ = cache
+                .cache_budget_overview(
+                    &month_str,
+                    &year_str,
+                    currency_filter,
+                    &overview,
+                )
+                .await;
+            let _ = cache
+                .cache_category_budgets(
+                    &month_str,
+                    &year_str,
+                    currency_filter,
+                    &categories,
+                )
+                .await;
 
             (overview, categories)
         }
@@ -238,11 +260,15 @@ async fn create_budget(
 ) -> Result<Json<BudgetApi>> {
     // Validate input data
     if payload.planned <= Decimal::from(0) {
-        return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
+        return Err(AppError::Validation(
+            "Planned amount must be greater than 0".to_string(),
+        ));
     }
 
     if payload.category_id.is_empty() {
-        return Err(AppError::Validation("Category ID is required".to_string()));
+        return Err(AppError::Validation(
+            "Category ID is required".to_string(),
+        ));
     }
 
     if payload.currency.is_empty() {
@@ -252,31 +278,36 @@ async fn create_budget(
     // Validate optional month/year range to match database constraints
     if let Some(m) = payload.month {
         if m < 1 || m > 12 {
-            return Err(AppError::Validation("Month must be between 1 and 12".to_string()));
+            return Err(AppError::Validation(
+                "Month must be between 1 and 12".to_string(),
+            ));
         }
     }
     if let Some(y) = payload.year {
         if y < 2000 {
-            return Err(AppError::Validation("Year must be 2000 or later".to_string()));
+            return Err(AppError::Validation(
+                "Year must be 2000 or later".to_string(),
+            ));
         }
     }
 
     // Validate currency length to match char(3)
     if payload.currency.len() != 3 {
-        return Err(AppError::Validation("Currency must be a 3-letter code".to_string()));
+        return Err(AppError::Validation(
+            "Currency must be a 3-letter code".to_string(),
+        ));
     }
 
     // Parse category_id to UUID
-    let category_id = Uuid::parse_str(&payload.category_id)
-        .map_err(|_| AppError::Validation("Invalid category ID format".to_string()))?;
+    let category_id = Uuid::parse_str(&payload.category_id).map_err(|_| {
+        AppError::Validation("Invalid category ID format".to_string())
+    })?;
 
     // Use current month/year if not provided
-    let month = payload.month.unwrap_or_else(|| {
-        chrono::Utc::now().month() as i16
-    });
-    let year = payload.year.unwrap_or_else(|| {
-        chrono::Utc::now().year()
-    });
+    let month = payload
+        .month
+        .unwrap_or_else(|| chrono::Utc::now().month() as i16);
+    let year = payload.year.unwrap_or_else(|| chrono::Utc::now().year());
 
     // Generate a secure UUID for the budget ID
     // This prevents ID enumeration and provides global uniqueness
@@ -332,7 +363,13 @@ async fn create_budget(
     // This ensures cache consistency when new data is added
     let month_str = budget.month.to_string();
     let year_str = budget.year.to_string();
-    let _ = cache.invalidate_month_cache(&month_str, &year_str, Some(payload.currency.as_str())).await;
+    let _ = cache
+        .invalidate_month_cache(
+            &month_str,
+            &year_str,
+            Some(payload.currency.as_str()),
+        )
+        .await;
 
     Ok(Json(budget_api))
 }
@@ -376,8 +413,9 @@ async fn update_budget(
     Json(payload): Json<UpdateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Parse ID to UUID
-    let budget_id = Uuid::parse_str(&id)
-        .map_err(|_| AppError::Validation("Invalid budget ID format".to_string()))?;
+    let budget_id = Uuid::parse_str(&id).map_err(|_| {
+        AppError::Validation("Invalid budget ID format".to_string())
+    })?;
 
     // Fetch current budget state to ensure it exists
     // This provides better error messages and maintains data consistency
@@ -393,13 +431,17 @@ async fn update_budget(
     // This allows flexible updates without requiring all fields
     if let Some(planned) = payload.planned {
         if planned <= Decimal::from(0) {
-            return Err(AppError::Validation("Planned amount must be greater than 0".to_string()));
+            return Err(AppError::Validation(
+                "Planned amount must be greater than 0".to_string(),
+            ));
         }
         budget.planned = planned;
     }
     if let Some(carryover) = payload.carryover {
         if carryover < Decimal::from(0) {
-            return Err(AppError::Validation("Carryover amount cannot be negative".to_string()));
+            return Err(AppError::Validation(
+                "Carryover amount cannot be negative".to_string(),
+            ));
         }
         budget.carryover = carryover;
     }
@@ -439,7 +481,13 @@ async fn update_budget(
     let month_str = updated_budget.month.to_string();
     let year_str = updated_budget.year.to_string();
     let _ = cache.invalidate_budget_cache(&id).await;
-    let _ = cache.invalidate_month_cache(&month_str, &year_str, Some(currency_owned.as_str())).await;
+    let _ = cache
+        .invalidate_month_cache(
+            &month_str,
+            &year_str,
+            Some(currency_owned.as_str()),
+        )
+        .await;
 
     Ok(Json(budget_api))
 }
@@ -483,8 +531,9 @@ async fn get_budget_by_id(
     }
 
     // Parse ID to UUID
-    let budget_id = Uuid::parse_str(&id)
-        .map_err(|_| AppError::Validation("Invalid budget ID format".to_string()))?;
+    let budget_id = Uuid::parse_str(&id).map_err(|_| {
+        AppError::Validation("Invalid budget ID format".to_string())
+    })?;
 
     // Cache miss - fetch from database
     let budget = sqlx::query_as::<_, Budget>(
@@ -561,7 +610,10 @@ async fn get_budget_overview_data(
             planned,
             spent,
             remaining,
-            currency: result.try_get::<String, _>("currency")?.trim().to_string(),
+            currency: result
+                .try_get::<String, _>("currency")?
+                .trim()
+                .to_string(),
         })
     } else {
         // No data for this month/year: return zeros and default currency (EUR) if not provided
@@ -663,7 +715,8 @@ fn generate_budget_insights(
     // Identify categories that exceeded their planned budget
     for category in categories {
         if category.percentage > Decimal::from(100) {
-            let over_percentage = (category.percentage - Decimal::from(100)).round_dp(2);
+            let over_percentage =
+                (category.percentage - Decimal::from(100)).round_dp(2);
             insights.push(BudgetInsight {
                 type_: "warning".to_string(),
                 message: format!(

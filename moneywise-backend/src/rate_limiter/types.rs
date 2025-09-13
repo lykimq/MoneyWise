@@ -3,6 +3,12 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// Defines the rate limit for BudgetModification transactions.
+const BUDGET_MODIFICATION_LIMIT: u32 = 30; // 30 requests per minute
+
+/// Defines the time window in seconds for rate limits.
+const RATE_LIMIT_WINDOW_SECONDS: u64 = 60; // 1-minute window
+
 /// Transaction type for budget operations with specific rate limits
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TransactionType {
@@ -18,13 +24,13 @@ impl TransactionType {
     /// Get the rate limit for budget operations
     pub fn get_limit(&self) -> u32 {
         match self {
-            Self::BudgetModification => 30, // 30 requests per minute for budget operations
+            Self::BudgetModification => BUDGET_MODIFICATION_LIMIT,
         }
     }
 
     /// Get the time window in seconds
     pub fn get_window_seconds(&self) -> u64 {
-        60 // 1-minute window
+        RATE_LIMIT_WINDOW_SECONDS
     }
 }
 
@@ -88,7 +94,11 @@ pub struct RateLimitResult {
 
 impl RateLimitResult {
     /// Create a result for an allowed request
-    pub fn allowed(remaining: u32, reset_time: u64, limit_type: TransactionType) -> Self {
+    pub fn allowed(
+        remaining: u32,
+        reset_time: u64,
+        limit_type: TransactionType,
+    ) -> Self {
         Self {
             allowed: true,
             remaining_requests: remaining,
@@ -99,7 +109,11 @@ impl RateLimitResult {
     }
 
     /// Create a result for a rate-limited request
-    pub fn rate_limited(reset_time: u64, retry_after: u64, limit_type: TransactionType) -> Self {
+    pub fn rate_limited(
+        reset_time: u64,
+        retry_after: u64,
+        limit_type: TransactionType,
+    ) -> Self {
         Self {
             allowed: false,
             remaining_requests: 0,

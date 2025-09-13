@@ -10,11 +10,11 @@ use tokio_retry::{
     strategy::{jitter, ExponentialBackoff},
     RetryIf,
 };
-use tracing::{warn, error};
+use tracing::{error, warn};
 
+use crate::cache::core::config::CacheConfig;
 use crate::error::{AppError, Result};
 use redis::ErrorKind as RedisErrorKind;
-use crate::cache::core::config::CacheConfig;
 
 /// Determine if a Redis error is transient and should be retried.
 /// Returns true for network/cluster and redirection issues.
@@ -23,9 +23,15 @@ pub fn is_transient_error(error: &AppError) -> bool {
         // Redis-specific classification using error kinds
         AppError::Cache(redis_err) => match redis_err.kind() {
             // Network/cluster issues and redirections: retry
-            RedisErrorKind::IoError | RedisErrorKind::TryAgain | RedisErrorKind::Moved | RedisErrorKind::Ask | RedisErrorKind::ClusterDown => true,
+            RedisErrorKind::IoError
+            | RedisErrorKind::TryAgain
+            | RedisErrorKind::Moved
+            | RedisErrorKind::Ask
+            | RedisErrorKind::ClusterDown => true,
             // Auth, type, or client-side parse errors are permanent
-            RedisErrorKind::AuthenticationFailed | RedisErrorKind::TypeError | RedisErrorKind::ClientError => false,
+            RedisErrorKind::AuthenticationFailed
+            | RedisErrorKind::TypeError
+            | RedisErrorKind::ClientError => false,
             // Default: be conservative and do not retry
             _ => false,
         },
@@ -41,7 +47,7 @@ pub fn is_transient_error(error: &AppError) -> bool {
 /// 4. logs each failure and the final give-up
 pub async fn with_retry<F, Fut, T>(
     config: &CacheConfig,
-    mut operation: F
+    mut operation: F,
 ) -> Result<T>
 where
     // FnMut is enough, we only need to call it, not clone it.
@@ -86,7 +92,10 @@ where
         Ok(val) => Ok(val),
         Err(e) => {
             // either exhausted all attempts or permenant error
-            error!("Redis operation failed after {} retries: {}", config.retry_attempts, e);
+            error!(
+                "Redis operation failed after {} retries: {}",
+                config.retry_attempts, e
+            );
             Err(e)
         }
     }

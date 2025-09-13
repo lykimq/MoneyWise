@@ -1,8 +1,10 @@
 //! Domain-aligned cache wrapper over the mock Redis backend.
 
-use moneywise_backend::cache::{CacheConfig, domains::budget::keys};
-use moneywise_backend::cache::core::serialization::{serialize, deserialize};
-use moneywise_backend::models::{BudgetOverviewApi, CategoryBudgetApi, BudgetApi};
+use moneywise_backend::cache::core::serialization::{deserialize, serialize};
+use moneywise_backend::cache::{domains::budget::keys, CacheConfig};
+use moneywise_backend::models::{
+    BudgetApi, BudgetOverviewApi, CategoryBudgetApi,
+};
 
 use crate::common::mock_redis::MockRedis;
 
@@ -20,7 +22,10 @@ pub struct MockBudgetCache {
 
 impl MockBudgetCache {
     pub fn new(config: CacheConfig) -> Self {
-        let mock = MockRedis::new(64 * 1024, crate::common::mock_redis::EvictionPolicy::AllKeysLru);
+        let mock = MockRedis::new(
+            64 * 1024,
+            crate::common::mock_redis::EvictionPolicy::AllKeysLru,
+        );
         Self { mock, config }
     }
 
@@ -35,7 +40,9 @@ impl MockBudgetCache {
     ) {
         let key = keys::overview_key(month, year, currency);
         let json = serialize(overview).unwrap();
-        self.mock.set(key, json, Some(self.config.overview_ttl)).await;
+        self.mock
+            .set(key, json, Some(self.config.overview_ttl))
+            .await;
     }
 
     /// Fetch a month-level `BudgetOverviewApi`, self-healing on corrupt payloads.
@@ -50,9 +57,14 @@ impl MockBudgetCache {
             match deserialize::<BudgetOverviewApi>(json) {
                 Ok(Some(v)) => Some(v),
                 // Self-heal on corrupt data: delete and return None
-                _ => { self.mock.delete(&key).await; None }
+                _ => {
+                    self.mock.delete(&key).await;
+                    None
+                }
             }
-        } else { None }
+        } else {
+            None
+        }
     }
 
     /// Store category-level budgets slice for a given month/year.
@@ -66,7 +78,9 @@ impl MockBudgetCache {
     ) {
         let key = keys::categories_key(month, year, currency);
         let json = serialize(&categories.to_vec()).unwrap();
-        self.mock.set(key, json, Some(self.config.categories_ttl)).await;
+        self.mock
+            .set(key, json, Some(self.config.categories_ttl))
+            .await;
     }
 
     /// Fetch category-level budgets, deleting the key if deserialization fails.
@@ -80,9 +94,14 @@ impl MockBudgetCache {
         if let Some(json) = self.mock.get(&key).await {
             match deserialize::<Vec<CategoryBudgetApi>>(json) {
                 Ok(Some(v)) => Some(v),
-                _ => { self.mock.delete(&key).await; None }
+                _ => {
+                    self.mock.delete(&key).await;
+                    None
+                }
             }
-        } else { None }
+        } else {
+            None
+        }
     }
 
     /// Store an individual `BudgetApi` by id. Uses `budget_ttl`.
@@ -98,13 +117,23 @@ impl MockBudgetCache {
         if let Some(json) = self.mock.get(&key).await {
             match deserialize::<BudgetApi>(json) {
                 Ok(Some(v)) => Some(v),
-                _ => { self.mock.delete(&key).await; None }
+                _ => {
+                    self.mock.delete(&key).await;
+                    None
+                }
             }
-        } else { None }
+        } else {
+            None
+        }
     }
 
     /// Invalidate both overview and categories for a given month/year.
-    pub async fn invalidate_month_cache(&self, month: &str, year: &str, currency: Option<&str>) {
+    pub async fn invalidate_month_cache(
+        &self,
+        month: &str,
+        year: &str,
+        currency: Option<&str>,
+    ) {
         let overview_key = keys::overview_key(month, year, currency);
         let categories_key = keys::categories_key(month, year, currency);
         self.mock.delete(&overview_key).await;
@@ -117,5 +146,3 @@ impl MockBudgetCache {
         self.mock.delete(&key).await;
     }
 }
-
-

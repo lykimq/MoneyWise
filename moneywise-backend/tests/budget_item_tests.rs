@@ -2,9 +2,9 @@
 
 mod common;
 
-use rust_decimal::Decimal;
-use moneywise_backend::{cache::CacheConfig, models::BudgetApi};
 use common::MockBudgetCache;
+use moneywise_backend::{cache::CacheConfig, models::BudgetApi};
+use rust_decimal::Decimal;
 
 /// Test: cache a single budget item, read back, then invalidate
 /// Why: verifies roundtrip serialization, keying, and explicit invalidation behavior
@@ -35,5 +35,3 @@ async fn budget_roundtrip_and_invalidate() {
     cache.invalidate_budget_cache(&budget.id).await;
     assert!(cache.get_cached_budget(&budget.id).await.is_none());
 }
-
-

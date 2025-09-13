@@ -3,17 +3,16 @@
 use crate::rate_limiter::service::RateLimitService;
 use crate::rate_limiter::types::{RateLimitKey, TransactionType};
 use axum::{
-    extract::State,
-    http::StatusCode,
-    middleware::Next,
-    response::IntoResponse,
+    extract::State, http::StatusCode, middleware::Next, response::IntoResponse,
     Json,
 };
 use serde_json::json;
 use std::sync::Arc;
 
 /// Extract rate limit information from request
-pub fn extract_rate_limit_info(req: &axum::http::Request<axum::body::Body>) -> RateLimitKey {
+pub fn extract_rate_limit_info(
+    req: &axum::http::Request<axum::body::Body>,
+) -> RateLimitKey {
     // Get IP address from headers (in production, this should come from a reverse proxy)
     let ip = req
         .headers()
@@ -59,7 +58,11 @@ pub fn extract_rate_limit_info(req: &axum::http::Request<axum::body::Body>) -> R
 fn validate_device_id(device_id: &str) -> bool {
     // Device ID should be 8-64 characters, alphanumeric with hyphens/underscores
     let len = device_id.len();
-    len >= 8 && len <= 64 && device_id.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    len >= 8
+        && len <= 64
+        && device_id
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
 }
 
 /// Rate limiting middleware for Axum
@@ -68,7 +71,6 @@ pub async fn rate_limit_middleware(
     req: axum::http::Request<axum::body::Body>,
     next: Next<axum::body::Body>,
 ) -> impl IntoResponse {
-
     // Extract rate limit information
     let rate_limit_key = extract_rate_limit_info(&req);
 
@@ -96,15 +98,20 @@ pub async fn rate_limit_middleware(
 }
 
 /// Add rate limit headers to response
-fn add_rate_limit_headers(res: &mut axum::response::Response, result: &crate::rate_limiter::types::RateLimitResult) {
+fn add_rate_limit_headers(
+    res: &mut axum::response::Response,
+    result: &crate::rate_limiter::types::RateLimitResult,
+) {
     let headers = res.headers_mut();
 
     // Safely insert headers with proper error handling
-    if let Ok(limit_header) = result.limit_type.get_limit().to_string().parse() {
+    if let Ok(limit_header) = result.limit_type.get_limit().to_string().parse()
+    {
         headers.insert("X-RateLimit-Limit", limit_header);
     }
 
-    if let Ok(remaining_header) = result.remaining_requests.to_string().parse() {
+    if let Ok(remaining_header) = result.remaining_requests.to_string().parse()
+    {
         headers.insert("X-RateLimit-Remaining", remaining_header);
     }
 
@@ -128,7 +135,9 @@ fn add_error_headers(res: &mut axum::response::Response) {
 }
 
 /// Create rate limit error response
-fn create_rate_limit_error(result: &crate::rate_limiter::types::RateLimitResult) -> impl IntoResponse {
+fn create_rate_limit_error(
+    result: &crate::rate_limiter::types::RateLimitResult,
+) -> impl IntoResponse {
     let error_body = json!({
         "error": "Rate limit exceeded",
         "message": format!("Too many requests for {:?}", result.limit_type),

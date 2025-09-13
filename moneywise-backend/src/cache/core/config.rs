@@ -36,14 +36,18 @@ impl Default for CacheConfig {
     /// that cannot be parsed as the expected types. This is intentional for
     /// configuration errors that should be caught at startup.
     fn default() -> Self {
-        let redis_url =
-            std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".to_string());
+        let redis_url = std::env::var("REDIS_URL")
+            .unwrap_or_else(|_| "redis://localhost:6379".to_string());
 
-        let overview_ttl = parse_env_with_default("CACHE_OVERVIEW_TTL_SECS", 900);
-        let categories_ttl = parse_env_with_default("CACHE_CATEGORIES_TTL_SECS", 300);
+        let overview_ttl =
+            parse_env_with_default("CACHE_OVERVIEW_TTL_SECS", 900);
+        let categories_ttl =
+            parse_env_with_default("CACHE_CATEGORIES_TTL_SECS", 300);
         let budget_ttl = parse_env_with_default("CACHE_BUDGET_TTL_SECS", 600);
-        let max_connections = parse_env_with_default("REDIS_MAX_CONNECTIONS", 10);
-        let connection_timeout = parse_env_with_default("REDIS_CONNECTION_TIMEOUT_SECS", 5);
+        let max_connections =
+            parse_env_with_default("REDIS_MAX_CONNECTIONS", 10);
+        let connection_timeout =
+            parse_env_with_default("REDIS_CONNECTION_TIMEOUT_SECS", 5);
         let retry_attempts = parse_env_with_default("REDIS_RETRY_ATTEMPTS", 3);
 
         Self {

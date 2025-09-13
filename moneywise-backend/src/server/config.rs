@@ -15,7 +15,8 @@ pub struct ServerConfig {
 
 /// Initialize server configuration from environment variables
 /// Returns a ServerConfig with host, port, and parsed SocketAddr
-pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>> {
+pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>>
+{
     tracing::info!("Initializing server configuration");
 
     // Configure server host and port from environment variables
@@ -46,7 +47,10 @@ pub fn init_server_config() -> Result<ServerConfig, Box<dyn std::error::Error>> 
 ///
 /// Validates that the port is within valid range (1-65535) and returns proper errors
 /// for invalid values.
-fn parse_port_env_with_default(var_name: &str, default_value: u16) -> Result<u16, String> {
+fn parse_port_env_with_default(
+    var_name: &str,
+    default_value: u16,
+) -> Result<u16, String> {
     match std::env::var(var_name) {
         Ok(value) => match value.parse::<u16>() {
             Ok(parsed) => {

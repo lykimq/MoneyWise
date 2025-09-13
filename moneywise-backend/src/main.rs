@@ -1,8 +1,5 @@
 // Import necessary modules from axum for web framework functionality
-use axum::{
-    Router,
-    middleware,
-};
+use axum::{middleware, Router};
 // Import CORS layer for handling Cross-Origin Resource Sharing
 use tower_http::cors::{Any, CorsLayer};
 // Import tracing subscriber for logging and observability
@@ -38,7 +35,8 @@ async fn main() {
         .with(tracing_subscriber::EnvFilter::new(
             // Use RUST_LOG environment variable or default to "info" level
             // Exclude sqlx query logs to reduce noise in production
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info,sqlx::query=warn".into()),
+            std::env::var("RUST_LOG")
+                .unwrap_or_else(|_| "info,sqlx::query=warn".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -49,25 +47,26 @@ async fn main() {
 
     // Initialize database, Redis connections, rate limiter, and server configuration
     // This establishes connection pools and server settings from environment variables
-    let (pool, cache_service, rate_limiter, server_config) = init_connections().await
+    let (pool, cache_service, rate_limiter, server_config) = init_connections()
+        .await
         .expect("Failed to initialize connections and configuration");
 
     // Configure CORS (Cross-Origin Resource Sharing) settings
     // This allows the API to be accessed from different origins (domains)
     let cors = CorsLayer::new()
-        .allow_origin(Any)      // Allow requests from any origin
-        .allow_methods(Any)     // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-        .allow_headers(Any);    // Allow all headers
+        .allow_origin(Any) // Allow requests from any origin
+        .allow_methods(Any) // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+        .allow_headers(Any); // Allow all headers
 
     // Build the application router with routes and middleware
     let app = Router::new()
-        .nest("/api", create_api_router())  // Mount all API routes under /api path
+        .nest("/api", create_api_router()) // Mount all API routes under /api path
         .nest("/api/config", api::config::create_config_routes()) // Mount simple config routes
         .layer(middleware::from_fn_with_state(
             Arc::new(rate_limiter),
             rate_limit_middleware,
-        ))                                  // Apply rate limiting middleware
-        .layer(cors)                        // Apply CORS middleware
+        )) // Apply rate limiting middleware
+        .layer(cors) // Apply CORS middleware
         .with_state((pool, cache_service)); // Inject database pool and cache service as application state
 
     // Log the server address for debugging and monitoring

@@ -20,7 +20,9 @@ pub fn serialize<T: serde::Serialize>(data: &T) -> Result<String> {
 
 /// Deserialize data from JSON stored in Redis.
 /// Returns deserialized data or `None` on corruption.
-pub fn deserialize<T: serde::de::DeserializeOwned>(json: String) -> Result<Option<T>> {
+pub fn deserialize<T: serde::de::DeserializeOwned>(
+    json: String,
+) -> Result<Option<T>> {
     match serde_json::from_str::<T>(&json) {
         Ok(data) => Ok(Some(data)),
         Err(e) => {

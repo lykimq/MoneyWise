@@ -2,9 +2,9 @@
 
 mod common;
 
-use rust_decimal::Decimal;
-use moneywise_backend::{cache::CacheConfig, models::CategoryBudgetApi};
 use common::MockBudgetCache;
+use moneywise_backend::{cache::CacheConfig, models::CategoryBudgetApi};
+use rust_decimal::Decimal;
 
 /// Test: cache a month of category budgets and fetch the collection back
 /// Why: demonstrates the collection shape and ensures ordering/serialization remain stable
@@ -40,13 +40,20 @@ async fn categories_roundtrip() {
     ];
 
     // verify the categories are not cached before caching where the month is January and the year is 2024 and the currency is USD, it is a fixed month, year and currency for this test to run correctly
-    assert!(cache.get_cached_category_budgets("January", "2024", Some("USD")).await.is_none());
+    assert!(cache
+        .get_cached_category_budgets("January", "2024", Some("USD"))
+        .await
+        .is_none());
 
     // cache the categories
-    cache.cache_category_budgets("January", "2024", Some("USD"), &categories).await;
+    cache
+        .cache_category_budgets("January", "2024", Some("USD"), &categories)
+        .await;
 
     // verify the categories are cached
-    let cached = cache.get_cached_category_budgets("January", "2024", Some("USD")).await;
+    let cached = cache
+        .get_cached_category_budgets("January", "2024", Some("USD"))
+        .await;
     assert!(cached.is_some());
 
     // verify the categories are in the cache
@@ -59,5 +66,3 @@ async fn categories_roundtrip() {
     assert_eq!(cached_categories[0].category_name, "Food");
     assert_eq!(cached_categories[1].category_name, "Transport");
 }
-
-

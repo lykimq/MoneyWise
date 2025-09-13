@@ -2,7 +2,7 @@
 // This module handles the initialization of Redis cache connections
 // with proper error handling and configuration management.
 
-use crate::cache::{CacheConfig, domains::budget::BudgetCache};
+use crate::cache::{domains::budget::BudgetCache, CacheConfig};
 use tracing;
 
 /// Initialize Redis cache service

@@ -74,7 +74,13 @@ impl MockRedis {
             }
 
             // insert new value
-            store.insert(key.clone(), CacheEntry { value: value.clone(), expiration });
+            store.insert(
+                key.clone(),
+                CacheEntry {
+                    value: value.clone(),
+                    expiration,
+                },
+            );
 
             // update current memory
             *current += size;
@@ -102,8 +108,12 @@ impl MockRedis {
                 // check if key is expired
                 if let Some(exp) = entry.expiration {
                     Instant::now() > exp
-                } else { false }
-            } else { return None; }
+                } else {
+                    false
+                }
+            } else {
+                return None;
+            }
         };
 
         // delete expired key
@@ -167,7 +177,9 @@ impl MockRedis {
             let cur = { *self.current_memory.lock().await };
 
             // check if we have enough memory
-            if cur + size_needed <= self.max_memory { break; }
+            if cur + size_needed <= self.max_memory {
+                break;
+            }
 
             // evict the oldest key
             match self.eviction_policy {
@@ -176,11 +188,13 @@ impl MockRedis {
                     let oldest = { self.lru_queue.lock().await.pop_front() };
 
                     // delete the oldest key
-                    if let Some(k) = oldest { self.delete(&k).await; } else { break; }
+                    if let Some(k) = oldest {
+                        self.delete(&k).await;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
     }
 }
-
-

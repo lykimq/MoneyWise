@@ -9,12 +9,12 @@
 //! - delete_keys: invalidate one or more keys
 
 use redis::{aio::ConnectionManager, AsyncCommands};
-use tracing::{debug, warn, error};
+use tracing::{debug, error, warn};
 
-use crate::error::{AppError, Result};
+use crate::cache::core::config::CacheConfig;
 use crate::cache::core::retry::with_retry;
 use crate::cache::core::serialization::deserialize;
-use crate::cache::core::config::CacheConfig;
+use crate::error::{AppError, Result};
 
 /// Set a key-value pair in Redis with TTL (seconds).
 /// Uses `SETEX` for atomic TTL setting.
@@ -35,9 +35,15 @@ pub async fn set_with_ttl(
         let mut conn = conn.clone();
 
         async move {
-            match conn.set_ex::<_, _, ()>(&key, &value, ttl_seconds as u64).await {
+            match conn
+                .set_ex::<_, _, ()>(&key, &value, ttl_seconds as u64)
+                .await
+            {
                 Ok(_) => {
-                    debug!("Cached data for key {} with TTL {}s", key, ttl_seconds);
+                    debug!(
+                        "Cached data for key {} with TTL {}s",
+                        key, ttl_seconds
+                    );
                     Ok(())
                 }
                 Err(e) => {
@@ -46,7 +52,8 @@ pub async fn set_with_ttl(
                 }
             }
         }
-    }).await
+    })
+    .await
 }
 
 /// Get a value from Redis by key.
@@ -133,11 +140,16 @@ pub async fn delete_keys(
                 }
             }
         }
-    }).await {
+    })
+    .await
+    {
         Ok(_) => Ok(()),
         Err(_) => {
             // Don't fail the operation if cache deletion fails
-            warn!("Redis retry failed for key deletion {:?}, continuing anyway", keys);
+            warn!(
+                "Redis retry failed for key deletion {:?}, continuing anyway",
+                keys
+            );
             Ok(())
         }
     }

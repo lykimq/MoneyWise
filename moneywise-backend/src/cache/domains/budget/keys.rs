@@ -9,7 +9,9 @@
 /// Used for caching monthly budget overview summaries
 pub fn overview_key(month: &str, year: &str, currency: Option<&str>) -> String {
     match currency {
-        Some(c) => format!("moneywise:budget:overview:{}:{}:{}", month, year, c),
+        Some(c) => {
+            format!("moneywise:budget:overview:{}:{}:{}", month, year, c)
+        }
         None => format!("moneywise:budget:overview:{}:{}", month, year),
     }
 }
@@ -18,9 +20,15 @@ pub fn overview_key(month: &str, year: &str, currency: Option<&str>) -> String {
 /// Key format: "moneywise:budget:categories:{month}:{year}" or with currency
 ///             "moneywise:budget:categories:{month}:{year}:{currency}"
 /// Used for caching category-specific budget breakdowns
-pub fn categories_key(month: &str, year: &str, currency: Option<&str>) -> String {
+pub fn categories_key(
+    month: &str,
+    year: &str,
+    currency: Option<&str>,
+) -> String {
     match currency {
-        Some(c) => format!("moneywise:budget:categories:{}:{}:{}", month, year, c),
+        Some(c) => {
+            format!("moneywise:budget:categories:{}:{}:{}", month, year, c)
+        }
         None => format!("moneywise:budget:categories:{}:{}", month, year),
     }
 }

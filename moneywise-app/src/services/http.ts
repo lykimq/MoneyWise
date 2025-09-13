@@ -15,6 +15,7 @@ import { csrfService } from './csrf';
 import { getRateLimiter } from './rateLimiter';
 import { sanitizeForUrl } from '../utils/sanitization';
 import { Platform, AppState } from 'react-native';
+import { rateLimiters } from './rateLimiter';
 
 export class HttpClient {
     private baseUrl: string;
@@ -215,7 +216,6 @@ export class HttpClient {
         }
 
         // Import rateLimiters for cleanup
-        const { rateLimiters } = require('./rateLimiter');
         Object.values(rateLimiters).forEach((limiter: any) => limiter.destroy());
     }
 }

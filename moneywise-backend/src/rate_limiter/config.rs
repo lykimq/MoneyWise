@@ -22,7 +22,10 @@ impl Default for RateLimitConfig {
     /// configuration errors that should be caught at startup.
     fn default() -> Self {
         Self {
-            redis_url: parse_redis_url_env_with_default("REDIS_URL", "redis://localhost:6379"),
+            redis_url: parse_redis_url_env_with_default(
+                "REDIS_URL",
+                "redis://localhost:6379",
+            ),
             graceful_degradation: true,
         }
     }
@@ -32,7 +35,10 @@ impl Default for RateLimitConfig {
 ///
 /// Validates that the URL starts with `redis://` or `rediss://` and logs warnings
 /// for invalid formats.
-fn parse_redis_url_env_with_default(var_name: &str, default_value: &str) -> String {
+fn parse_redis_url_env_with_default(
+    var_name: &str,
+    default_value: &str,
+) -> String {
     match std::env::var(var_name) {
         Ok(value) => {
             // Basic validation for Redis URL format
