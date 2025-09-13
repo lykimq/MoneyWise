@@ -8,7 +8,11 @@
 
 import { useMemo } from 'react';
 import { buildDateParams } from '../utils/dateUtils';
-import type { BaseQueryParams, BudgetQueryParams, BudgetTimePeriod } from './types';
+import type {
+  BaseQueryParams,
+  BudgetQueryParams,
+  BudgetTimePeriod,
+} from './types';
 
 /**
  * Default currency for the application.
@@ -25,14 +29,16 @@ const DEFAULT_CURRENCY = 'USD';
  * @returns Normalized parameters with defaults applied for month, year, and
  *          currency.
  */
-const buildQueryParams = (params: BaseQueryParams): Required<BaseQueryParams> => {
-    const dateParams = buildDateParams(params.month, params.year);
+const buildQueryParams = (
+  params: BaseQueryParams
+): Required<BaseQueryParams> => {
+  const dateParams = buildDateParams(params.month, params.year);
 
-    return {
-        month: dateParams.month,
-        year: dateParams.year,
-        currency: params.currency || DEFAULT_CURRENCY,
-    };
+  return {
+    month: dateParams.month,
+    year: dateParams.year,
+    currency: params.currency || DEFAULT_CURRENCY,
+  };
 };
 
 /**
@@ -44,24 +50,24 @@ const buildQueryParams = (params: BaseQueryParams): Required<BaseQueryParams> =>
  *          yearly aggregation).
  */
 const buildApiParams = (params: BudgetQueryParams) => {
-    const dateParams = buildDateParams(params.month, params.year);
-    const apiParams: { month?: string; year?: string; currency?: string } = {};
+  const dateParams = buildDateParams(params.month, params.year);
+  const apiParams: { month?: string; year?: string; currency?: string } = {};
 
-    // For monthly view, both month and year are sent for specific month data.
-    if (params.timePeriod === 'Monthly') {
-        apiParams.month = dateParams.month;
-        apiParams.year = dateParams.year;
-    }
-    // For yearly view, only the year is sent for annual aggregation.
-    else if (params.timePeriod === 'Yearly') {
-        apiParams.year = dateParams.year;
-    }
+  // For monthly view, both month and year are sent for specific month data.
+  if (params.timePeriod === 'Monthly') {
+    apiParams.month = dateParams.month;
+    apiParams.year = dateParams.year;
+  }
+  // For yearly view, only the year is sent for annual aggregation.
+  else if (params.timePeriod === 'Yearly') {
+    apiParams.year = dateParams.year;
+  }
 
-    if (params.currency) {
-        apiParams.currency = params.currency;
-    }
+  if (params.currency) {
+    apiParams.currency = params.currency;
+  }
 
-    return apiParams;
+  return apiParams;
 };
 
 /**
@@ -72,7 +78,10 @@ const buildApiParams = (params: BudgetQueryParams) => {
  * @returns Memoized query parameters.
  */
 export const useQueryParams = (params: BaseQueryParams) => {
-    return useMemo(() => buildQueryParams(params), [params.month, params.year, params.currency]);
+  return useMemo(
+    () => buildQueryParams(params),
+    [params.month, params.year, params.currency]
+  );
 };
 
 /**
@@ -83,12 +92,10 @@ export const useQueryParams = (params: BaseQueryParams) => {
  * @returns Memoized API parameters.
  */
 export const useApiParams = (params: BudgetQueryParams) => {
-    return useMemo(() => buildApiParams(params), [
-        params.timePeriod,
-        params.month,
-        params.year,
-        params.currency
-    ]);
+  return useMemo(
+    () => buildApiParams(params),
+    [params.timePeriod, params.month, params.year, params.currency]
+  );
 };
 
 /**
@@ -99,19 +106,22 @@ export const useApiParams = (params: BudgetQueryParams) => {
  *               'categories').
  * @returns True if the data is considered empty, false otherwise.
  */
-export const isDataEmpty = (data: any, type: 'budget' | 'overview' | 'categories'): boolean => {
-    if (!data) return true;
+export const isDataEmpty = (
+  data: any,
+  type: 'budget' | 'overview' | 'categories'
+): boolean => {
+  if (!data) return true;
 
-    switch (type) {
-        case 'budget':
-            return !data.categories?.length && !data.overview;
-        case 'overview':
-            return !data.planned && !data.spent;
-        case 'categories':
-            return !Array.isArray(data) || data.length === 0;
-        default:
-            return true;
-    }
+  switch (type) {
+    case 'budget':
+      return !data.categories?.length && !data.overview;
+    case 'overview':
+      return !data.planned && !data.spent;
+    case 'categories':
+      return !Array.isArray(data) || data.length === 0;
+    default:
+      return true;
+  }
 };
 
 /**
@@ -122,7 +132,7 @@ export const isDataEmpty = (data: any, type: 'budget' | 'overview' | 'categories
  * @returns Filtered categories where `spent` amount is greater than 0.
  */
 export const filterCategoriesWithSpending = (categories: any[] = []) => {
-    return categories.filter(cat => parseFloat(cat.spent || '0') > 0);
+  return categories.filter((cat) => parseFloat(cat.spent || '0') > 0);
 };
 
 /**
@@ -131,13 +141,15 @@ export const filterCategoriesWithSpending = (categories: any[] = []) => {
  * @param queryParams - The base query parameters.
  * @returns Budget query parameters including a default time period.
  */
-export const buildBudgetQueryParams = (queryParams: Required<BaseQueryParams>) => {
-    return {
-        timePeriod: 'Monthly' as const,
-        month: queryParams.month,
-        year: queryParams.year,
-        currency: queryParams.currency,
-    };
+export const buildBudgetQueryParams = (
+  queryParams: Required<BaseQueryParams>
+) => {
+  return {
+    timePeriod: 'Monthly' as const,
+    month: queryParams.month,
+    year: queryParams.year,
+    currency: queryParams.currency,
+  };
 };
 
 /**
@@ -148,11 +160,14 @@ export const buildBudgetQueryParams = (queryParams: Required<BaseQueryParams>) =
  * @param type - The type of data structure for the empty check.
  * @returns An object containing `hasData` and `isEmpty` flags.
  */
-const computeDataValidation = (data: any, type: 'budget' | 'overview' | 'categories') => {
-    const hasData = Boolean(data);
-    const isEmpty = hasData && isDataEmpty(data, type);
+const computeDataValidation = (
+  data: any,
+  type: 'budget' | 'overview' | 'categories'
+) => {
+  const hasData = Boolean(data);
+  const isEmpty = hasData && isDataEmpty(data, type);
 
-    return { hasData, isEmpty };
+  return { hasData, isEmpty };
 };
 
 /**
@@ -162,7 +177,7 @@ const computeDataValidation = (data: any, type: 'budget' | 'overview' | 'categor
  * @returns Computed validation flags for budget data.
  */
 export const computeBudgetDataValues = (budgetData: any) => {
-    return computeDataValidation(budgetData, 'budget');
+  return computeDataValidation(budgetData, 'budget');
 };
 
 /**
@@ -172,7 +187,7 @@ export const computeBudgetDataValues = (budgetData: any) => {
  * @returns Computed validation flags for overview data.
  */
 export const computeOverviewDataValues = (overview: any) => {
-    return computeDataValidation(overview, 'overview');
+  return computeDataValidation(overview, 'overview');
 };
 
 /**
@@ -184,8 +199,8 @@ export const computeOverviewDataValues = (overview: any) => {
  *          flags for category spending.
  */
 export const computeCategorySpendingValues = (budgetData: any) => {
-    const categories = filterCategoriesWithSpending(budgetData?.categories);
-    const { hasData, isEmpty } = computeDataValidation(categories, 'categories');
+  const categories = filterCategoriesWithSpending(budgetData?.categories);
+  const { hasData, isEmpty } = computeDataValidation(categories, 'categories');
 
-    return { categories, hasData, isEmpty };
+  return { categories, hasData, isEmpty };
 };

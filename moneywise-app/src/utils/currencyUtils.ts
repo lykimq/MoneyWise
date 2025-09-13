@@ -18,18 +18,18 @@ import { sanitizeString, sanitizeNumber } from './sanitization';
  * @returns The converted number, or 0 if conversion fails or value is undefined.
  */
 export const toNumber = (value: string | number | undefined): number => {
-    if (value === undefined) return 0;
+  if (value === undefined) return 0;
 
-    // Sanitizes input before processing.
-    const sanitizedValue = sanitizeString(value);
-    if (!sanitizedValue) return 0;
+  // Sanitizes input before processing.
+  const sanitizedValue = sanitizeString(value);
+  if (!sanitizedValue) return 0;
 
-    if (typeof value === 'string') {
-        // Removes currency symbols and parses as a float.
-        const cleaned = sanitizedValue.replace(/[$,]/g, '');
-        return sanitizeNumber(parseFloat(cleaned));
-    }
-    return sanitizeNumber(value);
+  if (typeof value === 'string') {
+    // Removes currency symbols and parses as a float.
+    const cleaned = sanitizedValue.replace(/[$,]/g, '');
+    return sanitizeNumber(parseFloat(cleaned));
+  }
+  return sanitizeNumber(value);
 };
 
 /**
@@ -39,9 +39,9 @@ export const toNumber = (value: string | number | undefined): number => {
  * @returns The formatted currency string.
  */
 export const formatAmount = (amount: string | number | undefined): string => {
-    const numAmount = toNumber(amount);
-    const formatted = numAmount.toLocaleString();
-    return `$${sanitizeString(formatted)}`;
+  const numAmount = toNumber(amount);
+  const formatted = numAmount.toLocaleString();
+  return `$${sanitizeString(formatted)}`;
 };
 
 /**
@@ -53,23 +53,23 @@ export const formatAmount = (amount: string | number | undefined): string => {
  * @returns The formatted currency string with proper locale formatting.
  */
 export const formatCurrency = (
-    amount: string | number | undefined,
-    currency: string = 'USD',
-    locale: string = 'en-US'
+  amount: string | number | undefined,
+  currency: string = 'USD',
+  locale: string = 'en-US'
 ): string => {
-    const numAmount = toNumber(amount);
-    const sanitizedCurrency = sanitizeString(currency);
-    const sanitizedLocale = sanitizeString(locale);
+  const numAmount = toNumber(amount);
+  const sanitizedCurrency = sanitizeString(currency);
+  const sanitizedLocale = sanitizeString(locale);
 
-    try {
-        const formatted = new Intl.NumberFormat(sanitizedLocale, {
-            style: 'currency',
-            currency: sanitizedCurrency,
-        }).format(numAmount);
-        return sanitizeString(formatted);
-    } catch (error) {
-        // Fallback to basic formatting if Intl fails.
-        // TODO: Log the error for better debugging in production.
-        return `$${numAmount.toLocaleString()}`;
-    }
+  try {
+    const formatted = new Intl.NumberFormat(sanitizedLocale, {
+      style: 'currency',
+      currency: sanitizedCurrency,
+    }).format(numAmount);
+    return sanitizeString(formatted);
+  } catch (error) {
+    // Fallback to basic formatting if Intl fails.
+    // TODO: Log the error for better debugging in production.
+    return `$${numAmount.toLocaleString()}`;
+  }
 };

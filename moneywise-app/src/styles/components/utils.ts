@@ -32,12 +32,12 @@ import { cardBase } from '../base';
  * and extra-large padding.
  */
 export const createCardStyle = (
-    elevation: 'sm' | 'md' | 'xl' = 'md',
-    padding: keyof typeof spacing = 'lg'
+  elevation: 'sm' | 'md' | 'xl' = 'md',
+  padding: keyof typeof spacing = 'lg'
 ): ViewStyle => ({
-    ...cardBase,
-    padding: spacing[padding],
-    ...shadows[elevation],
+  ...cardBase,
+  padding: spacing[padding],
+  ...shadows[elevation],
 });
 
 /**
@@ -58,13 +58,13 @@ export const createCardStyle = (
  * in the primary brand color.
  */
 export const createTextStyle = (
-    size: keyof typeof typography.sizes,
-    weight: keyof typeof typography.weights = 'semibold',
-    color: string = colors.text.primary
+  size: keyof typeof typography.sizes,
+  weight: keyof typeof typography.weights = 'semibold',
+  color: string = colors.text.primary
 ): TextStyle => ({
-    fontSize: typography.sizes[size],
-    fontWeight: typography.weights[weight],
-    color,
+  fontSize: typography.sizes[size],
+  fontWeight: typography.weights[weight],
+  color,
 });
 
 /**
@@ -81,8 +81,10 @@ export const createTextStyle = (
  * Example: `createRowStyle('lg')` → A horizontal row with large gaps between
  * its child elements.
  */
-export const createRowStyle = (gap: keyof typeof spacing = 'md'): ViewStyle => ({
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[gap],
+export const createRowStyle = (
+  gap: keyof typeof spacing = 'md'
+): ViewStyle => ({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: spacing[gap],
 });

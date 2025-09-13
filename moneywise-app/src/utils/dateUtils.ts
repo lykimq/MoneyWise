@@ -11,11 +11,11 @@
  * @returns An object containing the current month (1-12) and year as strings.
  */
 export const getCurrentDateParams = () => {
-    const now = new Date();
-    return {
-        month: String(now.getMonth() + 1), // JavaScript months are 0-indexed.
-        year: String(now.getFullYear()),
-    };
+  const now = new Date();
+  return {
+    month: String(now.getMonth() + 1), // JavaScript months are 0-indexed.
+    year: String(now.getFullYear()),
+  };
 };
 
 /**
@@ -27,9 +27,9 @@ export const getCurrentDateParams = () => {
  * @returns An object with the month and year, defaulting to the current date.
  */
 export const buildDateParams = (month?: string, year?: string) => {
-    const current = getCurrentDateParams();
-    return {
-        month: month || current.month,
-        year: year || current.year,
-    };
+  const current = getCurrentDateParams();
+  return {
+    month: month || current.month,
+    year: year || current.year,
+  };
 };

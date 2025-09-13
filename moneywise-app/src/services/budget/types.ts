@@ -10,10 +10,10 @@ export type Money = string;
  * Backend: Returned by `GET /api/budgets/overview`.
  */
 export interface BudgetOverviewApi {
-    planned: Money;
-    spent: Money;
-    remaining: Money;
-    currency: string;
+  planned: Money;
+  spent: Money;
+  remaining: Money;
+  currency: string;
 }
 
 /**
@@ -21,16 +21,16 @@ export interface BudgetOverviewApi {
  * Backend: Included in the response from `GET /api/budgets`.
  */
 export interface CategoryBudgetApi {
-    id: string;
-    category_name: string;
-    group_name: string | null;
-    category_color: string;
-    group_color: string | null;
-    planned: Money;
-    spent: Money;
-    remaining: Money;
-    percentage: Money;
-    currency: string;
+  id: string;
+  category_name: string;
+  group_name: string | null;
+  category_color: string;
+  group_color: string | null;
+  planned: Money;
+  spent: Money;
+  remaining: Money;
+  percentage: Money;
+  currency: string;
 }
 
 /**
@@ -39,10 +39,10 @@ export interface CategoryBudgetApi {
  * Backend: Included in the response from `GET /api/budgets`.
  */
 export interface BudgetInsight {
-    type_: string;
-    message: string;
-    icon: string;
-    color: string;
+  type_: string;
+  message: string;
+  icon: string;
+  color: string;
 }
 
 /**
@@ -50,7 +50,7 @@ export interface BudgetInsight {
  * Contains an overview, category-specific budgets, and relevant insights.
  */
 export interface BudgetResponse {
-    overview: BudgetOverviewApi;
-    categories: CategoryBudgetApi[];
-    insights: BudgetInsight[];
+  overview: BudgetOverviewApi;
+  categories: CategoryBudgetApi[];
+  insights: BudgetInsight[];
 }

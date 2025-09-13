@@ -22,26 +22,29 @@
 export * from './budget';
 
 import { budgetClient } from './budget';
-import type {
-    BudgetOverviewApi,
-    BudgetResponse,
-} from './budget';
+import type { BudgetOverviewApi, BudgetResponse } from './budget';
 
 export const apiService = {
-    /**
-     * Retrieves a list of budgets based on the provided parameters.
-     * @param params - Optional parameters for filtering budgets (month, year, currency).
-     * @returns A promise that resolves to a BudgetResponse.
-     */
-    getBudgets: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetResponse> =>
-        budgetClient.list(params),
-    /**
-     * Retrieves an overview of budgets based on the provided parameters.
-     * @param params - Optional parameters for filtering the overview (month, year, currency).
-     * @returns A promise that resolves to a BudgetOverviewApi object.
-     */
-    getBudgetOverview: (params?: { month?: string; year?: string; currency?: string }): Promise<BudgetOverviewApi> =>
-        budgetClient.overview(params),
+  /**
+   * Retrieves a list of budgets based on the provided parameters.
+   * @param params - Optional parameters for filtering budgets (month, year, currency).
+   * @returns A promise that resolves to a BudgetResponse.
+   */
+  getBudgets: (params?: {
+    month?: string;
+    year?: string;
+    currency?: string;
+  }): Promise<BudgetResponse> => budgetClient.list(params),
+  /**
+   * Retrieves an overview of budgets based on the provided parameters.
+   * @param params - Optional parameters for filtering the overview (month, year, currency).
+   * @returns A promise that resolves to a BudgetOverviewApi object.
+   */
+  getBudgetOverview: (params?: {
+    month?: string;
+    year?: string;
+    currency?: string;
+  }): Promise<BudgetOverviewApi> => budgetClient.overview(params),
 };
 
 export default apiService;

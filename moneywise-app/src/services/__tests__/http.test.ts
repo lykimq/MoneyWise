@@ -10,219 +10,236 @@ import { csrfService } from '../csrf';
 
 // Mock external dependencies to isolate HttpClient behavior
 jest.mock('../../config/api', () => {
-    const mockValidateApiConfig = jest.fn().mockReturnValue(true);
-    return {
-        apiConfig: {
-            baseUrl: 'https://api.moneywise.com',
-            timeout: 5000,
-            retryAttempts: 3,
-            retryDelay: 1000,
-        },
-        validateApiConfig: mockValidateApiConfig,
-    };
+  const mockValidateApiConfig = jest.fn().mockReturnValue(true);
+  return {
+    apiConfig: {
+      baseUrl: 'https://api.moneywise.com',
+      timeout: 5000,
+      retryAttempts: 3,
+      retryDelay: 1000,
+    },
+    validateApiConfig: mockValidateApiConfig,
+  };
 });
 
 jest.mock('../csrf', () => ({
-    csrfService: {
-        getHeaders: jest.fn().mockResolvedValue({ 'X-CSRF-Token': 'test-token' }),
-    },
+  csrfService: {
+    getHeaders: jest.fn().mockResolvedValue({ 'X-CSRF-Token': 'test-token' }),
+  },
 }));
 
 jest.mock('../rateLimiter', () => ({
-    getRateLimiter: jest.fn().mockReturnValue({
-        isAllowed: jest.fn().mockReturnValue(true),
-        getTimeUntilReset: jest.fn().mockReturnValue(0),
-    }),
+  getRateLimiter: jest.fn().mockReturnValue({
+    isAllowed: jest.fn().mockReturnValue(true),
+    getTimeUntilReset: jest.fn().mockReturnValue(0),
+  }),
 }));
 
 // Main test suite for HttpClient class
 describe('HttpClient', () => {
-    let httpClient: HttpClient;
-    let originalFetch: typeof global.fetch;
+  let httpClient: HttpClient;
+  let originalFetch: typeof global.fetch;
 
-    beforeEach(() => {
-        originalFetch = global.fetch;
-        httpClient = new HttpClient();
-        global.fetch = jest.fn().mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({ data: 'test' }),
-        });
+  beforeEach(() => {
+    originalFetch = global.fetch;
+    httpClient = new HttpClient();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: 'test' }),
+    });
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.clearAllMocks();
+  });
+
+  // Tests HttpClient initialization and configuration validation
+  describe('Constructor and Initialization', () => {
+    it('should initialize with default baseUrl when not provided', async () => {
+      const client = new HttpClient();
+      expect(client).toBeDefined();
     });
 
-    afterEach(() => {
-        global.fetch = originalFetch;
-        jest.clearAllMocks();
+    it('should throw error for invalid base URL', async () => {
+      expect(() => new HttpClient('invalid-url')).toThrow(
+        'Invalid base URL provided'
+      );
     });
 
-    // Tests HttpClient initialization and configuration validation
-    describe('Constructor and Initialization', () => {
-        it('should initialize with default baseUrl when not provided', async () => {
-            const client = new HttpClient();
-            expect(client).toBeDefined();
-        });
+    it('should throw error when API config is invalid', () => {
+      const { validateApiConfig } = require('../../config/api');
+      (validateApiConfig as jest.Mock).mockReturnValueOnce(false);
+      expect(() => new HttpClient()).toThrow(
+        'Invalid API configuration detected'
+      );
+    });
+  });
 
-        it('should throw error for invalid base URL', async () => {
-            expect(() => new HttpClient('invalid-url')).toThrow('Invalid base URL provided');
-        });
-
-        it('should throw error when API config is invalid', () => {
-            const { validateApiConfig } = require('../../config/api');
-            (validateApiConfig as jest.Mock).mockReturnValueOnce(false);
-            expect(() => new HttpClient()).toThrow('Invalid API configuration detected');
-        });
+  // Tests URL sanitization and endpoint validation for security
+  describe('URL and Endpoint Handling', () => {
+    it('should properly sanitize endpoints', async () => {
+      await httpClient.request('/test-endpoint');
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.moneywise.com/test-endpoint',
+        expect.any(Object)
+      );
     });
 
-    // Tests URL sanitization and endpoint validation for security
-    describe('URL and Endpoint Handling', () => {
-        it('should properly sanitize endpoints', async () => {
-            await httpClient.request('/test-endpoint');
-            expect(global.fetch).toHaveBeenCalledWith(
-                'https://api.moneywise.com/test-endpoint',
-                expect.any(Object)
-            );
-        });
-
-        it('should add leading slash to endpoints when missing', async () => {
-            await httpClient.request('test-endpoint');
-            expect(global.fetch).toHaveBeenCalledWith(
-                'https://api.moneywise.com/test-endpoint',
-                expect.any(Object)
-            );
-        });
-
-        it('should throw error for invalid endpoints', async () => {
-            await expect(httpClient.request('')).rejects.toThrow('Endpoint must be a non-empty string');
-        });
+    it('should add leading slash to endpoints when missing', async () => {
+      await httpClient.request('test-endpoint');
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.moneywise.com/test-endpoint',
+        expect.any(Object)
+      );
     });
 
-    // Tests CSRF protection for state-changing requests
-    describe('CSRF Protection', () => {
-        it('should include CSRF headers for POST requests', async () => {
-            await httpClient.request('/test', { method: 'POST' });
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.any(String),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'X-CSRF-Token': 'test-token',
-                    }),
-                })
-            );
-        });
+    it('should throw error for invalid endpoints', async () => {
+      await expect(httpClient.request('')).rejects.toThrow(
+        'Endpoint must be a non-empty string'
+      );
+    });
+  });
 
-        it('should not include CSRF headers for GET requests', async () => {
-            await httpClient.request('/test', { method: 'GET' });
-            expect(csrfService.getHeaders).not.toHaveBeenCalled();
-        });
-
-        it('should continue request if CSRF service fails', async () => {
-            (csrfService.getHeaders as jest.Mock).mockRejectedValueOnce(new Error('CSRF Error'));
-            const response = await httpClient.request('/test', { method: 'POST' });
-            expect(response).toBeDefined();
-        });
+  // Tests CSRF protection for state-changing requests
+  describe('CSRF Protection', () => {
+    it('should include CSRF headers for POST requests', async () => {
+      await httpClient.request('/test', { method: 'POST' });
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-CSRF-Token': 'test-token',
+          }),
+        })
+      );
     });
 
-    // Tests rate limiting to prevent API abuse
-    describe('Rate Limiting', () => {
-        it('should throw error when rate limited', async () => {
-            const { getRateLimiter } = require('../rateLimiter');
-            const mockLimiter = {
-                isAllowed: jest.fn().mockReturnValue(false),
-                getTimeUntilReset: jest.fn().mockReturnValue(5000),
-            };
-            (getRateLimiter as jest.Mock).mockReturnValueOnce(mockLimiter);
-
-            await expect(httpClient.request('/test')).rejects.toThrow('Rate limit exceeded');
-        });
+    it('should not include CSRF headers for GET requests', async () => {
+      await httpClient.request('/test', { method: 'GET' });
+      expect(csrfService.getHeaders).not.toHaveBeenCalled();
     });
 
-    // Tests retry logic for network failures and server errors
-    describe('Request Retry Logic', () => {
-        it('should retry on network failure', async () => {
-            const networkError = new Error('Network request failed');
-            global.fetch = jest.fn()
-                .mockRejectedValueOnce(networkError)
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: () => Promise.resolve({ data: 'test' }),
-                });
+    it('should continue request if CSRF service fails', async () => {
+      (csrfService.getHeaders as jest.Mock).mockRejectedValueOnce(
+        new Error('CSRF Error')
+      );
+      const response = await httpClient.request('/test', { method: 'POST' });
+      expect(response).toBeDefined();
+    });
+  });
 
-            const result = await httpClient.request('/test');
-            expect(result).toEqual({ data: 'test' });
-            expect(global.fetch).toHaveBeenCalledTimes(2);
+  // Tests rate limiting to prevent API abuse
+  describe('Rate Limiting', () => {
+    it('should throw error when rate limited', async () => {
+      const { getRateLimiter } = require('../rateLimiter');
+      const mockLimiter = {
+        isAllowed: jest.fn().mockReturnValue(false),
+        getTimeUntilReset: jest.fn().mockReturnValue(5000),
+      };
+      (getRateLimiter as jest.Mock).mockReturnValueOnce(mockLimiter);
+
+      await expect(httpClient.request('/test')).rejects.toThrow(
+        'Rate limit exceeded'
+      );
+    });
+  });
+
+  // Tests retry logic for network failures and server errors
+  describe('Request Retry Logic', () => {
+    it('should retry on network failure', async () => {
+      const networkError = new Error('Network request failed');
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: 'test' }),
         });
 
-        it('should retry on timeout', async () => {
-            const abortError = new Error('AbortError');
-            abortError.name = 'AbortError';
-
-            global.fetch = jest.fn()
-                .mockRejectedValueOnce(abortError)
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: () => Promise.resolve({ data: 'test' }),
-                });
-
-            const result = await httpClient.request('/test');
-            expect(result).toEqual({ data: 'test' });
-            expect(global.fetch).toHaveBeenCalledTimes(2);
-        });
-
-        it('should retry on 500 server errors', async () => {
-            global.fetch = jest.fn()
-                .mockResolvedValueOnce({
-                    ok: false,
-                    status: 500,
-                    statusText: 'Internal Server Error',
-                })
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: () => Promise.resolve({ data: 'test' }),
-                });
-
-            const result = await httpClient.request('/test');
-            expect(result).toEqual({ data: 'test' });
-            expect(global.fetch).toHaveBeenCalledTimes(2);
-        });
-
-        it('should give up after maximum retry attempts', async () => {
-            const networkError = new Error('Network request failed');
-            global.fetch = jest.fn().mockRejectedValue(networkError);
-
-            await expect(httpClient.request('/test')).rejects.toThrow('Network request failed');
-            expect(global.fetch).toHaveBeenCalledTimes(3);
-        });
+      const result = await httpClient.request('/test');
+      expect(result).toEqual({ data: 'test' });
+      expect(global.fetch).toHaveBeenCalledTimes(2);
     });
 
-    // Tests response parsing and error handling
-    describe('Response Handling', () => {
-        it('should handle successful JSON response', async () => {
-            const testData = { message: 'success' };
-            global.fetch = jest.fn().mockResolvedValueOnce({
-                ok: true,
-                json: () => Promise.resolve(testData),
-            });
+    it('should retry on timeout', async () => {
+      const abortError = new Error('AbortError');
+      abortError.name = 'AbortError';
 
-            const result = await httpClient.request('/test');
-            expect(result).toEqual(testData);
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(abortError)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: 'test' }),
         });
 
-        it('should throw error for non-OK response', async () => {
-            global.fetch = jest.fn().mockResolvedValueOnce({
-                ok: false,
-                status: 404,
-                statusText: 'Not Found',
-            });
-
-            await expect(httpClient.request('/test')).rejects.toThrow('API request failed: 404');
-        });
-
-        it('should handle malformed JSON response', async () => {
-            global.fetch = jest.fn().mockResolvedValueOnce({
-                ok: true,
-                json: () => Promise.reject(new Error('Invalid JSON')),
-            });
-
-            await expect(httpClient.request('/test')).rejects.toThrow('Invalid JSON');
-        });
+      const result = await httpClient.request('/test');
+      expect(result).toEqual({ data: 'test' });
+      expect(global.fetch).toHaveBeenCalledTimes(2);
     });
+
+    it('should retry on 500 server errors', async () => {
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ data: 'test' }),
+        });
+
+      const result = await httpClient.request('/test');
+      expect(result).toEqual({ data: 'test' });
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should give up after maximum retry attempts', async () => {
+      const networkError = new Error('Network request failed');
+      global.fetch = jest.fn().mockRejectedValue(networkError);
+
+      await expect(httpClient.request('/test')).rejects.toThrow(
+        'Network request failed'
+      );
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  // Tests response parsing and error handling
+  describe('Response Handling', () => {
+    it('should handle successful JSON response', async () => {
+      const testData = { message: 'success' };
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(testData),
+      });
+
+      const result = await httpClient.request('/test');
+      expect(result).toEqual(testData);
+    });
+
+    it('should throw error for non-OK response', async () => {
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(httpClient.request('/test')).rejects.toThrow(
+        'API request failed: 404'
+      );
+    });
+
+    it('should handle malformed JSON response', async () => {
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.reject(new Error('Invalid JSON')),
+      });
+
+      await expect(httpClient.request('/test')).rejects.toThrow('Invalid JSON');
+    });
+  });
 });

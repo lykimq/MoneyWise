@@ -1,59 +1,68 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, mainCardStyles, secondaryCardStyles, progressBarStyles, sectionStyles, cardVariants, standardCardStyles } from '../styles';
+import {
+  colors,
+  spacing,
+  mainCardStyles,
+  secondaryCardStyles,
+  progressBarStyles,
+  sectionStyles,
+  cardVariants,
+  standardCardStyles,
+} from '../styles';
 import { toNumber, formatAmount } from '../utils/currencyUtils';
 
 /**
  * Props for the FinancialDashboardCard component.
  */
 interface FinancialDashboardCardProps {
-    spent?: string | number;
-    remaining?: string | number;
-    savings?: string | number;
-    totalBudget?: string | number;
-    loading?: boolean;
-    period?: string;
+  spent?: string | number;
+  remaining?: string | number;
+  savings?: string | number;
+  totalBudget?: string | number;
+  loading?: boolean;
+  period?: string;
 }
 
 /**
  * Props for the MainCard component.
  */
 interface MainCardProps {
-    spent: string | number;
-    spentPercentage: number;
-    totalBudgetAmount: number;
-    loading: boolean;
-    period: string;
+  spent: string | number;
+  spentPercentage: number;
+  totalBudgetAmount: number;
+  loading: boolean;
+  period: string;
 }
 
 /**
  * Props for the SecondaryCardsRow component.
  */
 interface SecondaryCardsRowProps {
-    remaining: string | number;
-    savings: string | number;
-    remainingPercentage: number;
-    remainingNum: number;
-    loading: boolean;
+  remaining: string | number;
+  savings: string | number;
+  remainingPercentage: number;
+  remainingNum: number;
+  loading: boolean;
 }
 
 /**
  * Props for the RemainingCard component.
  */
 interface RemainingCardProps {
-    remaining: string | number;
-    remainingPercentage: number;
-    remainingNum: number;
-    loading: boolean;
+  remaining: string | number;
+  remainingPercentage: number;
+  remainingNum: number;
+  loading: boolean;
 }
 
 /**
  * Props for the SavingsCard component.
  */
 interface SavingsCardProps {
-    savings: string | number;
-    loading: boolean;
+  savings: string | number;
+  loading: boolean;
 }
 
 /**
@@ -63,55 +72,66 @@ interface SavingsCardProps {
  * indicator. This is the most prominent card in the dashboard.
  */
 const MainCard: React.FC<MainCardProps> = ({
-    spent,
-    spentPercentage,
-    totalBudgetAmount,
-    loading,
-    period
+  spent,
+  spentPercentage,
+  totalBudgetAmount,
+  loading,
+  period,
 }) => (
-    <View style={mainCardStyles.card}>
-        {/* Main Card Header - Contains the icon, title, and period. */}
-        <View style={mainCardStyles.header}>
-            {/* Title Row - Groups the trending-down icon and "Total Spent" text. */}
-            <View style={mainCardStyles.titleRow}>
-                <Ionicons name="trending-down-outline" size={28} color={colors.spending} />
-                <Text style={mainCardStyles.title}>Total Spent</Text>
-            </View>
-            {/* Period Text - Displays the current financial period (e.g., "This Month"). */}
-            <Text style={mainCardStyles.period}>{period}</Text>
-        </View>
-
-        {/* Main Card Content - Displays the spent amount and spending progress. */}
-        <View style={mainCardStyles.content}>
-            {/* Spent Amount Display - Shows a loading indicator or the formatted amount. */}
-            {loading ? (
-                <ActivityIndicator size="large" color={colors.spending} />
-            ) : (
-                <Text style={[mainCardStyles.amount, { color: colors.spending }]}>
-                    {formatAmount(spent)}
-                </Text>
-            )}
-
-            {/* Progress Indicator - Visual bar showing spending against total budget. */}
-            <View style={mainCardStyles.progressContainer}>
-                <View style={[mainCardStyles.progressBar, { backgroundColor: colors.spending + '20' }]}>
-                    <View
-                        style={[
-                            mainCardStyles.progressFill,
-                            {
-                                width: `${Math.min(spentPercentage, 100)}%`,
-                                backgroundColor: colors.spending
-                            }
-                        ]}
-                    />
-                </View>
-                {/* Progress Text - Shows percentage of budget spent or "No budget set" message. */}
-                <Text style={mainCardStyles.progressText}>
-                    {totalBudgetAmount > 0 ? `${Math.round(spentPercentage)}% of budget` : 'No budget set'}
-                </Text>
-            </View>
-        </View>
+  <View style={mainCardStyles.card}>
+    {/* Main Card Header - Contains the icon, title, and period. */}
+    <View style={mainCardStyles.header}>
+      {/* Title Row - Groups the trending-down icon and "Total Spent" text. */}
+      <View style={mainCardStyles.titleRow}>
+        <Ionicons
+          name="trending-down-outline"
+          size={28}
+          color={colors.spending}
+        />
+        <Text style={mainCardStyles.title}>Total Spent</Text>
+      </View>
+      {/* Period Text - Displays the current financial period (e.g., "This Month"). */}
+      <Text style={mainCardStyles.period}>{period}</Text>
     </View>
+
+    {/* Main Card Content - Displays the spent amount and spending progress. */}
+    <View style={mainCardStyles.content}>
+      {/* Spent Amount Display - Shows a loading indicator or the formatted amount. */}
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.spending} />
+      ) : (
+        <Text style={[mainCardStyles.amount, { color: colors.spending }]}>
+          {formatAmount(spent)}
+        </Text>
+      )}
+
+      {/* Progress Indicator - Visual bar showing spending against total budget. */}
+      <View style={mainCardStyles.progressContainer}>
+        <View
+          style={[
+            mainCardStyles.progressBar,
+            { backgroundColor: colors.spending + '20' },
+          ]}
+        >
+          <View
+            style={[
+              mainCardStyles.progressFill,
+              {
+                width: `${Math.min(spentPercentage, 100)}%`,
+                backgroundColor: colors.spending,
+              },
+            ]}
+          />
+        </View>
+        {/* Progress Text - Shows percentage of budget spent or "No budget set" message. */}
+        <Text style={mainCardStyles.progressText}>
+          {totalBudgetAmount > 0
+            ? `${Math.round(spentPercentage)}% of budget`
+            : 'No budget set'}
+        </Text>
+      </View>
+    </View>
+  </View>
 );
 
 /**
@@ -120,50 +140,61 @@ const MainCard: React.FC<MainCardProps> = ({
  * Displays the remaining budget amount with a progress indicator and status.
  */
 const RemainingCard: React.FC<RemainingCardProps> = ({
-    remaining,
-    remainingPercentage,
-    remainingNum,
-    loading
+  remaining,
+  remainingPercentage,
+  remainingNum,
+  loading,
 }) => (
-    <View style={[secondaryCardStyles.card, cardVariants.remaining]}>
-        {/* Secondary Card Header - Contains the icon and "Remaining" label. */}
-        <View style={secondaryCardStyles.header}>
-            <Ionicons name="checkmark-circle-outline" size={20} color={colors.remaining} />
-            <Text style={secondaryCardStyles.label}>Remaining</Text>
-        </View>
-        {/* Remaining Amount Display - Shows a loading indicator or the formatted amount. */}
-        {loading ? (
-            <ActivityIndicator size="small" color={colors.remaining} />
-        ) : (
-            <Text style={[secondaryCardStyles.amount, { color: colors.remaining }]}>
-                {formatAmount(remaining)}
-            </Text>
-        )}
-        {/* Budget Indicator - Shows a colored dot and text indicating budget status. */}
-        <View style={secondaryCardStyles.indicator}>
-            <View style={[secondaryCardStyles.dot, { backgroundColor: colors.remaining }]} />
-            <Text style={[secondaryCardStyles.text, { color: colors.remaining }]}>
-                {remainingNum > 0 ? 'On Track' : 'Over Budget'}
-            </Text>
-        </View>
-        {/* Remaining Progress - Visual bar showing remaining budget. */}
-        <View style={progressBarStyles.container}>
-            <View style={[progressBarStyles.bar, { backgroundColor: colors.remaining + '20' }]}>
-                <View
-                    style={[
-                        progressBarStyles.fill,
-                        {
-                            width: `${Math.min(remainingPercentage, 100)}%`,
-                            backgroundColor: colors.remaining
-                        }
-                    ]}
-                />
-            </View>
-            <Text style={progressBarStyles.percentageText}>
-                {`${Math.round(remainingPercentage)}% ${remainingNum > 0 ? 'remaining' : 'over budget'}`}
-            </Text>
-        </View>
+  <View style={[secondaryCardStyles.card, cardVariants.remaining]}>
+    {/* Secondary Card Header - Contains the icon and "Remaining" label. */}
+    <View style={secondaryCardStyles.header}>
+      <Ionicons
+        name="checkmark-circle-outline"
+        size={20}
+        color={colors.remaining}
+      />
+      <Text style={secondaryCardStyles.label}>Remaining</Text>
     </View>
+    {/* Remaining Amount Display - Shows a loading indicator or the formatted amount. */}
+    {loading ? (
+      <ActivityIndicator size="small" color={colors.remaining} />
+    ) : (
+      <Text style={[secondaryCardStyles.amount, { color: colors.remaining }]}>
+        {formatAmount(remaining)}
+      </Text>
+    )}
+    {/* Budget Indicator - Shows a colored dot and text indicating budget status. */}
+    <View style={secondaryCardStyles.indicator}>
+      <View
+        style={[secondaryCardStyles.dot, { backgroundColor: colors.remaining }]}
+      />
+      <Text style={[secondaryCardStyles.text, { color: colors.remaining }]}>
+        {remainingNum > 0 ? 'On Track' : 'Over Budget'}
+      </Text>
+    </View>
+    {/* Remaining Progress - Visual bar showing remaining budget. */}
+    <View style={progressBarStyles.container}>
+      <View
+        style={[
+          progressBarStyles.bar,
+          { backgroundColor: colors.remaining + '20' },
+        ]}
+      >
+        <View
+          style={[
+            progressBarStyles.fill,
+            {
+              width: `${Math.min(remainingPercentage, 100)}%`,
+              backgroundColor: colors.remaining,
+            },
+          ]}
+        />
+      </View>
+      <Text style={progressBarStyles.percentageText}>
+        {`${Math.round(remainingPercentage)}% ${remainingNum > 0 ? 'remaining' : 'over budget'}`}
+      </Text>
+    </View>
+  </View>
 );
 
 /**
@@ -171,32 +202,31 @@ const RemainingCard: React.FC<RemainingCardProps> = ({
  *
  * Displays the total savings amount with a status indicator.
  */
-const SavingsCard: React.FC<SavingsCardProps> = ({
-    savings,
-    loading
-}) => (
-    <View style={secondaryCardStyles.card}>
-        {/* Secondary Card Header - Contains the icon and "Savings" label. */}
-        <View style={secondaryCardStyles.header}>
-            <Ionicons name="trending-up-outline" size={20} color={colors.savings} />
-            <Text style={secondaryCardStyles.label}>Savings</Text>
-        </View>
-        {/* Savings Amount Display - Shows a loading indicator or the formatted amount. */}
-        {loading ? (
-            <ActivityIndicator size="small" color={colors.savings} />
-        ) : (
-            <Text style={[secondaryCardStyles.amount, { color: colors.savings }]}>
-                {formatAmount(savings)}
-            </Text>
-        )}
-        {/* Budget Indicator - Shows a colored dot and text indicating savings status. */}
-        <View style={secondaryCardStyles.indicator}>
-            <View style={[secondaryCardStyles.dot, { backgroundColor: colors.savings }]} />
-            <Text style={[secondaryCardStyles.text, { color: colors.savings }]}>
-                Savings
-            </Text>
-        </View>
+const SavingsCard: React.FC<SavingsCardProps> = ({ savings, loading }) => (
+  <View style={secondaryCardStyles.card}>
+    {/* Secondary Card Header - Contains the icon and "Savings" label. */}
+    <View style={secondaryCardStyles.header}>
+      <Ionicons name="trending-up-outline" size={20} color={colors.savings} />
+      <Text style={secondaryCardStyles.label}>Savings</Text>
     </View>
+    {/* Savings Amount Display - Shows a loading indicator or the formatted amount. */}
+    {loading ? (
+      <ActivityIndicator size="small" color={colors.savings} />
+    ) : (
+      <Text style={[secondaryCardStyles.amount, { color: colors.savings }]}>
+        {formatAmount(savings)}
+      </Text>
+    )}
+    {/* Budget Indicator - Shows a colored dot and text indicating savings status. */}
+    <View style={secondaryCardStyles.indicator}>
+      <View
+        style={[secondaryCardStyles.dot, { backgroundColor: colors.savings }]}
+      />
+      <Text style={[secondaryCardStyles.text, { color: colors.savings }]}>
+        Savings
+      </Text>
+    </View>
+  </View>
 );
 
 /**
@@ -205,27 +235,24 @@ const SavingsCard: React.FC<SavingsCardProps> = ({
  * Contains the Remaining and Savings cards displayed side-by-side.
  */
 const SecondaryCardsRow: React.FC<SecondaryCardsRowProps> = ({
-    remaining,
-    savings,
-    remainingPercentage,
-    remainingNum,
-    loading
+  remaining,
+  savings,
+  remainingPercentage,
+  remainingNum,
+  loading,
 }) => (
-    <View style={standardCardStyles.row}>
-        {/* REMAINING CARD - Displays the amount left to spend. */}
-        <RemainingCard
-            remaining={remaining}
-            remainingPercentage={remainingPercentage}
-            remainingNum={remainingNum}
-            loading={loading}
-        />
+  <View style={standardCardStyles.row}>
+    {/* REMAINING CARD - Displays the amount left to spend. */}
+    <RemainingCard
+      remaining={remaining}
+      remainingPercentage={remainingPercentage}
+      remainingNum={remainingNum}
+      loading={loading}
+    />
 
-        {/* SAVINGS CARD - Displays the total savings amount. */}
-        <SavingsCard
-            savings={savings}
-            loading={loading}
-        />
-    </View>
+    {/* SAVINGS CARD - Displays the total savings amount. */}
+    <SavingsCard savings={savings} loading={loading} />
+  </View>
 );
 
 /**
@@ -247,56 +274,58 @@ const SecondaryCardsRow: React.FC<SecondaryCardsRowProps> = ({
  * @param period - The financial period being displayed.
  */
 const FinancialDashboardCard: React.FC<FinancialDashboardCardProps> = ({
-    spent = 0,
-    remaining = 0,
-    savings = 0,
-    totalBudget,
-    loading = false,
-    period = 'This Month',
+  spent = 0,
+  remaining = 0,
+  savings = 0,
+  totalBudget,
+  loading = false,
+  period = 'This Month',
 }) => {
-    // Converts all incoming props to numbers for consistent calculations.
-    const spentNum = toNumber(spent);
-    const remainingNum = toNumber(remaining);
-    const savingsNum = toNumber(savings);
-    const totalBudgetNum = toNumber(totalBudget);
+  // Converts all incoming props to numbers for consistent calculations.
+  const spentNum = toNumber(spent);
+  const remainingNum = toNumber(remaining);
+  const savingsNum = toNumber(savings);
+  const totalBudgetNum = toNumber(totalBudget);
 
-    // Determines the total budget amount, falling back to spent + remaining if
-    // totalBudget is not explicitly provided.
-    const totalBudgetAmount = totalBudgetNum || (spentNum + remainingNum);
+  // Determines the total budget amount, falling back to spent + remaining if
+  // totalBudget is not explicitly provided.
+  const totalBudgetAmount = totalBudgetNum || spentNum + remainingNum;
 
-    // Calculates percentages for progress bars.
-    const spentPercentage = totalBudgetAmount > 0 ? (spentNum / totalBudgetAmount) * 100 : 0;
-    const remainingPercentage = totalBudgetAmount > 0 ? (remainingNum / totalBudgetAmount) * 100 : 0;
-    // TODO: Replace hardcoded $1000 with actual savings goal/target from API.
-    // This is a placeholder calculation; the backend needs to provide savings
-    // goals for accurate representation.
-    const savingsPercentage = Math.min(100, (savingsNum / 1000) * 100);
+  // Calculates percentages for progress bars.
+  const spentPercentage =
+    totalBudgetAmount > 0 ? (spentNum / totalBudgetAmount) * 100 : 0;
+  const remainingPercentage =
+    totalBudgetAmount > 0 ? (remainingNum / totalBudgetAmount) * 100 : 0;
+  // TODO: Replace hardcoded $1000 with actual savings goal/target from API.
+  // This is a placeholder calculation; the backend needs to provide savings
+  // goals for accurate representation.
+  const savingsPercentage = Math.min(100, (savingsNum / 1000) * 100);
 
-    return (
-        // MAIN SECTION CONTAINER - Uses shared section styling for consistency.
-        <View style={sectionStyles.container}>
-            {/* DASHBOARD CONTAINER - Holds the main and secondary financial cards. */}
-            <View style={standardCardStyles.container}>
-                {/* MAIN CARD - Displays "Total Spent" as the most prominent information. */}
-                <MainCard
-                    spent={spent}
-                    spentPercentage={spentPercentage}
-                    totalBudgetAmount={totalBudgetAmount}
-                    loading={loading}
-                    period={period}
-                />
+  return (
+    // MAIN SECTION CONTAINER - Uses shared section styling for consistency.
+    <View style={sectionStyles.container}>
+      {/* DASHBOARD CONTAINER - Holds the main and secondary financial cards. */}
+      <View style={standardCardStyles.container}>
+        {/* MAIN CARD - Displays "Total Spent" as the most prominent information. */}
+        <MainCard
+          spent={spent}
+          spentPercentage={spentPercentage}
+          totalBudgetAmount={totalBudgetAmount}
+          loading={loading}
+          period={period}
+        />
 
-                {/* SECONDARY CARDS ROW - Contains "Remaining" and "Savings" cards. */}
-                <SecondaryCardsRow
-                    remaining={remaining}
-                    savings={savings}
-                    remainingPercentage={remainingPercentage}
-                    remainingNum={remainingNum}
-                    loading={loading}
-                />
-            </View>
-        </View>
-    );
+        {/* SECONDARY CARDS ROW - Contains "Remaining" and "Savings" cards. */}
+        <SecondaryCardsRow
+          remaining={remaining}
+          savings={savings}
+          remainingPercentage={remainingPercentage}
+          remainingNum={remainingNum}
+          loading={loading}
+        />
+      </View>
+    </View>
+  );
 };
 
 export default FinancialDashboardCard;

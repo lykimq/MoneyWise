@@ -21,44 +21,44 @@ import type { UseBudgetOverviewReturn, BaseQueryParams } from './types';
  * thus avoiding the fetching of unnecessary data.
  */
 export const useBudgetOverview = (
-    month?: string,
-    year?: string,
-    currency?: string
+  month?: string,
+  year?: string,
+  currency?: string
 ): UseBudgetOverviewReturn => {
-    // Constructs base parameters for the API request.
-    const baseParams: BaseQueryParams = { month, year, currency };
-    const queryParams = useQueryParams(baseParams);
+  // Constructs base parameters for the API request.
+  const baseParams: BaseQueryParams = { month, year, currency };
+  const queryParams = useQueryParams(baseParams);
 
-    // Fetches overview data using a centralized query configuration.
-    const {
-        data: overview,
-        isLoading,
-        error,
-        refetch,
-        isStale,
-        isFetching,
-        dataUpdatedAt,
-    } = useQuery({
-        queryKey: queryKeys.budgets.overview(queryParams),
-        queryFn: () => apiService.getBudgetOverview(queryParams),
-        enabled: Boolean(queryParams.month && queryParams.year),
-    });
+  // Fetches overview data using a centralized query configuration.
+  const {
+    data: overview,
+    isLoading,
+    error,
+    refetch,
+    isStale,
+    isFetching,
+    dataUpdatedAt,
+  } = useQuery({
+    queryKey: queryKeys.budgets.overview(queryParams),
+    queryFn: () => apiService.getBudgetOverview(queryParams),
+    enabled: Boolean(queryParams.month && queryParams.year),
+  });
 
-    // Memoizes computed values using an extracted utility function to prevent
-    // unnecessary recalculations.
-    const computedValues = useMemo(() =>
-        computeOverviewDataValues(overview),
-        [overview]
-    );
+  // Memoizes computed values using an extracted utility function to prevent
+  // unnecessary recalculations.
+  const computedValues = useMemo(
+    () => computeOverviewDataValues(overview),
+    [overview]
+  );
 
-    return {
-        overview,
-        loading: isLoading,
-        error,
-        refetch,
-        isStale,
-        isFetching,
-        dataUpdatedAt,
-        ...computedValues,
-    };
+  return {
+    overview,
+    loading: isLoading,
+    error,
+    refetch,
+    isStale,
+    isFetching,
+    dataUpdatedAt,
+    ...computedValues,
+  };
 };

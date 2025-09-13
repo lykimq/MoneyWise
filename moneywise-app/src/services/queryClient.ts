@@ -45,44 +45,44 @@ import { QueryClient } from '@tanstack/react-query';
  * - Especially useful in React Native when the app comes to the foreground.
  */
 export const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            // DATA FRESHNESS CONFIGURATION
-            staleTime: 5 * 60 * 1000, // 5 minutes - budget data is not frequently updated.
+  defaultOptions: {
+    queries: {
+      // DATA FRESHNESS CONFIGURATION
+      staleTime: 5 * 60 * 1000, // 5 minutes - budget data is not frequently updated.
 
-            // CACHE MANAGEMENT
-            gcTime: 10 * 60 * 1000, // 10 minutes - keeps unused data in memory.
+      // CACHE MANAGEMENT
+      gcTime: 10 * 60 * 1000, // 10 minutes - keeps unused data in memory.
 
-            // ERROR HANDLING & RELIABILITY
-            retry: (failureCount, error) => {
-                // Does not retry on client errors (4xx), but retries on server errors (5xx).
-                if (error && typeof error === 'object' && 'status' in error) {
-                    const status = error.status as number;
-                    if (status >= 400 && status < 500) {
-                        return false; // Does not retry client errors.
-                    }
-                }
-                return failureCount < 3; // Retries up to 3 times for other errors.
-            },
+      // ERROR HANDLING & RELIABILITY
+      retry: (failureCount, error) => {
+        // Does not retry on client errors (4xx), but retries on server errors (5xx).
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = error.status as number;
+          if (status >= 400 && status < 500) {
+            return false; // Does not retry client errors.
+          }
+        }
+        return failureCount < 3; // Retries up to 3 times for other errors.
+      },
 
-            // BACKGROUND UPDATES
-            refetchOnWindowFocus: true,  // Refreshes when the user returns to the app.
-            refetchOnReconnect: true,    // Refreshes when the internet reconnects.
+      // BACKGROUND UPDATES
+      refetchOnWindowFocus: true, // Refreshes when the user returns to the app.
+      refetchOnReconnect: true, // Refreshes when the internet reconnects.
 
-            // LOADING STATES
-            refetchOnMount: true,        // Always fetches fresh data on component mount.
+      // LOADING STATES
+      refetchOnMount: true, // Always fetches fresh data on component mount.
 
-            // NETWORK OPTIMIZATION
-            networkMode: 'online',       // Only fetches when online.
-        },
-        mutations: {
-            // MUTATION ERROR HANDLING
-            retry: 1, // Only retries mutations once to avoid duplicate transactions.
-
-            // NETWORK OPTIMIZATION
-            networkMode: 'online',
-        },
+      // NETWORK OPTIMIZATION
+      networkMode: 'online', // Only fetches when online.
     },
+    mutations: {
+      // MUTATION ERROR HANDLING
+      retry: 1, // Only retries mutations once to avoid duplicate transactions.
+
+      // NETWORK OPTIMIZATION
+      networkMode: 'online',
+    },
+  },
 });
 
 /**
@@ -103,14 +103,18 @@ export const queryClient = new QueryClient({
  * - Easy to extend when new queries are needed.
  */
 export const queryKeys = {
-    // BUDGET-RELATED QUERIES
-    budgets: {
-        // Budget overview data (used by the useBudgetOverview hook).
-        overview: (params: { month?: string; year?: string; currency?: string }) =>
-            ['budgets', 'overview', params] as const,
+  // BUDGET-RELATED QUERIES
+  budgets: {
+    // Budget overview data (used by the useBudgetOverview hook).
+    overview: (params: { month?: string; year?: string; currency?: string }) =>
+      ['budgets', 'overview', params] as const,
 
-        // Complete budget data with categories and insights (used by useBudgetData hook).
-        data: (params: { timePeriod: string; month?: string; year?: string; currency?: string }) =>
-            ['budgets', 'data', params] as const,
-    },
+    // Complete budget data with categories and insights (used by useBudgetData hook).
+    data: (params: {
+      timePeriod: string;
+      month?: string;
+      year?: string;
+      currency?: string;
+    }) => ['budgets', 'data', params] as const,
+  },
 } as const;

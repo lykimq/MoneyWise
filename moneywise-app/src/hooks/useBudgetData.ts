@@ -4,9 +4,9 @@ import apiService from '../services/api';
 import { queryKeys } from '../services/queryClient';
 import { useApiParams, computeBudgetDataValues } from './utils';
 import type {
-    UseBudgetDataReturn,
-    BudgetQueryParams,
-    BudgetTimePeriod
+  UseBudgetDataReturn,
+  BudgetQueryParams,
+  BudgetTimePeriod,
 } from './types';
 
 /**
@@ -39,64 +39,64 @@ import type {
 export type { BudgetTimePeriod, BudgetQueryParams, UseBudgetDataReturn };
 
 export const useBudgetData = (
-    timePeriod: BudgetTimePeriod,
-    month?: string,
-    year?: string,
-    currency?: string
+  timePeriod: BudgetTimePeriod,
+  month?: string,
+  year?: string,
+  currency?: string
 ): UseBudgetDataReturn => {
-    // Constructs query parameters based on the provided arguments.
-    const queryParams: BudgetQueryParams = {
-        timePeriod,
-        month,
-        year,
-        currency,
-    };
+  // Constructs query parameters based on the provided arguments.
+  const queryParams: BudgetQueryParams = {
+    timePeriod,
+    month,
+    year,
+    currency,
+  };
 
-    // Converts hook parameters to the API-compatible format based on the
-    // selected time period.
-    const apiParams = useApiParams(queryParams);
+  // Converts hook parameters to the API-compatible format based on the
+  // selected time period.
+  const apiParams = useApiParams(queryParams);
 
-    // Fetches comprehensive budget data using a centralized query configuration.
-    const {
-        data: budgetData,
-        isLoading,
-        isFetching,
-        error,
-        refetch,
-        isStale,
-        dataUpdatedAt,
-    } = useQuery({
-        queryKey: queryKeys.budgets.data(queryParams),
-        queryFn: () => apiService.getBudgets(apiParams),
-        enabled: Boolean(timePeriod), // Ensures query only runs when timePeriod is defined.
-    });
+  // Fetches comprehensive budget data using a centralized query configuration.
+  const {
+    data: budgetData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    isStale,
+    dataUpdatedAt,
+  } = useQuery({
+    queryKey: queryKeys.budgets.data(queryParams),
+    queryFn: () => apiService.getBudgets(apiParams),
+    enabled: Boolean(timePeriod), // Ensures query only runs when timePeriod is defined.
+  });
 
-    // Memoizes computed values using an extracted utility function to prevent
-    // unnecessary recalculations.
-    const computedValues = useMemo(() =>
-        computeBudgetDataValues(budgetData),
-        [budgetData]
-    );
+  // Memoizes computed values using an extracted utility function to prevent
+  // unnecessary recalculations.
+  const computedValues = useMemo(
+    () => computeBudgetDataValues(budgetData),
+    [budgetData]
+  );
 
-    return {
-        // Core budget data.
-        budgetData,
+  return {
+    // Core budget data.
+    budgetData,
 
-        // Loading states for data fetching.
-        loading: isLoading,
-        isFetching,
+    // Loading states for data fetching.
+    loading: isLoading,
+    isFetching,
 
-        // Error handling.
-        error,
+    // Error handling.
+    error,
 
-        // Data freshness indicators.
-        isStale,
-        dataUpdatedAt,
+    // Data freshness indicators.
+    isStale,
+    dataUpdatedAt,
 
-        // Actions for data management.
-        refetch,
+    // Actions for data management.
+    refetch,
 
-        // Computed values (e.g., hasData, isEmpty).
-        ...computedValues,
-    };
+    // Computed values (e.g., hasData, isEmpty).
+    ...computedValues,
+  };
 };

@@ -16,10 +16,10 @@ import { colors, spacing, borderRadius, shadows } from './theme';
  * `moneywise-app/src/components/cards.ts`
  */
 export const cardBase: ViewStyle = {
-    backgroundColor: colors.background.secondary,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    ...shadows.md,
+  backgroundColor: colors.background.secondary,
+  borderRadius: borderRadius.xl,
+  padding: spacing.lg,
+  ...shadows.md,
 };
 
 /**
@@ -28,8 +28,8 @@ export const cardBase: ViewStyle = {
  * @usedIn `moneywise-app/src/components/layout.ts` (e.g., `headerRow` style)
  */
 export const headerRowBase: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
+  flexDirection: 'row',
+  alignItems: 'center',
 };
 
 /**
@@ -39,9 +39,9 @@ export const headerRowBase: ViewStyle = {
  * (e.g., `progressBarContainer` style)
  */
 export const progressBarBase: ViewStyle = {
-    width: '100%',
-    borderRadius: borderRadius.sm,
-    overflow: 'hidden',
+  width: '100%',
+  borderRadius: borderRadius.sm,
+  overflow: 'hidden',
 };
 
 /**
@@ -51,9 +51,9 @@ export const progressBarBase: ViewStyle = {
  * (e.g., `primaryButton`, `secondaryButton`)
  */
 export const buttonBase: ViewStyle = {
-    paddingHorizontal: spacing['2xl'],
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+  paddingHorizontal: spacing['2xl'],
+  paddingVertical: spacing.md,
+  borderRadius: borderRadius.md,
+  alignItems: 'center',
+  justifyContent: 'center',
 };
