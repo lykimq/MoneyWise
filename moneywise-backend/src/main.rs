@@ -1,11 +1,12 @@
-// Import necessary modules from axum for web framework functionality
+//! Main entry point for MoneyWise backend server.
+//!
+//! This module initializes the HTTP server with all necessary middleware,
+//! database connections, caching, and rate limiting.
+
 use axum::{middleware, Router};
-// Import CORS layer for handling Cross-Origin Resource Sharing
 use tower_http::cors::{Any, CorsLayer};
-// Import tracing subscriber for logging and observability
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-// Import local modules
 mod api;
 mod cache;
 mod connections;
@@ -15,7 +16,6 @@ mod models;
 mod rate_limiter;
 mod server;
 
-// Import specific functions from local modules
 use api::create_api_router;
 use connections::init_connections;
 use rate_limiter::middleware::rate_limit_middleware;
@@ -25,8 +25,6 @@ use std::sync::Arc;
 /// This function initializes the application, sets up logging, database connection,
 /// CORS configuration, and starts the HTTP server
 ///
-/// CI/CD Test: This comment was added to test the fixed backend build workflow
-/// with PostgreSQL connection and Supabase API.
 #[tokio::main]
 async fn main() {
     // Initialize tracing for structured logging
@@ -46,12 +44,9 @@ async fn main() {
     dotenv::dotenv().ok();
 
     // Initialize database, Redis connections, rate limiter, and server configuration
-    // This establishes connection pools and server settings from environment variables
     let (pool, cache_service, rate_limiter, server_config) = init_connections()
         .await
         .expect("Failed to initialize connections and configuration");
-
-
 
     // Configure CORS (Cross-Origin Resource Sharing) settings
     // This allows the API to be accessed from different origins (domains)

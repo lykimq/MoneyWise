@@ -4,6 +4,7 @@
 //! connection sizing, and retry behavior. The defaults are production-friendly
 //! but can be overridden via environment variables.
 
+use crate::connections::parse_redis_url_from_env;
 use std::time::Duration;
 use tracing::warn;
 
@@ -36,8 +37,7 @@ impl Default for CacheConfig {
     /// that cannot be parsed as the expected types. This is intentional for
     /// configuration errors that should be caught at startup.
     fn default() -> Self {
-        let redis_url = std::env::var("REDIS_URL")
-            .unwrap_or_else(|_| "redis://localhost:6379".to_string());
+        let redis_url = parse_redis_url_from_env("REDIS_URL");
 
         let overview_ttl =
             parse_env_with_default("CACHE_OVERVIEW_TTL_SECS", 900);

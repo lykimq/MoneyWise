@@ -56,6 +56,7 @@ pub fn extract_rate_limit_info(
         }
     } else {
         // For non-budget endpoints, use a default rate limit
+        // TODO: Add other transaction types as needed
         // This prevents the warning and provides reasonable rate limiting
         TransactionType::BudgetRead
     };

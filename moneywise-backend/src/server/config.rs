@@ -1,6 +1,7 @@
-// Server configuration module for MoneyWise backend
-// This module handles server host and port configuration
-// with proper error handling and environment variable management.
+//! Server configuration module for MoneyWise backend.
+//!
+//! This module handles server host and port configuration
+//! with proper error handling and environment variable management.
 
 use std::net::SocketAddr;
 use tracing;

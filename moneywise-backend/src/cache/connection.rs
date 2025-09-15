@@ -1,6 +1,7 @@
-// Cache connection management module for MoneyWise backend
-// This module handles the initialization of Redis cache connections
-// with proper error handling and configuration management.
+//! Cache connection management module for MoneyWise backend.
+//!
+//! This module handles the initialization of Redis cache connections
+//! with proper error handling and configuration management.
 
 use crate::cache::{domains::budget::BudgetCache, CacheConfig};
 use tracing;

@@ -1,6 +1,7 @@
-// API module for MoneyWise backend
-// This module organizes all API routes and provides a centralized way to manage
-// different API endpoints for the application.
+//! API module for MoneyWise backend.
+//!
+//! This module organizes all API routes and provides a centralized way to manage
+//! different API endpoints for the application.
 
 use crate::cache::domains::budget::BudgetCache;
 use axum::Router;

@@ -1,3 +1,7 @@
+//! Error handling for MoneyWise backend.
+//!
+//! Provides centralized error types and HTTP response conversion.
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},

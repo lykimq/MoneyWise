@@ -1,5 +1,6 @@
-// Database module for MoneyWise backend
-// This module provides database functionality including connection pooling and operations
+//! Database module for MoneyWise backend.
+//!
+//! This module provides database functionality including connection pooling and operations.
 
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::time::Duration;

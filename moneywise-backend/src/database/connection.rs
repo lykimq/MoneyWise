@@ -1,6 +1,7 @@
-// Database connection management module for MoneyWise backend
-// This module handles the initialization of PostgreSQL database connections
-// with proper error handling and configuration management.
+//! Database connection management module for MoneyWise backend.
+//!
+//! This module handles the initialization of PostgreSQL database connections
+//! with proper error handling and configuration management.
 
 use crate::database::create_pool;
 use sqlx::PgPool;

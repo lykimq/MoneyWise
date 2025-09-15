@@ -1,15 +1,19 @@
 //! Data models for the MoneyWise backend.
 //!
-//! This module intentionally separates database-facing structs (used by sqlx) from
-//! API-facing structs (DTOs) that are serialized to/from JSON. This gives us:
-//! - Backwards-compatible APIs when the database schema evolves
-//! - The ability to hide internal fields or change types for ergonomics (e.g., `Uuid` → `String`)
-//! - Clear security boundaries between persistence and public contracts
+//! This module separates database models (used by sqlx) from external models
+//! (with Serialize/Deserialize traits). This provides:
+//! - Backwards compatibility when the database schema evolves
+//! - Flexibility to transform internal types for external consumption
+//! - Clear separation between persistence and external interfaces
 //!
 //! Design trade-offs:
 //! - Slightly more code due to model duplication
-//! - Lower coupling and better long-term maintainability for real-world apps
+//! - Lower coupling and better long-term maintainability
 //!
+//! Usage:
+//! - Database models: Used with sqlx for database operations
+//! - External models: Used for serialization/deserialization (HTTP, caching, etc.)
+//! - Request models: Used for deserializing incoming data
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -20,29 +24,27 @@ use uuid::Uuid;
 // Database models
 //////////////////////////////////////////////////////////////////////
 
-/// Database representation of a budget row in table `budgets`.
+/// Database representation of a budget row.
 ///
-/// Notes:
-/// - Types match the PostgreSQL schema (e.g., `i16` for `smallint`)
-/// - `currency` is `character(3)` in PostgreSQL - handled by custom Currency wrapper
-/// - Do not expose this type to API consumers directly; prefer `BudgetApi`
+/// - Matches PostgreSQL schema types
+/// - Not exposed directly to API; use `BudgetApi`
 #[derive(Debug, FromRow)]
 pub struct Budget {
     pub id: Uuid,
-    pub month: i16, // smallint in PostgreSQL - matches database schema
+    pub month: i16, // smallint in PostgreSQL
     pub year: i32,  // integer in PostgreSQL
     pub category_id: Uuid,
     pub planned: Decimal,
     pub spent: Decimal,
-    pub carryover: Decimal, // NOT NULL DEFAULT 0 in database
-    pub currency: String, // character(3) in PostgreSQL - Bpchar maps to String
-    pub created_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
-    pub updated_at: DateTime<Utc>, // timestamptz NOT NULL DEFAULT now() in database
+    pub carryover: Decimal,        // Default 0 in database
+    pub currency: String,          // character(3) in PostgreSQL
+    pub created_at: DateTime<Utc>, // timestamptz with default now()
+    pub updated_at: DateTime<Utc>, // timestamptz with default now()
 }
 
-/// Aggregated response returned by the budget endpoints.
+/// Budget overview with aggregated insights.
 ///
-/// Contains a high-level overview, per-category breakdowns, and generated insights.
+/// Contains high-level summaries and category breakdowns.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BudgetResponse {
     pub overview: BudgetOverviewApi,
@@ -50,28 +52,28 @@ pub struct BudgetResponse {
     pub insights: Vec<BudgetInsight>,
 }
 
-/// Payload for creating a new budget entry via the HTTP API.
+/// Payload for creating a new budget entry.
 ///
-/// The `month` and `year` are optional; if omitted, the server uses the current month/year.
+/// Month and year are optional; server uses current if not provided.
 #[derive(Debug, Deserialize)]
 pub struct CreateBudgetRequest {
     pub category_id: String, // Keep as String for API compatibility
     pub planned: Decimal,
     pub currency: String,
-    pub month: Option<i16>, // Make optional with default - matches database schema
-    pub year: Option<i32>,  // Make optional with default
+    pub month: Option<i16>, // Optional with default
+    pub year: Option<i32>,  // Optional with default
 }
 
-/// Payload for partially updating an existing budget.
+/// Partial update for an existing budget.
 ///
-/// Only provided fields will be updated.
+/// Only provided fields will be modified.
 #[derive(Debug, Deserialize)]
 pub struct UpdateBudgetRequest {
     pub planned: Option<Decimal>,
     pub carryover: Option<Decimal>,
 }
 
-/// A single insight item that the UI can render to guide users (e.g., warnings or suggestions).
+/// User-facing budget insight for UI guidance.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BudgetInsight {
     pub type_: String, // 'warning', 'suggestion', 'positive'
@@ -81,21 +83,19 @@ pub struct BudgetInsight {
 }
 
 //////////////////////////////////////////////////////////////////////
-// Separation of Database and API models
-// Trade-offs: More code but better maintainability and API versioning.
+// Separation of Database and External models
+// Trade-offs: More code but better maintainability and interface stability.
 //////////////////////////////////////////////////////////////////////
 
-/// API-facing representation of a budget.
+/// External budget representation.
 ///
-/// Differences vs. `Budget` (DB):
-/// - `id` and `category_id` are `String` for convenient JSON interop
-/// - This type is safe to expose externally and can remain stable across DB changes
+/// Decoupled from database schema for interface stability.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetApi {
-    pub id: String, // Keep as String for API compatibility
-    pub month: i16, // smallint to match database schema
+    pub id: String, // String for JSON compatibility
+    pub month: i16, // smallint
     pub year: i32,
-    pub category_id: String, // Keep as String for API compatibility
+    pub category_id: String, // String for JSON compatibility
     pub planned: Decimal,
     pub spent: Decimal,
     pub carryover: Decimal,
@@ -104,9 +104,9 @@ pub struct BudgetApi {
     pub updated_at: DateTime<Utc>,
 }
 
-/// High-level totals for a month/year used by dashboards and summaries.
+/// Monthly budget totals for dashboards.
 ///
-/// `remaining` is computed as `planned - spent + carryover`.
+/// Remaining = planned - spent + carryover
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BudgetOverviewApi {
     pub planned: Decimal,
@@ -115,14 +115,16 @@ pub struct BudgetOverviewApi {
     pub currency: String,
 }
 
-/// Per-category budget breakdown used by the UI for grouping and progress bars.
+/// Per-category budget details for UI.
+///
+/// Includes progress tracking and grouping information.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CategoryBudgetApi {
     pub id: String,
     pub category_name: String,
-    pub group_name: Option<String>, // Make optional since group_id can be NULL
+    pub group_name: Option<String>, // Nullable group
     pub category_color: String,
-    pub group_color: Option<String>, // Make optional since group can be NULL
+    pub group_color: Option<String>, // Nullable group color
     pub planned: Decimal,
     pub spent: Decimal,
     pub remaining: Decimal,
