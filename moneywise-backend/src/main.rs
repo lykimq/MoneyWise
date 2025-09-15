@@ -4,11 +4,14 @@ use axum::{middleware, Router};
 use tower_http::cors::{Any, CorsLayer};
 // Import tracing subscriber for logging and observability
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+// Import session management
+use axum_sessions::{async_session::MemoryStore, SessionLayer};
 
 // Import local modules
 mod api;
 mod cache;
 mod connections;
+mod csrf;
 mod database;
 mod error;
 mod models;
@@ -18,6 +21,7 @@ mod server;
 // Import specific functions from local modules
 use api::create_api_router;
 use connections::init_connections;
+use csrf::CsrfService;
 use rate_limiter::middleware::rate_limit_middleware;
 use std::sync::Arc;
 
@@ -51,6 +55,13 @@ async fn main() {
         .await
         .expect("Failed to initialize connections and configuration");
 
+    // Initialize CSRF service
+    let csrf_service = CsrfService::new();
+
+    // Initialize session store and layer
+    let store = MemoryStore::new();
+    let session_layer = SessionLayer::new(store, b"your-secret-key-must-be-at-least-32-bytes-long");
+
     // Configure CORS (Cross-Origin Resource Sharing) settings
     // This allows the API to be accessed from different origins (domains)
     let cors = CorsLayer::new()
@@ -61,12 +72,13 @@ async fn main() {
     // Build the application router with routes and middleware
     let app = Router::new()
         .nest("/api", create_api_router()) // Mount all API routes under /api path
+        .layer(session_layer) // Apply session management
         .layer(middleware::from_fn_with_state(
             Arc::new(rate_limiter),
             rate_limit_middleware,
         )) // Apply rate limiting middleware
         .layer(cors) // Apply CORS middleware
-        .with_state((pool, cache_service)); // Inject database pool and cache service as application state
+        .with_state((pool, cache_service, csrf_service)); // Inject database pool, cache service, and CSRF service as application state
 
     // Log the server address for debugging and monitoring
     tracing::info!("listening on {}", server_config.addr);

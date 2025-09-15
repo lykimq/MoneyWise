@@ -27,17 +27,13 @@ class CSRFService {
 
   /**
    * Refreshes the CSRF token from the server.
-   * This method expects a dedicated backend endpoint to provide a secure,
-   * server-generated token.
+   * This method fetches a secure, server-generated token from the backend.
    *
-   * IMPORTANT SECURITY NOTE:
-   * Client-side generation of CSRF tokens is INSECURE and has been removed.
-   * A proper backend endpoint (`/api/csrf-token`) MUST be implemented to
-   * provide server-generated, cryptographically secure CSRF tokens.
-   * Without a backend-provided token, CSRF protection is NOT effective.
-   *
-   * TODO: Implement the `/api/csrf-token` backend endpoint to provide
-   * server-generated CSRF tokens.
+   * Security Features:
+   * - Server-generated cryptographically secure tokens
+   * - Session-based token storage
+   * - Automatic token expiry management
+   * - Proper error handling and cleanup
    *
    * @throws Error if the backend CSRF token endpoint fails or returns an
    * invalid token.
@@ -52,7 +48,7 @@ class CSRFService {
       if (!response.ok) {
         throw new Error(
           `Failed to fetch CSRF token: ${response.status} ` +
-            `${response.statusText}`
+          `${response.statusText}`
         );
       }
 
@@ -91,7 +87,7 @@ class CSRFService {
     if (!this.token) {
       throw new Error(
         'Failed to obtain a valid CSRF token from the backend. ' +
-          'CSRF protection is compromised.'
+        'CSRF protection is compromised.'
       );
     }
     return this.token;
@@ -107,6 +103,15 @@ class CSRFService {
       'X-CSRF-Token': token,
       'X-Requested-With': 'XMLHttpRequest', // Additional CSRF protection.
     };
+  }
+
+  /**
+   * Clears the current CSRF token from memory.
+   * Useful for logout scenarios or when switching users.
+   */
+  clearToken(): void {
+    this.token = null;
+    this.tokenExpiry = null;
   }
 }
 
