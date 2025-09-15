@@ -1,12 +1,5 @@
 /**
- * Client-Side Rate Limiting Service
- *
- * Provides request throttling to prevent accidental API abuse and improve
- * application performance by limiting request frequency from the frontend.
- * Uses static configuration optimized for budget mobile application.
- *
- * SECURITY NOTE: This is client-side only and does not provide security against
- * malicious actors. Backend rate limiting is essential for API protection.
+ * Client-side rate limiting service for request throttling and performance optimization.
  */
 
 // Import generated rate limit configuration
@@ -17,8 +10,7 @@ interface RequestRecord {
 }
 
 /**
- * Manages rate limiting for API endpoints with automatic memory cleanup.
- * Uses static configuration for simplicity and reliability.
+ * Rate limiter with automatic memory cleanup and static configuration.
  */
 class RateLimiter {
   private requests: Map<string, RequestRecord[]> = new Map();
@@ -30,10 +22,6 @@ class RateLimiter {
 
   /**
    * Checks if a request is allowed and records it if permitted.
-   * Automatically cleans up old records to prevent memory leaks.
-   *
-   * @param endpoint - The API endpoint being requested
-   * @returns boolean - True if request is allowed, false if rate limited
    */
   isAllowed(endpoint: string): boolean {
     this.cleanup();
@@ -52,10 +40,6 @@ class RateLimiter {
 
   /**
    * Gets the time until the next request is allowed for an endpoint.
-   * Used by http.ts to show user-friendly error messages.
-   *
-   * @param endpoint - The API endpoint
-   * @returns number - Milliseconds until next request allowed, or 0 if allowed now
    */
   getTimeUntilReset(endpoint: string): number {
     const config = this.getConfigForEndpoint(endpoint);
@@ -75,12 +59,7 @@ class RateLimiter {
   }
 
   /**
-   * Common logic to get valid requests for an endpoint.
-   * Filters out expired requests to prevent memory leaks.
-   *
-   * @param endpoint - The API endpoint
-   * @param config - The rate limit configuration for this endpoint
-   * @returns Object with validRequests array and current timestamp
+   * Gets valid requests for an endpoint, filtering out expired ones.
    */
   private getValidRequests(endpoint: string, config: typeof RATE_LIMIT_CONFIGS.budget_modification | typeof RATE_LIMIT_CONFIGS.budget_read | typeof RATE_LIMIT_CONFIGS.budget_overview): {
     validRequests: RequestRecord[];
@@ -98,7 +77,6 @@ class RateLimiter {
 
   /**
    * Cleans up old request records to prevent memory leaks.
-   * Called automatically every 5 minutes and before each request.
    */
   private cleanup(): void {
     const now = Date.now();
@@ -120,7 +98,6 @@ class RateLimiter {
 
   /**
    * Starts automatic cleanup timer to prevent memory leaks.
-   * Runs cleanup every 5 minutes to remove old request records.
    */
   private startCleanupTimer(): void {
     this.cleanupInterval = setInterval(
@@ -133,7 +110,6 @@ class RateLimiter {
 
   /**
    * Stops the cleanup timer and cleans up resources.
-   * Called when the rate limiter is no longer needed.
    */
   destroy(): void {
     if (this.cleanupInterval) {
@@ -145,10 +121,6 @@ class RateLimiter {
 
   /**
    * Determines the appropriate rate limit configuration for an endpoint.
-   * Matches backend rate limiting logic for consistency.
-   *
-   * @param endpoint - The API endpoint path
-   * @returns Rate limit configuration for the endpoint type
    */
   private getConfigForEndpoint(endpoint: string): typeof RATE_LIMIT_CONFIGS.budget_modification | typeof RATE_LIMIT_CONFIGS.budget_read | typeof RATE_LIMIT_CONFIGS.budget_overview {
     if (endpoint.includes('/budgets/overview')) {
@@ -165,9 +137,6 @@ class RateLimiter {
 
   /**
    * Generates a unique key for the endpoint.
-   *
-   * @param endpoint - The API endpoint
-   * @returns Unique key for rate limiting purposes
    */
   private getKey(endpoint: string): string {
     const config = this.getConfigForEndpoint(endpoint);
@@ -181,24 +150,10 @@ class RateLimiter {
 const budgetRateLimiter = new RateLimiter();
 
 /**
- * Get the appropriate rate limiter for an endpoint.
- * The single rate limiter now handles different endpoint types with appropriate limits.
- *
- * @param endpoint - The API endpoint path
- * @returns RateLimiter instance for the endpoint type
+ * Gets the appropriate rate limiter for an endpoint.
  */
 export const getRateLimiter = (endpoint: string): RateLimiter => {
-  // The rate limiter now automatically determines the appropriate configuration
-  // based on the endpoint path, matching the backend rate limiting logic.
-  // This ensures consistency between frontend and backend rate limiting.
-  //
-  // Rate limit types:
-  // - budget_overview: 200 requests/minute for /budgets/overview
-  // - budget_read: 100 requests/minute for GET /budgets and /budgets/{id}
-  // - budget_modification: 30 requests/minute for POST/PUT /budgets
-  //
-  // NOTE: Backend rate limits are defined in backend/src/rate_limiter/types.rs
-  // and backend/src/rate_limiter/middleware.rs
+  // Rate limiter automatically determines configuration based on endpoint path
   return budgetRateLimiter;
 };
 

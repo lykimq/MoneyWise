@@ -1,31 +1,25 @@
 /**
- * Secure API Configuration
- *
- * Centralized configuration for API endpoints with proper security
- * validation. This replaces hardcoded URLs with environment-based
- * configuration and validation.
+ * Secure API configuration with environment-based URL validation.
  */
 
 import { Platform } from 'react-native';
 
 /**
- * Validates that a URL is secure and properly formatted.
- * @param url - The URL to validate.
- * @returns True if the URL is valid and secure, false otherwise.
+ * Validates URL security and format.
  */
 const isValidApiUrl = (url: string): boolean => {
   try {
     const urlObj = new URL(url);
 
-    // Only allows HTTPS in production; HTTP is permitted in development.
+    // Only allow HTTPS in production, HTTP in development
     const isSecure =
       urlObj.protocol === 'https:' || (urlObj.protocol === 'http:' && __DEV__);
 
-    // Ensures a valid hostname without directory traversal attempts or spaces.
+    // Validate hostname without directory traversal or spaces
     const hasValidHost =
       urlObj.hostname.length > 0 &&
-      !urlObj.hostname.includes('..') && // Prevents directory traversal.
-      !urlObj.hostname.includes(' '); // No spaces in the hostname.
+      !urlObj.hostname.includes('..') &&
+      !urlObj.hostname.includes(' ');
 
     return isSecure && hasValidHost;
   } catch {
@@ -34,32 +28,28 @@ const isValidApiUrl = (url: string): boolean => {
 };
 
 /**
- * Retrieves the default API URL based on the platform and environment.
- * @returns A secure default URL for the current platform.
- * @throws Error if in production and `EXPO_PUBLIC_API_BASE_URL` is not set.
+ * Gets default API URL based on platform and environment.
  */
 const getDefaultApiUrl = (): string => {
   if (__DEV__) {
-    // Development URLs - safe for local development.
+    // Development URLs for local development
     if (Platform.OS === 'android') {
-      return 'http://10.0.2.2:3000/api'; // Android emulator.
+      return 'http://10.0.2.2:3000/api';
     }
-    return 'http://localhost:3000/api'; // iOS simulator and web.
+    return 'http://localhost:3000/api';
   }
 
-  // Production environments must always use HTTPS and an environment variable.
+  // Production requires environment variable
   throw new Error('EXPO_PUBLIC_API_BASE_URL must be set in production.');
 };
 
 /**
- * Retrieves the API base URL with proper validation and security checks.
- * @returns A validated, secure API base URL.
- * @throws Error if the environment variable is invalid or missing in production.
+ * Gets validated API base URL with security checks.
  */
 export const getApiBaseUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-  // If an environment variable is provided, validate it.
+  // Validate environment variable if provided
   if (envUrl && envUrl.length > 0) {
     if (!isValidApiUrl(envUrl)) {
       throw new Error(
@@ -69,30 +59,29 @@ export const getApiBaseUrl = (): string => {
     return envUrl;
   }
 
-  // Falls back to default for development environments.
+  // Fallback to default for development
   if (__DEV__) {
     return getDefaultApiUrl();
   }
 
-  // Production environments require the environment variable to be set.
+  // Production requires environment variable
   throw new Error(
     'EXPO_PUBLIC_API_BASE_URL environment variable is required in production.'
   );
 };
 
 /**
- * API configuration object with predefined settings and validation.
+ * API configuration with timeout and retry settings.
  */
 export const apiConfig = {
   baseUrl: getApiBaseUrl(),
-  timeout: 10000, // 10-second timeout for API requests.
-  retryAttempts: 3, // Number of times to retry failed API requests.
-  retryDelay: 1000, // Base delay in milliseconds for retry attempts.
+  timeout: 10000, // 10-second timeout
+  retryAttempts: 3, // Retry failed requests
+  retryDelay: 1000, // Base retry delay in ms
 } as const;
 
 /**
- * Validates the current API configuration to ensure it is secure and functional.
- * @returns True if the configuration is valid, false otherwise.
+ * Validates current API configuration for security and functionality.
  */
 export const validateApiConfig = (): boolean => {
   try {

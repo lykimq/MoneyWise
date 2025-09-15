@@ -1,14 +1,5 @@
 /**
- * Secure HTTP Client for MoneyWise API
- *
- * Provides a secure, validated HTTP client with proper error handling,
- * timeout management, and request retry logic for the MoneyWise API.
- *
- * Security Features:
- * - URL validation and sanitization.
- * - Environment-based configuration.
- * - Request timeout protection.
- * - Retry logic with exponential backoff.
+ * Secure HTTP client with error handling, timeout management, and retry logic.
  */
 import { apiConfig, validateApiConfig } from '../config/api';
 import { getRateLimiter } from './rateLimiter';
@@ -24,14 +15,12 @@ export class HttpClient {
   private cleanupListener: any;
 
   constructor(baseUrl?: string) {
-    // Validates API configuration upon instantiation.
     if (!validateApiConfig()) {
       throw new Error('Invalid API configuration detected.');
     }
 
     this.baseUrl = baseUrl || apiConfig.baseUrl;
 
-    // Validates the base URL if provided
     if (baseUrl && !this.isValidUrl(baseUrl)) {
       throw new Error(`Invalid base URL provided: ${baseUrl}`);
     }
@@ -55,19 +44,15 @@ export class HttpClient {
 
   /**
    * Sanitizes the endpoint to prevent path traversal and injection attacks.
-   * @param endpoint - The API endpoint path.
-   * @returns The sanitized endpoint string.
    */
   private sanitizeEndpoint(endpoint: string): string {
     const sanitized = sanitizeForUrl(endpoint);
-    // Ensures the endpoint starts with a '/'.
+    // Ensure endpoint starts with '/'
     return sanitized.startsWith('/') ? sanitized : `/${sanitized}`;
   }
 
   /**
-   * Validates that a given URL is safe to use for HTTP requests.
-   * @param url - The URL to validate.
-   * @returns True if the URL uses 'http:' or 'https:' protocol, false otherwise.
+   * Validates that a URL is safe for HTTP requests.
    */
   private isValidUrl(url: string): boolean {
     try {
@@ -79,21 +64,19 @@ export class HttpClient {
   }
 
   /**
-   * Determines if a request should be retried based on the encountered error.
-   * @param error - The error object.
-   * @returns True if the request should be retried, false otherwise.
+   * Determines if a request should be retried based on the error.
    */
   private shouldRetry(error: any): boolean {
-    // Retries on network errors, timeouts, and 5xx server errors.
-    if (error.name === 'AbortError') return true; // Timeout.
-    if (error.message?.includes('Network request failed')) return true; // Network error.
+    // Retry on network errors, timeouts, and 5xx server errors
+    if (error.name === 'AbortError') return true;
+    if (error.message?.includes('Network request failed')) return true;
 
-    // More precise 5xx server error detection
+    // Check for 5xx server errors
     if (error.message?.includes('API request failed:')) {
       const statusMatch = error.message.match(/API request failed: (\d{3})/);
       if (statusMatch) {
         const statusCode = parseInt(statusMatch[1], 10);
-        return statusCode >= 500 && statusCode < 600; // 5xx server errors
+        return statusCode >= 500 && statusCode < 600;
       }
     }
 
@@ -103,11 +86,6 @@ export class HttpClient {
 
   /**
    * Performs an HTTP request with retry logic and timeout protection.
-   * @param url - The full URL for the request.
-   * @param options - Fetch options. `Content-Type: application/json` is added.
-   * @param attempt - The current retry attempt number (defaults to 1).
-   * @returns A promise that resolves to the parsed JSON response of type T.
-   * @throws Error if the request fails after all retry attempts.
    */
   private async requestWithRetry<T>(
     url: string,
@@ -137,9 +115,9 @@ export class HttpClient {
 
       return response.json();
     } catch (error) {
-      // Applies retry logic for network errors and timeouts.
+      // Apply retry logic for network errors and timeouts
       if (attempt < this.retryAttempts && this.shouldRetry(error)) {
-        const delay = this.retryDelay * Math.pow(2, attempt - 1); // Exponential backoff.
+        const delay = this.retryDelay * Math.pow(2, attempt - 1);
         await new Promise((resolve) => setTimeout(resolve, delay));
         return this.requestWithRetry<T>(url, options, attempt + 1);
       }
@@ -150,20 +128,13 @@ export class HttpClient {
 
   /**
    * Initiates a secure JSON HTTP request to the backend API.
-   * @param endpoint - The API endpoint path (e.g., `/budgets`).
-   * @param options - Optional fetch options.
-   * @returns A promise that resolves to the parsed JSON response of type T.
-   * @throws Error if the request fails after all retry attempts or is rate-limited.
    */
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    // Validates input parameters
     if (!endpoint || typeof endpoint !== 'string') {
       throw new Error('Endpoint must be a non-empty string');
     }
 
-    // Check rate limiting and record the request in one operation.
-    // NOTE: Client-side rate limiting matches backend limits (30 req/min for budget operations)
-    // Backend rate limiting is the authoritative source - see backend/src/rate_limiter/
+    // Check rate limiting
     const limiter = getRateLimiter(endpoint);
     if (!limiter.isAllowed(endpoint)) {
       const timeUntilReset = limiter.getTimeUntilReset(endpoint);
@@ -171,11 +142,10 @@ export class HttpClient {
       throw new Error(`Rate limit exceeded. Try again in ${seconds} seconds`);
     }
 
-    // Sanitizes the endpoint to prevent path traversal attacks.
+    // Sanitize endpoint and construct URL
     const sanitizedEndpoint = this.sanitizeEndpoint(endpoint);
     const url = `${this.baseUrl}${sanitizedEndpoint}`;
 
-    // Validates the constructed URL before making the request.
     if (!this.isValidUrl(url)) {
       throw new Error(`Invalid URL constructed: ${url}`);
     }
@@ -184,22 +154,16 @@ export class HttpClient {
   }
 
   /**
-   * Cleanup method to be called when the app is unloaded.
-   * This prevents memory leaks by destroying the rate limiters.
+   * Cleanup method to prevent memory leaks by destroying rate limiters.
    */
   public cleanupRateLimiter(): void {
-    // Remove platform-specific cleanup listener
     if (Platform.OS === 'web') {
       window.removeEventListener('beforeunload', this.cleanupListener);
-    } else {
-      // AppState cleanup is handled automatically in React Native
-      // No need to manually remove the listener
     }
 
-    // Import rateLimiters for cleanup
     Object.values(rateLimiters).forEach((limiter: any) => limiter.destroy());
   }
 }
 
-// Exports a singleton instance of the HttpClient.
+// Singleton instance of the HttpClient
 export const httpClient = new HttpClient();

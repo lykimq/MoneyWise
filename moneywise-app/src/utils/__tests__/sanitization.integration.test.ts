@@ -6,10 +6,7 @@ import {
 } from '../sanitization';
 
 /**
- * Integration Tests for Sanitization Functions
- *
- * Tests input sanitization to prevent XSS attacks and ensure data safety.
- * Verifies HTML tag removal, event handler stripping, and URL sanitization.
+ * Integration tests for sanitization functions to prevent XSS attacks.
  */
 describe('sanitizeString', () => {
   it('should handle null and undefined inputs', async () => {

@@ -18,7 +18,7 @@
  *     GET    /api/budgets/{id}
  *   Refer to `moneywise-backend/src/api/mod.rs` for the detailed router setup.
  */
-// Thin compatibility wrapper. Prefer importing from './budget' for richer types.
+// Re-export budget domain for convenience
 export * from './budget';
 
 import { budgetClient } from './budget';
@@ -26,9 +26,7 @@ import type { BudgetOverviewApi, BudgetResponse } from './budget';
 
 export const apiService = {
   /**
-   * Retrieves a list of budgets based on the provided parameters.
-   * @param params - Optional parameters for filtering budgets (month, year, currency).
-   * @returns A promise that resolves to a BudgetResponse.
+   * Retrieves budget list with optional filtering parameters.
    */
   getBudgets: (params?: {
     month?: string;
@@ -36,9 +34,7 @@ export const apiService = {
     currency?: string;
   }): Promise<BudgetResponse> => budgetClient.list(params),
   /**
-   * Retrieves an overview of budgets based on the provided parameters.
-   * @param params - Optional parameters for filtering the overview (month, year, currency).
-   * @returns A promise that resolves to a BudgetOverviewApi object.
+   * Retrieves budget overview with optional filtering parameters.
    */
   getBudgetOverview: (params?: {
     month?: string;

@@ -1,30 +1,20 @@
 /**
- * Date Utility Functions for MoneyWise App
- *
- * This file provides helper functions for handling date-related parameters,
- * primarily for use in API calls.
+ * Date utility functions for API parameter handling.
  */
 
 /**
- * Retrieves the current month and year as string values suitable for API calls.
- *
- * @returns An object containing the current month (1-12) and year as strings.
+ * Gets current month and year as strings for API calls.
  */
 export const getCurrentDateParams = () => {
   const now = new Date();
   return {
-    month: String(now.getMonth() + 1), // JavaScript months are 0-indexed.
+    month: String(now.getMonth() + 1), // Convert 0-indexed to 1-indexed
     year: String(now.getFullYear()),
   };
 };
 
 /**
- * Constructs date parameters, using the current date as a fallback if month
- * or year are not provided.
- *
- * @param month - Optional month string (e.g., "1" for January).
- * @param year - Optional year string (e.g., "2023").
- * @returns An object with the month and year, defaulting to the current date.
+ * Builds date parameters with current date as fallback for missing values.
  */
 export const buildDateParams = (month?: string, year?: string) => {
   const current = getCurrentDateParams();

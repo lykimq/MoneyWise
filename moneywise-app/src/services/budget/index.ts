@@ -1,7 +1,5 @@
 /**
- * Re-exports Budget domain types and the budget client to simplify imports
- * across the application. This centralizes access to budget-related
- * functionalities and data structures.
+ * Re-exports budget domain types and client for simplified imports.
  */
 export * from './types';
 export { budgetClient } from './client';

@@ -14,7 +14,7 @@ import {
 import { toNumber, formatAmount } from '../../utils/currencyUtils';
 
 /**
- * Props for the BudgetOverviewSection component.
+ * Budget overview section component props.
  */
 interface BudgetOverviewSectionProps {
   overview: {
@@ -27,7 +27,7 @@ interface BudgetOverviewSectionProps {
 }
 
 /**
- * Props for the PlannedBudgetCard component.
+ * Planned budget card component props.
  */
 interface PlannedBudgetCardProps {
   planned: string;
@@ -38,7 +38,7 @@ interface PlannedBudgetCardProps {
 }
 
 /**
- * Props for the SpentCard component.
+ * Spent card component props.
  */
 interface SpentCardProps {
   spent: string;
@@ -47,7 +47,7 @@ interface SpentCardProps {
 }
 
 /**
- * Props for the RemainingBudgetCard component.
+ * Remaining budget card component props.
  */
 interface RemainingBudgetCardProps {
   remaining: string;
@@ -57,7 +57,7 @@ interface RemainingBudgetCardProps {
 }
 
 /**
- * Props for the BudgetSecondaryCardsRow component.
+ * Budget secondary cards row component props.
  */
 interface BudgetSecondaryCardsRowProps {
   spent: string;
@@ -68,10 +68,7 @@ interface BudgetSecondaryCardsRowProps {
 }
 
 /**
- * PlannedBudgetCard Component
- *
- * Displays the primary budget information (Planned Budget) with a progress
- * indicator. This is the most prominent card in the budget overview.
+ * Planned budget card with progress indicator.
  */
 const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
   planned,
@@ -81,20 +78,20 @@ const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
   period,
 }) => (
   <View style={mainCardStyles.card}>
-    {/* Main Card Header - Contains the icon, title, and period. */}
+    
     <View style={mainCardStyles.header}>
-      {/* Title Row - Groups the wallet icon and "Planned Budget" text. */}
+      
       <View style={mainCardStyles.titleRow}>
         <Ionicons name="wallet-outline" size={28} color={colors.remaining} />
         <Text style={mainCardStyles.title}>Planned Budget</Text>
       </View>
-      {/* Period Text - Displays the current budget period (e.g., "This Month"). */}
+      
       <Text style={mainCardStyles.period}>{period}</Text>
     </View>
 
-    {/* Main Card Content - Displays the planned amount and spending progress. */}
+    
     <View style={mainCardStyles.content}>
-      {/* Planned Amount Display - Shows a loading indicator or the formatted amount. */}
+      
       {loading ? (
         <ActivityIndicator size="large" color={colors.remaining} />
       ) : (
@@ -103,7 +100,7 @@ const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
         </Text>
       )}
 
-      {/* Progress Indicator - Visual bar showing spending against the planned budget. */}
+      
       <View style={mainCardStyles.progressContainer}>
         <View
           style={[
@@ -125,7 +122,7 @@ const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
             ]}
           />
         </View>
-        {/* Progress Text - Shows the percentage of budget spent or a "No budget planned" message. */}
+        
         <Text style={mainCardStyles.progressText}>
           {spentPercentage > 0
             ? `${Math.round(spentPercentage)}% spent`
@@ -140,7 +137,7 @@ const PlannedBudgetCard: React.FC<PlannedBudgetCardProps> = ({
 /**
  * SpentCard Component
  *
- * Displays the total amount spent with a status indicator.
+ * Displays content.
  */
 const SpentCard: React.FC<SpentCardProps> = ({
   spent,
@@ -155,7 +152,7 @@ const SpentCard: React.FC<SpentCardProps> = ({
       isOverBudget ? cardVariants.overBudget : cardVariants.spent,
     ]}
   >
-    {/* Secondary Card Header - Contains the icon and "Spent" label. */}
+    {}
     <View style={secondaryCardStyles.header}>
       <Ionicons
         name="trending-down-outline"
@@ -166,7 +163,7 @@ const SpentCard: React.FC<SpentCardProps> = ({
       />
       <Text style={secondaryCardStyles.label}>Spent</Text>
     </View>
-    {/* Spent Amount Display - Shows a loading indicator or the formatted amount. */}
+    {}
     {loading ? (
       <ActivityIndicator
         size="small"
@@ -186,7 +183,7 @@ const SpentCard: React.FC<SpentCardProps> = ({
         {formatAmount(spent)}
       </Text>
     )}
-    {/* Budget Indicator - Shows a colored dot and text indicating budget status. */}
+    {}
     <View style={secondaryCardStyles.indicator}>
       <View
         style={[
@@ -217,7 +214,7 @@ const SpentCard: React.FC<SpentCardProps> = ({
 /**
  * RemainingBudgetCard Component
  *
- * Displays the remaining budget amount with a progress indicator and status.
+ * Displays content.
  */
 const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
   remaining,
@@ -233,7 +230,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
       isOverBudget ? cardVariants.overBudget : cardVariants.remaining,
     ]}
   >
-    {/* Secondary Card Header - Contains the icon and "Remaining" or "Over Budget" label. */}
+    {}
     <View style={secondaryCardStyles.header}>
       <Ionicons
         name="checkmark-circle-outline"
@@ -246,7 +243,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         {isOverBudget ? 'Over Budget' : 'Remaining'}
       </Text>
     </View>
-    {/* Remaining Amount Display - Shows a loading indicator or the formatted amount. */}
+    {}
     {loading ? (
       <ActivityIndicator
         size="small"
@@ -266,7 +263,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
         {formatAmount(Math.abs(toNumber(remaining)))}
       </Text>
     )}
-    {/* Remaining Progress - Visual bar showing remaining budget. */}
+    {}
     <View style={{ width: '100%' }}>
       <View
         style={[
@@ -298,7 +295,7 @@ const RemainingBudgetCard: React.FC<RemainingBudgetCardProps> = ({
 /**
  * BudgetSecondaryCardsRow Component
  *
- * Contains the Spent and Remaining budget cards displayed side-by-side.
+ * Contains elements.
  */
 const BudgetSecondaryCardsRow: React.FC<BudgetSecondaryCardsRowProps> = ({
   spent,
@@ -308,10 +305,10 @@ const BudgetSecondaryCardsRow: React.FC<BudgetSecondaryCardsRowProps> = ({
   loading,
 }) => (
   <View style={standardCardStyles.row}>
-    {/* SPENT CARD - Displays the total amount spent. */}
+    {}
     <SpentCard spent={spent} isOverBudget={isOverBudget} loading={loading} />
 
-    {/* REMAINING CARD - Displays the amount left to spend or the overspend amount. */}
+    {}
     <RemainingBudgetCard
       remaining={remaining}
       remainingPercentage={remainingPercentage}
@@ -332,9 +329,6 @@ const BudgetSecondaryCardsRow: React.FC<BudgetSecondaryCardsRowProps> = ({
  * Uses visual hierarchy, progress indicators, and better UX for budget
  * management.
  *
- * @param overview - Object containing planned, spent, and remaining amounts.
- * @param loading - Whether to show the loading state.
- * @param period - Description of the financial time period.
  */
 export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
   overview,
@@ -355,12 +349,12 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
   return (
     // Main container for the entire Budget Overview section.
     <View style={sectionStyles.container}>
-      {/* SECTION TITLE - Displays the title for the budget overview. */}
+      {}
       <Text style={sectionStyles.title}>Budget Overview</Text>
 
-      {/* DASHBOARD CONTAINER - Holds the main and secondary budget cards. */}
+      {}
       <View style={standardCardStyles.container}>
-        {/* MAIN CARD - Displays "Planned Budget" as the most prominent information. */}
+        {}
         <PlannedBudgetCard
           planned={overview.planned}
           spentPercentage={spentPercentage}
@@ -369,7 +363,7 @@ export const BudgetOverviewSection: React.FC<BudgetOverviewSectionProps> = ({
           period={period}
         />
 
-        {/* SECONDARY CARDS ROW - Contains "Spent" and "Remaining" budget cards. */}
+        {}
         <BudgetSecondaryCardsRow
           spent={overview.spent}
           remaining={overview.remaining}

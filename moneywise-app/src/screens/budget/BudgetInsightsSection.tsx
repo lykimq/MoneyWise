@@ -29,21 +29,16 @@ interface InsightItemProps {
 }
 
 /**
- * InsightItem Component
- *
- * Displays a single insight with an icon and message. Handles the styling for
- * individual insight items, including proper spacing.
+ * Insight item component with icon and message styling.
  */
 const InsightItem: React.FC<InsightItemProps> = ({ insight, isLast }) => (
   <View style={isLast ? contentCardStyles.itemLast : contentCardStyles.item}>
-    {/* INSIGHT ICON - Contextual icon with dynamic color from the API. */}
     <Ionicons
       name={insight.icon as keyof typeof Ionicons.glyphMap}
       size={20}
-      color={insight.color} // Dynamic color based on insight type.
+      color={insight.color}
     />
 
-    {/* INSIGHT MESSAGE - AI-generated recommendation text. */}
     <Text style={contentCardStyles.itemText}>{insight.message}</Text>
   </View>
 );
@@ -60,8 +55,6 @@ const InsightItem: React.FC<InsightItemProps> = ({ insight, isLast }) => (
  * The component gracefully handles empty states by not rendering when no
  * insights are available, maintaining a clean UI.
  *
- * @param insights - An array of insight objects containing type, message,
- *                   icon, and color.
  */
 export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({
   insights,
@@ -73,15 +66,15 @@ export const BudgetInsightsSection: React.FC<BudgetInsightsSectionProps> = ({
   }
 
   return (
-    // MAIN SECTION CONTAINER - Uses shared section styling for consistency.
+
     <View style={sectionStyles.container}>
-      {/* SECTION TITLE - Uses shared title styling across all budget sections. */}
+      { }
       <Text style={sectionStyles.title}>Budget Insights</Text>
 
-      {/* INSIGHTS CONTAINER - White card container for all insight items. */}
+      { }
       <View style={contentCardStyles.card}>
         {insights.map((insight, index) => (
-          // INDIVIDUAL INSIGHT ITEM - Single insight with icon and message.
+
           <InsightItem
             key={index}
             insight={insight}

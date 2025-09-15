@@ -1,19 +1,12 @@
 /**
- * Base Style Components
- *
- * Reusable base styles that form the foundation for all components.
- * These styles are designed to be composed and extended by specific components.
+ * Base styles that form the foundation for all components.
  */
 
-import { ViewStyle, TextStyle } from 'react-native';
+import { ViewStyle } from 'react-native';
 import { colors, spacing, borderRadius, shadows } from './theme';
 
 /**
- * @description Base card style with common properties like background,
- * border radius, padding, and shadow. This is the foundation for all card
- * components in the app.
- * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`,
- * `moneywise-app/src/components/cards.ts`
+ * Base card style with background, border radius, padding, and shadow.
  */
 export const cardBase: ViewStyle = {
   backgroundColor: colors.background.secondary,
@@ -23,9 +16,7 @@ export const cardBase: ViewStyle = {
 };
 
 /**
- * @description Base style for horizontal header rows, ensuring consistent
- * alignment of items within headers.
- * @usedIn `moneywise-app/src/components/layout.ts` (e.g., `headerRow` style)
+ * Base style for horizontal header rows with consistent alignment.
  */
 export const headerRowBase: ViewStyle = {
   flexDirection: 'row',
@@ -33,10 +24,7 @@ export const headerRowBase: ViewStyle = {
 };
 
 /**
- * @description Base style for progress bars, defining common properties like
- * width, border radius, and overflow behavior.
- * @usedIn `moneywise-app/src/components/progress.ts`
- * (e.g., `progressBarContainer` style)
+ * Base style for progress bars with width, border radius, and overflow.
  */
 export const progressBarBase: ViewStyle = {
   width: '100%',
@@ -45,10 +33,7 @@ export const progressBarBase: ViewStyle = {
 };
 
 /**
- * @description Base style for buttons with consistent padding and border
- * radius.
- * @usedIn `moneywise-app/src/styles/components/buttons.ts`
- * (e.g., `primaryButton`, `secondaryButton`)
+ * Base style for buttons with consistent padding and border radius.
  */
 export const buttonBase: ViewStyle = {
   paddingHorizontal: spacing['2xl'],

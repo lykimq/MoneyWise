@@ -1,11 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 
 /**
- * Maps category names to appropriate Ionicons for visual consistency.
- * Returns type-safe icon names that are guaranteed to exist in Ionicons.
- *
- * @param categoryName - The name of the budget category.
- * @returns Icon name that exists in Ionicons.glyphMap.
+ * Maps budget category names to corresponding Ionicons for UI display.
  */
 export const getCategoryIconName = (
   categoryName: string
@@ -37,6 +33,5 @@ export const getCategoryIconName = (
     'Vacation Fund': 'airplane-outline',
   };
 
-  // Returns the mapped icon or a default fallback if no match is found.
   return categoryToIconMap[categoryName] || 'wallet-outline';
 };

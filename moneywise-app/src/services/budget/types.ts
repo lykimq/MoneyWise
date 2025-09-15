@@ -1,13 +1,10 @@
 /**
- * Money is represented as a string to avoid floating-point precision errors
- * in JavaScript (e.g., "12.34"). The backend should serialize monetary values
- * as strings for consistency across the application.
+ * Money type as string to avoid floating-point precision errors.
  */
 export type Money = string;
 
 /**
- * Represents aggregated totals for a specific time period.
- * Backend: Returned by `GET /api/budgets/overview`.
+ * Aggregated budget totals for a specific time period.
  */
 export interface BudgetOverviewApi {
   planned: Money;
@@ -17,8 +14,7 @@ export interface BudgetOverviewApi {
 }
 
 /**
- * Provides a per-category budget breakdown and progress.
- * Backend: Included in the response from `GET /api/budgets`.
+ * Per-category budget breakdown with progress tracking.
  */
 export interface CategoryBudgetApi {
   id: string;
@@ -34,9 +30,7 @@ export interface CategoryBudgetApi {
 }
 
 /**
- * Represents an insight message derived from budget data, such as alerts or
- * tips for the user.
- * Backend: Included in the response from `GET /api/budgets`.
+ * Budget insight message with type, content, and styling.
  */
 export interface BudgetInsight {
   type_: string;
@@ -46,8 +40,7 @@ export interface BudgetInsight {
 }
 
 /**
- * The composite response structure for the budgets listing endpoint.
- * Contains an overview, category-specific budgets, and relevant insights.
+ * Complete budget response with overview, categories, and insights.
  */
 export interface BudgetResponse {
   overview: BudgetOverviewApi;

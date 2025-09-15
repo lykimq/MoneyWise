@@ -1,45 +1,26 @@
 /**
- * Layout Component Styles
- *
- * Styles for structural layout components used throughout the MoneyWise app.
- * Includes section containers, card variants, and common layout patterns
- * with consistent spacing and theming.
+ * Layout component styles with consistent spacing and theming.
  */
 
 import { StyleSheet } from 'react-native';
 import { colors, spacing } from '../theme';
 import { createTextStyle } from './utils';
 
-// ============================================================================
-// 📐 LAYOUT COMPONENT STYLES - Structure & Spacing
-// ============================================================================
+// Layout component styles
 
 /**
- * Section Container Styles
- *
- * Used for consistent section layout across all screens:
- * - Section titles and content containers
- * - Consistent padding and spacing
- * - Standard typography for section headers
- *
- * Features: Standard padding, bold titles, consistent spacing
- * Usage: <View style={sectionStyles.container}> for screen sections
+ * Section container styles for consistent layout across screens.
  */
 export const sectionStyles = StyleSheet.create({
   /**
-   * @description Section container style with standard horizontal and
-   * vertical padding. Provides consistent spacing for major sections on
-   * various screens.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for main sections)
+   * Section container with consistent horizontal and vertical padding.
    */
   container: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
   },
   /**
-   * @description Text style for section titles.
-   * Applies a large, bold typography with bottom margin for spacing.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for section headers)
+   * Section title with large, bold typography and bottom margin.
    */
   title: {
     ...createTextStyle('xl', 'bold'),
@@ -47,27 +28,13 @@ export const sectionStyles = StyleSheet.create({
   },
 });
 
-// ============================================================================
-// 🎨 CARD VARIANT STYLES - State-Based Styling
-// ============================================================================
 
 /**
- * Card Variant Styles
- *
- * Used to apply different visual states to cards based on budget status:
- * - spent: Light blue background for spent amounts
- * - remaining: Light green background for remaining budget
- * - overBudget: Light red background for overspent amounts
- *
- * Features: Color-coded backgrounds, subtle borders, state indication
- * Usage: <View style={[cardStyles.card, cardVariants.spent]}> for state styling
+ * Card variant styles for different budget states with color-coded backgrounds.
  */
 export const cardVariants = StyleSheet.create({
   /**
-   * @description Style for cards indicating spent amounts.
-   * Applies a light blue background and a subtle blue border.
-   * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
-   * (for "Spent" card)
+   * Spent card variant with light blue background and border.
    */
   spent: {
     backgroundColor: colors.card.spent,
@@ -75,10 +42,7 @@ export const cardVariants = StyleSheet.create({
     borderColor: colors.savings + '30', // 30% opacity blue border
   },
   /**
-   * @description Style for cards indicating remaining budget.
-   * Applies a light green background and a subtle teal border.
-   * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
-   * (for "Remaining" card)
+   * Remaining card variant with light green background and border.
    */
   remaining: {
     backgroundColor: colors.card.remaining,
@@ -86,10 +50,7 @@ export const cardVariants = StyleSheet.create({
     borderColor: colors.remaining + '30', // 30% opacity teal border
   },
   /**
-   * @description Style for cards indicating an over-budget state.
-   * Applies a light red background and a subtle red border.
-   * @usedIn `moneywise-app/src/components/FinancialDashboardCard.tsx`
-   * (for "Over Budget" state)
+   * Over budget card variant with light red background and border.
    */
   overBudget: {
     backgroundColor: colors.card.overBudget,

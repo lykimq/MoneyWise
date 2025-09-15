@@ -1,8 +1,5 @@
 /**
- * Budget Screen Styles
- *
  * Centralized styles for the Budget screen components.
- * Replaces inline styles with consistent, maintainable StyleSheet definitions.
  */
 
 import { StyleSheet } from 'react-native';
@@ -11,11 +8,7 @@ import { colors, spacing, typography } from '../../styles/theme';
 export const budgetScreenStyles = StyleSheet.create({
   // Main container styles
   /**
-   * @description Main container for the Budget screen.
-   * Provides a flexible layout (`flex: 1`) to take up the full screen and
-   * sets the background color to `colors.background.primary`.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (main `View` or
-   * `SafeAreaView`)
+   * Main container for the Budget screen with full screen layout.
    */
   container: {
     flex: 1,
@@ -24,10 +17,7 @@ export const budgetScreenStyles = StyleSheet.create({
 
   // ScrollView styles
   /**
-   * @description Style for the main ScrollView component on the Budget
-   * screen. Allows content to be scrollable and takes up available vertical
-   * space.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (main `ScrollView`)
+   * Main ScrollView component for scrollable content.
    */
   scrollView: {
     flex: 1,
@@ -35,11 +25,7 @@ export const budgetScreenStyles = StyleSheet.create({
 
   // Loading state styles
   /**
-   * @description Container style for displaying loading indicators and
-   * messages. Occupies the full screen, centers its content, and provides
-   * padding.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (when `loading`
-   * state is true)
+   * Container for loading indicators with centered content.
    */
   loadingContainer: {
     flex: 1,
@@ -49,11 +35,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for the main loading message (e.g., "Loading
-   * budget data..."). Uses `typography.sizes.xl` for size,
-   * `colors.text.primary` for color, and provides top margin.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (within
-   * `loadingContainer`)
+   * Main loading text with large typography and top margin.
    */
   loadingText: {
     fontSize: typography.sizes.xl,
@@ -63,11 +45,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for a secondary loading message (e.g., "Fetching
-   * latest updates..."). Uses `typography.sizes.sm` for size,
-   * `colors.text.secondary` for color, and provides top margin.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (within
-   * `loadingContainer`)
+   * Secondary loading text with small typography and top margin.
    */
   loadingSubtext: {
     fontSize: typography.sizes.sm,
@@ -78,11 +56,7 @@ export const budgetScreenStyles = StyleSheet.create({
 
   // Error state styles
   /**
-   * @description Container style for displaying error messages and retry
-   * options. Occupies the full screen, centers its content, and provides
-   * padding.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (when `error` state
-   * is true or data is empty)
+   * Error container with full screen layout and centered content.
    */
   errorContainer: {
     flex: 1,
@@ -92,21 +66,14 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the error icon displayed in the error state.
-   * Provides bottom margin for spacing.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (within
-   * `errorContainer`)
+   * Error icon with bottom margin.
    */
   errorIcon: {
     marginBottom: spacing.lg,
   },
 
   /**
-   * @description Text style for the main error title.
-   * Uses `typography.sizes.xl` for size, `colors.text.primary` for color,
-   * and provides bottom margin.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (within
-   * `errorContainer`)
+   * Error title with large typography and bottom margin.
    */
   errorTitle: {
     fontSize: typography.sizes.xl,
@@ -116,10 +83,8 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for the detailed error message.
-   * Uses `typography.sizes.lg` for size, `colors.text.secondary` for color,
+   * Uses theme values.secondary` for color,
    * and provides bottom margin.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (within
    * `errorContainer`)
    */
   errorMessage: {
@@ -131,10 +96,8 @@ export const budgetScreenStyles = StyleSheet.create({
 
   // Time period selector styles
   /**
-   * @description Container for the monthly/yearly toggle buttons.
    * Arranges buttons horizontally, applies a tertiary background, rounded
    * corners, and padding.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for period
    * selection)
    */
   periodToggleContainer: {
@@ -146,10 +109,8 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Base style for individual time period toggle buttons (e.g.,
    * "Monthly", "Yearly"). Provides flexible width, vertical and horizontal
    * padding, rounded corners, and centers content.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for toggle buttons)
    */
   periodToggleButton: {
     flex: 1,
@@ -160,9 +121,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style applied to the active (selected) time period toggle
    * button. Sets the background color to `colors.primary`.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (conditional
    * styling for active button)
    */
   periodToggleButtonActive: {
@@ -170,9 +129,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style applied to inactive (unselected) time period toggle
    * buttons. Sets the background to transparent.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (conditional
    * styling for inactive buttons)
    */
   periodToggleButtonInactive: {
@@ -180,10 +137,8 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Base text style for time period toggle buttons.
-   * Uses `typography.sizes.sm` for size and `typography.weights.semibold`
+   * Uses theme values.semibold`
    * for font weight.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (for toggle button
    * text)
    */
   periodToggleText: {
@@ -192,9 +147,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for the active (selected) time period toggle
    * button. Sets the text color to `colors.text.inverse` (white).
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (conditional
    * styling for active button text)
    */
   periodToggleTextActive: {
@@ -202,9 +155,7 @@ export const budgetScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for inactive (unselected) time period toggle
    * buttons. Sets the text color to `colors.text.secondary`.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (conditional
    * styling for inactive button text)
    */
   periodToggleTextInactive: {
@@ -213,9 +164,7 @@ export const budgetScreenStyles = StyleSheet.create({
 
   // Spinner container
   /**
-   * @description Container for a small spinner that appears next to the time
-   * period selector. Provides left margin for spacing.
-   * @usedIn `moneywise-app/src/screens/BudgetScreen.tsx` (when fetching data
+   * period selector. Provides functionality.
    * for period change)
    */
   spinnerContainer: {

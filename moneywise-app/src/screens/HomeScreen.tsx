@@ -19,12 +19,7 @@ import { colors } from '../styles';
 import { homeScreenStyles } from '../styles/screens/homeScreenStyles';
 
 /**
- * HomeScreen Component
- *
- * ARCHITECTURE PATTERN:
- * - Custom Hook (`useBudgetOverview`): Handles data fetching and state.
- * - Presentational Components: Focus only on rendering UI.
- * - Container Component (this): Orchestrates data and UI components.
+ * Home screen with budget overview and category spending visualization.
  */
 
 const HomeScreen: React.FC = () => {
@@ -36,13 +31,8 @@ const HomeScreen: React.FC = () => {
     isEmpty: categoriesEmpty,
   } = useCategorySpending();
 
-  /**
-   * FAB Action Handler
-   * Primary action for adding new transactions.
-   */
+  // TODO: Implement navigation to Add Transaction screen
   const handleAddTransaction = () => {
-    // TODO: Implement navigation to the Add Transaction screen.
-    // This is a placeholder and requires proper navigation implementation.
     // navigation.navigate('AddTransaction');
   };
 
@@ -227,9 +217,9 @@ const CategorySpendingSection: React.FC<CategorySpendingSectionProps> = ({
                 const spendingPercentage =
                   totalSpending > 0
                     ? (
-                        (parseFloat(category.spent) / totalSpending) *
-                        100
-                      ).toFixed(1)
+                      (parseFloat(category.spent) / totalSpending) *
+                      100
+                    ).toFixed(1)
                     : '0.0';
 
                 return (

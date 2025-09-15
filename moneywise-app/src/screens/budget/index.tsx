@@ -1,17 +1,5 @@
 /**
- * BudgetsScreen Component - MoneyWise Budget Management
- *
- * This is the main screen for comprehensive budget management, featuring:
- * - Time period selection (Monthly/Yearly).
- * - A budget overview with spending totals.
- * - A category-wise budget breakdown with progress tracking.
- * - AI-generated insights and recommendations.
- *
- * Architecture:
- * - Uses TanStack Query for efficient data management and caching.
- * - Employs a modular component structure for maintainability.
- * - Includes comprehensive error handling and loading states.
- * - Designed for responsiveness with consistent styling.
+ * Main budget management screen with time period selection and category breakdown.
  */
 
 import React, { useState } from 'react';
@@ -35,33 +23,26 @@ import { colors, sectionStyles, buttonStyles } from '../../styles';
 import { budgetScreenStyles } from '../../styles/screens/budgetScreenStyles';
 
 /**
- * Main Budget Screen Component
- *
- * Manages the complete budget interface, including data fetching, error
- * handling, and the organized display of budget information across multiple
- * sections.
+ * Main budget screen component managing data fetching and UI display.
  */
 const BudgetsScreen: React.FC = () => {
-  // UI State Management for the selected time period.
+  // Time period selection state
   const [selectedTimePeriod, setSelectedTimePeriod] =
     useState<BudgetTimePeriod>('Monthly');
   const availableTimePeriods: BudgetTimePeriod[] = ['Monthly', 'Yearly'];
 
-  // Data Fetching with TanStack Query.
-  // Provides automatic caching, background updates, error handling, and retry logic.
+  // Fetch budget data with caching and error handling
   const {
     budgetData,
     loading,
-    isFetching, // Indicates background data updates.
+    isFetching,
     error,
     refetch,
     hasData,
   } = useBudgetData(selectedTimePeriod);
 
   /**
-   * Handles the retry action for failed data fetching.
-   * Uses TanStack Query's built-in refetch mechanism with user-friendly
-   * error messaging.
+   * Handles functionality.
    */
   const handleRetryDataFetch = async () => {
     try {
@@ -72,14 +53,14 @@ const BudgetsScreen: React.FC = () => {
       Alert.alert(
         'Connection Error',
         'Unable to fetch budget data. Please check your internet ' +
-          'connection and try again.',
+        'connection and try again.',
         [{ text: 'OK' }]
       );
     }
   };
 
   // Loading State Component
-  // Displays a loading spinner during the initial data fetch.
+  // Displays content.
   if (loading) {
     return (
       <SafeAreaView style={budgetScreenStyles.container}>
@@ -99,7 +80,7 @@ const BudgetsScreen: React.FC = () => {
   }
 
   // Error State Component
-  // Handles network errors and empty data states with user-friendly messaging.
+  // Handles functionality.
   if (error || !hasData) {
     const errorMessage = error?.message || 'Failed to load budget data.';
 
@@ -124,30 +105,30 @@ const BudgetsScreen: React.FC = () => {
     );
   }
 
-  // MAIN SCREEN CONTENT - Complete budget interface with organized sections.
-  // Uses SafeAreaView for proper spacing on devices with notches/home indicators.
+  
+  // Uses theme values.
   // ScrollView enables vertical scrolling through all budget sections.
   return (
-    // SAFE AREA CONTAINER - Ensures content respects device safe areas.
+    
     <SafeAreaView style={budgetScreenStyles.container}>
-      {/* SCROLL CONTAINER - Provides vertical scrolling for all budget content. */}
+      {}
       <ScrollView style={budgetScreenStyles.scrollView}>
-        {/* TIME PERIOD SELECTOR SECTION - Monthly/Yearly toggle at the top. */}
+        {}
         {/* Allows users to switch between different time periods for budget data. */}
-        {/* Shows a loading indicator when fetching new data. */}
+        {/* Shows content. */}
         <TimePeriodSelector
           availablePeriods={availableTimePeriods}
           selectedPeriod={selectedTimePeriod}
           onPeriodChange={setSelectedTimePeriod}
-          isUpdating={isFetching} // Displays spinner during data updates.
+          isUpdating={isFetching} // Displays content.
         />
 
-        {/* BUDGET OVERVIEW SECTION - High-level budget summary cards. */}
-        {/* Displays planned, spent, and remaining amounts in a card format. */}
-        {/* Uses color coding to indicate over-budget status. */}
+        {}
+        {/* Displays content. */}
+        {/* Uses theme values. */}
         <BudgetOverviewSection overview={budgetData!.overview} />
 
-        {/* CATEGORY BUDGETS SECTION - Detailed category-wise breakdown. */}
+        {}
         {/* Shows individual category cards with icons, progress bars, and
                     spending details. */}
         {/* Each card displays spending progress, remaining budget, and
@@ -157,8 +138,8 @@ const BudgetsScreen: React.FC = () => {
           getCategoryIcon={getCategoryIconName} // Dynamic icon selection.
         />
 
-        {/* BUDGET INSIGHTS SECTION - AI-generated recommendations. */}
-        {/* Displays smart insights and suggestions based on spending patterns. */}
+        {}
+        {/* Displays content. */}
         {/* Only renders if insights are available from the API. */}
         <BudgetInsightsSection insights={budgetData!.insights} />
       </ScrollView>

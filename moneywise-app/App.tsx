@@ -16,35 +16,30 @@ import SettingsScreen from './src/screens/SettingsScreen';
 const Tab = createBottomTabNavigator();
 
 /**
- * 🚀 MAIN APP COMPONENT WITH TANSTACK QUERY PROVIDER
+ * Main application component that sets up the core providers and navigation structure.
  *
- * 📚 EDUCATIONAL NOTE:
- * QueryClientProvider must wrap your entire app to provide TanStack Query
- * functionality to all components. Think of it like a "context provider"
- * that gives every component access to the query client.
+ * Provider hierarchy is critical for proper functionality:
+ * - SafeAreaProvider: Handles device-specific safe areas (notches, status bars)
+ * - QueryClientProvider: Enables data fetching and caching across all screens
+ * - NavigationContainer: Provides React Navigation context
+ * - Tab.Navigator: Defines the bottom tab navigation structure
  *
- * 🎯 PROVIDER HIERARCHY (Order matters!):
- * 1. SafeAreaProvider - Handles safe areas (notches, etc.)
- * 2. QueryClientProvider - Provides TanStack Query functionality
- * 3. NavigationContainer - Provides React Navigation
- * 4. Tab.Navigator - Your app's navigation structure
- *
- * WHY THIS ORDER?
- * - SafeAreaProvider should be outermost for device compatibility
- * - QueryClientProvider should wrap navigation so all screens can use queries
- * - NavigationContainer provides navigation context to all screens
+ * This order ensures all screens have access to both navigation and data fetching
+ * capabilities while maintaining proper device compatibility.
  */
 export default function App() {
   return (
     <SafeAreaProvider>
-      {/* 🔥 TANSTACK QUERY PROVIDER - ENABLES ENTERPRISE-GRADE DATA FETCHING */}
       <QueryClientProvider client={queryClient}>
         <NavigationContainer>
           <Tab.Navigator
             screenOptions={({ route }) => ({
+              // Dynamic icon mapping based on route name and focus state
+              // Uses filled icons when focused, outline icons when inactive
               tabBarIcon: ({ focused, color, size }) => {
                 let iconName: keyof typeof Ionicons.glyphMap;
 
+                // Map each route to appropriate Ionicons with focus state variants
                 if (route.name === 'Home') {
                   iconName = focused ? 'home' : 'home-outline';
                 } else if (route.name === 'Budgets') {
@@ -56,13 +51,16 @@ export default function App() {
                 } else if (route.name === 'Settings') {
                   iconName = focused ? 'settings' : 'settings-outline';
                 } else {
+                  // Fallback icon for unknown routes
                   iconName = 'help-outline';
                 }
 
                 return <Ionicons name={iconName} size={size} color={color} />;
               },
+              // Tab bar styling: iOS blue for active tabs, gray for inactive
               tabBarActiveTintColor: '#007AFF',
               tabBarInactiveTintColor: 'gray',
+              // Header styling: iOS blue background with white text
               headerStyle: {
                 backgroundColor: '#007AFF',
               },
@@ -72,6 +70,7 @@ export default function App() {
               },
             })}
           >
+            {/* Define the five main app screens with their navigation options */}
             <Tab.Screen
               name="Home"
               component={HomeScreen}
@@ -98,6 +97,7 @@ export default function App() {
               options={{ title: 'Settings' }}
             />
           </Tab.Navigator>
+          {/* Status bar with light content to contrast with blue header */}
           <StatusBar style="light" />
         </NavigationContainer>
       </QueryClientProvider>

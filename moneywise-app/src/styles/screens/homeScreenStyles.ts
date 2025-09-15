@@ -2,10 +2,7 @@ import { StyleSheet } from 'react-native';
 import { colors } from '../index'; // Assuming index.ts exports colors
 
 /**
- * REUSABLE STYLE OBJECTS
- *
- * Extract common patterns into reusable objects
- * This prevents duplication and ensures consistency
+ * Reusable style objects to prevent duplication and ensure consistency.
  */
 const cardShadow = {
   shadowColor: '#000',
@@ -16,22 +13,13 @@ const cardShadow = {
 };
 
 /**
- * STYLES ORGANIZATION
- *
- * Organized by hierarchy and purpose:
- * 1. Layout styles (container, sections)
- * 2. Component-specific styles (grouped by component)
- * 3. Text styles
- * 4. Interactive element styles
+ * Styles organized by hierarchy: layout, components, text, and interactive elements.
  */
 export const homeScreenStyles = StyleSheet.create({
   // === LAYOUT STYLES ===
 
   /**
-   * @description Main container for the HomeScreen.
-   * Defines the overall screen layout, taking up full available space.
-   * Uses `colors.background.primary` for a light gray background.
-   * @usedIn `HomeScreen.tsx` (SafeAreaView)
+   * Main container for the HomeScreen with full screen layout.
    */
   container: {
     flex: 1,
@@ -39,20 +27,14 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the scrollable content area of the HomeScreen.
-   * Allows content to extend beyond the screen height and be scrolled.
-   * @usedIn `HomeScreen.tsx` (ScrollView)
+   * Scrollable content area for the HomeScreen.
    */
   scrollView: {
     flex: 1,
   },
 
   /**
-   * @description Generic section container style.
-   * Provides consistent horizontal padding and vertical spacing for major
-   * sections on the HomeScreen.
-   * @usedIn `HomeScreen.tsx` (CategorySpendingSection,
-   * RecentTransactionsSection, UpcomingBillsSection)
+   * Section container with consistent horizontal padding and vertical spacing.
    */
   section: {
     paddingHorizontal: 20, // Consistent horizontal padding
@@ -62,11 +44,7 @@ export const homeScreenStyles = StyleSheet.create({
   // === TEXT STYLES ===
 
   /**
-   * @description Style for section headers.
-   * Ensures consistent styling for titles of different sections
-   * (e.g., "Spending by Category").
-   * @usedIn `CategorySpendingSection.tsx`, `RecentTransactionsSection.tsx`,
-   * `UpcomingBillsSection.tsx`
+   * Section title with consistent styling.
    */
   sectionTitle: {
     fontSize: 18,
@@ -78,11 +56,7 @@ export const homeScreenStyles = StyleSheet.create({
   // === FLOATING ACTION BUTTON STYLES ===
 
   /**
-   * @description Style for the Floating Action Button (FAB).
-   * Positions the button absolutely at the bottom-right of the screen.
-   * Provides standard FAB size, circular shape, primary background color,
-   * and a shadow for elevation. `zIndex` ensures it stays on top.
-   * @usedIn `HomeScreen.tsx` (FloatingActionButton component)
+   * Floating action button positioned at bottom-right with elevation.
    */
   fab: {
     position: 'absolute',
@@ -101,10 +75,7 @@ export const homeScreenStyles = StyleSheet.create({
   // === CATEGORY SECTION STYLES ===
 
   /**
-   * @description Container style for the spending by category chart.
-   * Applies a card-like appearance with rounded corners, background color,
-   * padding, and a shadow. Centers the chart content horizontally.
-   * @usedIn `CategorySpendingSection.tsx`
+   * Chart container with card-like appearance and centered content.
    */
   chartContainer: {
     backgroundColor: colors.background.secondary,
@@ -116,9 +87,7 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Wrapper for the pie chart to ensure proper centering and
-   * overflow handling.
-   * @usedIn `CategorySpendingSection.tsx`
+   * Pie chart wrapper with overflow handling.
    */
   pieChartWrapper: {
     alignItems: 'center',
@@ -129,9 +98,7 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Placeholder style for when chart data is loading or empty.
-   * Centers content and sets a fixed height.
-   * @usedIn `CategorySpendingSection.tsx`
+   * Chart placeholder with centered content and fixed height.
    */
   chartPlaceholder: {
     alignItems: 'center',
@@ -139,10 +106,6 @@ export const homeScreenStyles = StyleSheet.create({
     height: 120,
   },
 
-  /**
-   * @description Text style for the chart placeholder message.
-   * @usedIn `CategorySpendingSection.tsx`
-   */
   chartPlaceholderText: {
     marginTop: 10,
     color: colors.text.secondary,
@@ -150,10 +113,8 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Container for the category legend items, arranged in a grid
    * layout. Uses `flexWrap` to allow items to wrap to the next line and
    * `justifyContent` for spacing.
-   * @usedIn `CategorySpendingSection.tsx`
    */
   categoryLegendGrid: {
     marginTop: 20,
@@ -164,11 +125,9 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for an individual legend item within the category grid.
    * Arranges content vertically, centers items, and applies background,
    * padding, and rounded corners. `minWidth` and `maxWidth` help with
    * responsive layout.
-   * @usedIn `CategoryLegendItem.tsx`
    */
   legendItem: {
     flexDirection: 'column',
@@ -183,8 +142,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the color indicator circle in each legend item.
-   * @usedIn `CategoryLegendItem.tsx`
    */
   legendColorIndicator: {
     width: 16,
@@ -194,8 +151,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the category name text in the legend.
-   * @usedIn `CategoryLegendItem.tsx`
    */
   legendName: {
     fontSize: 12,
@@ -206,8 +161,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the amount text in the legend.
-   * @usedIn `CategoryLegendItem.tsx`
    */
   legendAmount: {
     fontSize: 11,
@@ -218,8 +171,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the percentage text in the legend.
-   * @usedIn `CategoryLegendItem.tsx`
    */
   legendPercentage: {
     fontSize: 10,
@@ -229,11 +180,9 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Container for a list of categories.
-   * Provides spacing between individual category items.
+   * Provides functionality.
    * (Note: Marked as legacy as the primary category display now uses
    * `categoryLegendGrid`).
-   * @usedIn `CategoryItem.tsx` (though `CategorySpendingSection` now uses
    * `categoryLegendGrid`)
    */
   categoryList: {
@@ -241,11 +190,9 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for an individual category item.
-   * Arranges icon and text horizontally with spacing.
+   * Arranges layout.
    * (Note: Marked as legacy as the primary category display now uses
    * `legendItem`).
-   * @usedIn `CategoryItem.tsx`
    */
   categoryItem: {
     flexDirection: 'row',
@@ -254,8 +201,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for category names.
-   * @usedIn `CategoryItem.tsx`
    */
   categoryText: {
     fontSize: 14,
@@ -265,19 +210,15 @@ export const homeScreenStyles = StyleSheet.create({
   // === TRANSACTION SECTION STYLES ===
 
   /**
-   * @description Container for the list of recent transactions.
-   * Provides spacing between individual transaction items.
-   * @usedIn `RecentTransactionsSection.tsx`
+   * Provides functionality.
    */
   transactionList: {
     gap: 10,
   },
 
   /**
-   * @description Style for an individual transaction item.
    * Displays icon, details, and amount horizontally with card-like styling
    * and shadow.
-   * @usedIn `TransactionItem.tsx`
    */
   transactionItem: {
     flexDirection: 'row',
@@ -289,26 +230,20 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the transaction icon, providing right margin for
    * spacing.
-   * @usedIn `TransactionItem.tsx`
    */
   transactionIcon: {
     marginRight: 15,
   },
 
   /**
-   * @description Style for the transaction details (title and time).
    * Takes up remaining horizontal space.
-   * @usedIn `TransactionItem.tsx`
    */
   transactionDetails: {
     flex: 1, // Take remaining space
   },
 
   /**
-   * @description Style for the transaction title.
-   * @usedIn `TransactionItem.tsx`
    */
   transactionTitle: {
     fontSize: 16,
@@ -317,8 +252,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the transaction time.
-   * @usedIn `TransactionItem.tsx`
    */
   transactionTime: {
     fontSize: 12,
@@ -327,9 +260,7 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Style for the transaction amount.
    * Note: The color is set dynamically based on the amount (income/expense).
-   * @usedIn `TransactionItem.tsx`
    */
   transactionAmount: {
     fontSize: 16,
@@ -340,18 +271,14 @@ export const homeScreenStyles = StyleSheet.create({
   // === BILLS SECTION STYLES ===
 
   /**
-   * @description Container for the list of upcoming bills.
-   * Provides spacing between individual bill items.
-   * @usedIn `UpcomingBillsSection.tsx`
+   * Provides functionality.
    */
   billsList: {
     gap: 10,
   },
 
   /**
-   * @description Style for an individual bill item.
-   * Displays icon and text horizontally with card-like styling and shadow.
-   * @usedIn `BillItem.tsx`
+   * Displays content.
    */
   billItem: {
     flexDirection: 'row',
@@ -364,8 +291,6 @@ export const homeScreenStyles = StyleSheet.create({
   },
 
   /**
-   * @description Text style for bill descriptions.
-   * @usedIn `BillItem.tsx`
    */
   billText: {
     fontSize: 14,
