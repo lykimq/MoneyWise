@@ -8,7 +8,6 @@ use sqlx::PgPool;
 
 // Import route modules
 pub mod budget;
-pub mod config;
 
 /// Create the main API router with all available routes
 /// This function combines all API routes into a single router

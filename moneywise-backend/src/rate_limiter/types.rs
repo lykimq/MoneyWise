@@ -3,17 +3,20 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// Defines the rate limit for BudgetModification transactions.
-const BUDGET_MODIFICATION_LIMIT: u32 = 30; // 30 requests per minute
-
-/// Defines the time window in seconds for rate limits.
-const RATE_LIMIT_WINDOW_SECONDS: u64 = 60; // 1-minute window
+// Import generated rate limit configuration
+mod generated {
+    include!("generated/config.rs");
+}
 
 /// Transaction type for budget operations with specific rate limits
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TransactionType {
-    /// Budget operations (create, update, delete, view budgets)
+    /// Budget modification operations (create, update, delete)
     BudgetModification,
+    /// Budget read operations (GET requests for budget data)
+    BudgetRead,
+    /// Budget overview operations (GET requests for summary data)
+    BudgetOverview,
     // TODO: Add other transaction types as needed:
     // - UserManagement (user registration, profile updates)
     // - Reporting (analytics, reports generation)
@@ -24,13 +27,21 @@ impl TransactionType {
     /// Get the rate limit for budget operations
     pub fn get_limit(&self) -> u32 {
         match self {
-            Self::BudgetModification => BUDGET_MODIFICATION_LIMIT,
+            Self::BudgetModification => generated::BUDGET_MODIFICATION_LIMIT,
+            Self::BudgetRead => generated::BUDGET_READ_LIMIT,
+            Self::BudgetOverview => generated::BUDGET_OVERVIEW_LIMIT,
         }
     }
 
     /// Get the time window in seconds
     pub fn get_window_seconds(&self) -> u64 {
-        RATE_LIMIT_WINDOW_SECONDS
+        match self {
+            Self::BudgetModification => {
+                generated::BUDGET_MODIFICATION_WINDOW_SECONDS
+            }
+            Self::BudgetRead => generated::BUDGET_READ_WINDOW_SECONDS,
+            Self::BudgetOverview => generated::BUDGET_OVERVIEW_WINDOW_SECONDS,
+        }
     }
 }
 
@@ -43,6 +54,8 @@ impl fmt::Display for TransactionType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::BudgetModification => write!(f, "budget_modification"),
+            Self::BudgetRead => write!(f, "budget_read"),
+            Self::BudgetOverview => write!(f, "budget_overview"),
         }
     }
 }

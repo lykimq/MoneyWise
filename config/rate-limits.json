@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "rate_limits": {
+    "budget_modification": {
+      "max_requests": 30,
+      "window_seconds": 60,
+      "description": "Rate limit for budget creation, modification, and deletion operations"
+    },
+    "budget_read": {
+      "max_requests": 100,
+      "window_seconds": 60,
+      "description": "Rate limit for budget read operations (GET requests)"
+    },
+    "budget_overview": {
+      "max_requests": 200,
+      "window_seconds": 60,
+      "description": "Rate limit for budget overview and summary operations"
+    }
+  },
+  "metadata": {
+    "last_updated": "2025-09-15",
+    "description": "Shared rate limit configuration for MoneyWise frontend and backend services"
+  }
+}

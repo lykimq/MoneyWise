@@ -61,7 +61,6 @@ async fn main() {
     // Build the application router with routes and middleware
     let app = Router::new()
         .nest("/api", create_api_router()) // Mount all API routes under /api path
-        .nest("/api/config", api::config::create_config_routes()) // Mount simple config routes
         .layer(middleware::from_fn_with_state(
             Arc::new(rate_limiter),
             rate_limit_middleware,

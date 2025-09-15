@@ -9,15 +9,8 @@
  * malicious actors. Backend rate limiting is essential for API protection.
  */
 
-// Static configuration for budget operations - simple and reliable
-// IMPORTANT: These limits MUST match the backend rate limiting configuration
-// Backend: 30 requests per minute for BudgetModification (see backend/src/rate_limiter/types.rs)
-// Backend: 60-second window (see backend/src/rate_limiter/types.rs)
-const BUDGET_RATE_LIMIT_CONFIG = {
-  maxRequests: 30, // Matches backend TransactionType::BudgetModification.get_limit()
-  windowMs: 60000, // 1 minute - matches backend TransactionType::BudgetModification.get_window_seconds()
-  keyPrefix: 'budget_modification',
-};
+// Import generated rate limit configuration
+import { RATE_LIMIT_CONFIGS } from './generated/rateLimits';
 
 interface RequestRecord {
   timestamp: number;
@@ -45,9 +38,10 @@ class RateLimiter {
   isAllowed(endpoint: string): boolean {
     this.cleanup();
 
-    const { validRequests, now } = this.getValidRequests(endpoint);
+    const config = this.getConfigForEndpoint(endpoint);
+    const { validRequests, now } = this.getValidRequests(endpoint, config);
 
-    if (validRequests.length >= BUDGET_RATE_LIMIT_CONFIG.maxRequests) {
+    if (validRequests.length >= config.maxRequests) {
       return false;
     }
 
@@ -64,9 +58,10 @@ class RateLimiter {
    * @returns number - Milliseconds until next request allowed, or 0 if allowed now
    */
   getTimeUntilReset(endpoint: string): number {
-    const { validRequests } = this.getValidRequests(endpoint);
+    const config = this.getConfigForEndpoint(endpoint);
+    const { validRequests } = this.getValidRequests(endpoint, config);
 
-    if (validRequests.length < BUDGET_RATE_LIMIT_CONFIG.maxRequests) {
+    if (validRequests.length < config.maxRequests) {
       return 0;
     }
 
@@ -75,7 +70,7 @@ class RateLimiter {
     );
     return Math.max(
       0,
-      oldestRequest + BUDGET_RATE_LIMIT_CONFIG.windowMs - Date.now()
+      oldestRequest + config.windowMs - Date.now()
     );
   }
 
@@ -84,15 +79,16 @@ class RateLimiter {
    * Filters out expired requests to prevent memory leaks.
    *
    * @param endpoint - The API endpoint
+   * @param config - The rate limit configuration for this endpoint
    * @returns Object with validRequests array and current timestamp
    */
-  private getValidRequests(endpoint: string): {
+  private getValidRequests(endpoint: string, config: typeof RATE_LIMIT_CONFIGS.budget_modification | typeof RATE_LIMIT_CONFIGS.budget_read | typeof RATE_LIMIT_CONFIGS.budget_overview): {
     validRequests: RequestRecord[];
     now: number;
   } {
     const key = this.getKey(endpoint);
     const now = Date.now();
-    const windowStart = now - BUDGET_RATE_LIMIT_CONFIG.windowMs;
+    const windowStart = now - config.windowMs;
 
     const requests = this.requests.get(key) || [];
     const validRequests = requests.filter((req) => req.timestamp > windowStart);
@@ -148,13 +144,34 @@ class RateLimiter {
   }
 
   /**
+   * Determines the appropriate rate limit configuration for an endpoint.
+   * Matches backend rate limiting logic for consistency.
+   *
+   * @param endpoint - The API endpoint path
+   * @returns Rate limit configuration for the endpoint type
+   */
+  private getConfigForEndpoint(endpoint: string): typeof RATE_LIMIT_CONFIGS.budget_modification | typeof RATE_LIMIT_CONFIGS.budget_read | typeof RATE_LIMIT_CONFIGS.budget_overview {
+    if (endpoint.includes('/budgets/overview')) {
+      return RATE_LIMIT_CONFIGS.budget_overview;
+    } else if (endpoint.includes('/budgets') && (endpoint.includes('POST') || endpoint.includes('PUT'))) {
+      return RATE_LIMIT_CONFIGS.budget_modification;
+    } else if (endpoint.includes('/budgets')) {
+      return RATE_LIMIT_CONFIGS.budget_read;
+    } else {
+      // Default to budget read for non-budget endpoints
+      return RATE_LIMIT_CONFIGS.budget_read;
+    }
+  }
+
+  /**
    * Generates a unique key for the endpoint.
    *
    * @param endpoint - The API endpoint
    * @returns Unique key for rate limiting purposes
    */
   private getKey(endpoint: string): string {
-    return `${BUDGET_RATE_LIMIT_CONFIG.keyPrefix}:${endpoint}`;
+    const config = this.getConfigForEndpoint(endpoint);
+    return `${config.keyPrefix}:${endpoint}`;
   }
 }
 
@@ -165,21 +182,23 @@ const budgetRateLimiter = new RateLimiter();
 
 /**
  * Get the appropriate rate limiter for an endpoint.
- * All endpoints currently use the same budget rate limiter.
+ * The single rate limiter now handles different endpoint types with appropriate limits.
  *
  * @param endpoint - The API endpoint path
  * @returns RateLimiter instance for the endpoint type
  */
 export const getRateLimiter = (endpoint: string): RateLimiter => {
-  // TODO: Implement specific rate limiters for different endpoint types
-  // - User management endpoints (registration, profile)
-  // - Reporting endpoints (analytics, exports)
-  // - Settings endpoints (configuration, preferences)
-  // All endpoints currently use the same budget rate limiter
+  // The rate limiter now automatically determines the appropriate configuration
+  // based on the endpoint path, matching the backend rate limiting logic.
+  // This ensures consistency between frontend and backend rate limiting.
   //
-  // NOTE: When adding new rate limiters, ensure they match backend limits:
-  // - Backend rate limits are defined in backend/src/rate_limiter/types.rs
-  // - Backend headers are set in backend/src/rate_limiter/middleware.rs
+  // Rate limit types:
+  // - budget_overview: 200 requests/minute for /budgets/overview
+  // - budget_read: 100 requests/minute for GET /budgets and /budgets/{id}
+  // - budget_modification: 30 requests/minute for POST/PUT /budgets
+  //
+  // NOTE: Backend rate limits are defined in backend/src/rate_limiter/types.rs
+  // and backend/src/rate_limiter/middleware.rs
   return budgetRateLimiter;
 };
 

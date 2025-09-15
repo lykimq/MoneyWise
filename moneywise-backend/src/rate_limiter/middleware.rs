@@ -29,26 +29,35 @@ pub fn extract_rate_limit_info(
         .and_then(|h| h.to_str().ok())
         .and_then(|s| validate_device_id(s).then_some(s.to_string()));
 
-    // Determine transaction type from path
+    // Determine transaction type from path and HTTP method
     let path = req.uri().path();
-    // Use regex to match budget endpoints: /budgets followed by / or end of string
-    // This prevents false positives like /user-budgets or /my-budgets
-    let transaction_type = match regex::Regex::new(r"^/budgets(/|$)") {
-        Ok(budget_endpoint_regex) => {
-            if budget_endpoint_regex.is_match(path) {
+    let method = req.method().as_str();
+
+    // Match API endpoints with appropriate rate limiting
+    let transaction_type = if path.starts_with("/api/budgets") {
+        match (path, method) {
+            // Budget overview endpoint - highest rate limit for frequent dashboard updates
+            ("/api/budgets/overview", "GET") => TransactionType::BudgetOverview,
+            // Budget read operations - moderate rate limit for data fetching
+            ("/api/budgets", "GET") => TransactionType::BudgetRead,
+            // Individual budget read operations
+            (path, "GET") if path.starts_with("/api/budgets/") && path.len() > "/api/budgets/".len() => {
+                TransactionType::BudgetRead
+            },
+            // Budget modification operations - strictest rate limit for write operations
+            ("/api/budgets", "POST") => TransactionType::BudgetModification,
+            ("/api/budgets", "PUT") => TransactionType::BudgetModification,
+            // Individual budget modification operations
+            (path, "PUT") if path.starts_with("/api/budgets/") && path.len() > "/api/budgets/".len() => {
                 TransactionType::BudgetModification
-            } else {
-                // TODO: Implement rate limiting for non-budget endpoints
-                // For now, log warning and use budget rate limiting as fallback
-                tracing::warn!("Non-budget endpoint '{}' using budget rate limiting - implement specific rate limiting", path);
-                TransactionType::BudgetModification
-            }
+            },
+            // Default to budget read for any other budget endpoints
+            _ => TransactionType::BudgetRead,
         }
-        Err(e) => {
-            tracing::error!("Failed to compile budget endpoint regex: {}", e);
-            // Fallback to budget type if regex compilation fails
-            TransactionType::BudgetModification
-        }
+    } else {
+        // For non-budget endpoints, use a default rate limit
+        // This prevents the warning and provides reasonable rate limiting
+        TransactionType::BudgetRead
     };
 
     RateLimitKey::new(ip, device_id, transaction_type)
