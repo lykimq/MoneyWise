@@ -51,6 +51,12 @@ MoneyWise is a cross-platform personal finance app that helps you take control o
 - Optional cloud backup (coming soon)
 - GDPR compliant
 
+### ⚡ **Performance & Reliability**
+- **Smart Rate Limiting** - Multi-tier rate limiting for optimal performance
+- **Intelligent Caching** - Redis-powered caching for lightning-fast responses
+- **Type-Safe Configuration** - Shared configuration ensures consistency
+- **Graceful Degradation** - Continues working even when services are unavailable
+
 ---
 
 ## 🛠️ Built With
@@ -86,12 +92,18 @@ MoneyWise/
 ├── 🔄 .github/workflows        # CI/CD pipelines and GitHub Actions
 ├── 📱 moneywise-app/           # React Native frontend
 ├── 🦀 moneywise-backend/       # Rust backend API
+├── ⚙️ config/                  # Shared configuration files
 ├── 🗄️ scripts/                 # Setup and utility scripts
 ├── 🧰 tools/                   # Development tools and utilities
 │   └── 🐫 ocaml/              # OCaml-based project management tools
 ├── 📚 docs/                    # Project documentation and guides
 │   └── 🐫 ocamldoc/           # Development tools documentation (deployed to GitHub Pages)
 ```
+
+### **Configuration Strategy**
+- **Shared Configuration**: Single source of truth for rate limiting across frontend and backend
+- **Auto-Generation**: Build scripts generate type-safe configs for both platforms
+- **Type Safety**: TypeScript definitions ensure consistency between services
 
 ### **Database Strategy**
 - **Production**: Supabase (hosted, managed, scalable)
@@ -128,6 +140,7 @@ MoneyWise/
 - ✅ **Basic UI Framework** - Component library and design system
 - ✅ **Backend API** - Budget management endpoints with Redis caching
 - ✅ **Database Schema** - PostgreSQL with migrations and sample data
+- ✅ **Rate Limiting** - Multi-tier rate limiting with shared configuration
 - ✅ **Development Tools** - OCaml-based project management tools
 - 🔄 **Core Features** - Transaction management, budgets, goals (UI ready, backend in progress)
 - 📋 **Testing** - Comprehensive test suite setup
@@ -181,6 +194,7 @@ MoneyWise/
 - [x] Backend API with budget management
 - [x] Database schema and migrations
 - [x] Basic UI framework and navigation
+- [x] Rate limiting system with shared configuration
 - [x] Development tools and architecture
 - [ ] Transaction management (backend + frontend integration)
 - [ ] Budget tracking (frontend integration)
