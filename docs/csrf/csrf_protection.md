@@ -213,11 +213,51 @@ let csrf_service = CsrfService::with_expiry(7200);
 
 The CSRF implementation relies on Axum sessions. Ensure proper session configuration:
 
+#### Session Secret
+
+**Critical**: The session secret must be at least 64 bytes long for security. The application handles this automatically:
+
+```rust
+// Automatic session secret generation (production-ready)
+let session_secret = std::env::var("SESSION_SECRET")
+    .unwrap_or_else(|_| {
+        // Generate a random 64-byte secret if not provided in environment
+        use rand::Rng;
+        let mut secret = [0u8; 64];
+        rand::thread_rng().fill(&mut secret);
+        general_purpose::STANDARD.encode(secret)
+    });
+let session_layer = SessionLayer::new(store, session_secret.as_bytes());
+```
+
+#### Environment Configuration
+
+For production, set a secure session secret:
+
+```bash
+# Generate a secure 64+ byte secret
+export SESSION_SECRET="$(openssl rand -base64 64)"
+
+# Or using Python
+export SESSION_SECRET="$(python3 -c "import secrets; print(secrets.token_urlsafe(64))")"
+```
+
+#### Session Security Settings
+
 ```rust
 let session_config = SessionConfig::default()
     .with_secure(true)  // HTTPS only in production
-    .with_same_site_policy(SameSite::Lax);
+    .with_same_site_policy(SameSite::Lax)
+    .with_cookie_name("moneywise_session")
+    .with_max_age(Some(Duration::hours(24)));
 ```
+
+#### Security Notes
+
+- **Minimum Length**: Session secret must be 64+ bytes (enforced by axum-sessions)
+- **Cryptographic Security**: Uses OS random number generator for secret generation
+- **Environment Variable**: Production deployments should use `SESSION_SECRET` env var
+- **Automatic Fallback**: Development environments get secure auto-generated secrets
 
 ## Error Handling
 
@@ -271,10 +311,15 @@ Backend tests cover:
 
 ### Common Issues
 
-1. **Token Not Found**: Check session configuration and cookie settings
-2. **Expired Tokens**: Verify system clock synchronization
-3. **CORS Issues**: Ensure proper CORS configuration for API endpoints
-4. **Session Problems**: Verify session middleware configuration
+1. **Session Secret Error**: `secret must be at least 64 bytes`
+   - **Cause**: Session secret is too short (less than 64 bytes)
+   - **Solution**: The application now automatically generates a secure 64-byte secret
+   - **Prevention**: Set `SESSION_SECRET` environment variable for production
+
+2. **Token Not Found**: Check session configuration and cookie settings
+3. **Expired Tokens**: Verify system clock synchronization
+4. **CORS Issues**: Ensure proper CORS configuration for API endpoints
+5. **Session Problems**: Verify session middleware configuration
 
 ### Debug Information
 

@@ -61,6 +61,12 @@ session.insert("csrf_token", &token_data)?;
 - **Session Hijacking Mitigation**: Tokens tied to specific sessions
 - **Storage Security**: Server-controlled storage prevents tampering
 
+**Session Secret Security:**
+- **Minimum Length**: 64-byte minimum enforced by axum-sessions
+- **Cryptographic Strength**: Uses OS random number generator
+- **Environment Configuration**: Production secrets via `SESSION_SECRET` env var
+- **Automatic Generation**: Secure fallback for development environments
+
 ### 3. Token Lifecycle Management
 
 **Implementation:**
