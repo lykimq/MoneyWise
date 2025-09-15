@@ -126,6 +126,8 @@ MoneyWise/
 | **Privacy** | ✅ Your data stays local | ❌ Cloud-dependent |
 | **Multi-Currency** | ✅ Native support | ❌ Limited options |
 | **No Signup** | ✅ Start immediately | ❌ Account required |
+| **Smart Performance** | ✅ Multi-tier rate limiting | ❌ Basic or no rate limiting |
+| **Type Safety** | ✅ Shared configuration | ❌ Manual sync required |
 | **Open Source** | ✅ Transparent & free | ❌ Proprietary |
 | **Development Tools** | ✅ OCaml + Shell hybrid | ❌ Single approach |
 
