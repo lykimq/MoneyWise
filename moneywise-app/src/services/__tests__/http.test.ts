@@ -2,11 +2,10 @@
  * Unit Tests for HttpClient Service
  *
  * Tests HTTP client functionality in isolation with mocked dependencies.
- * Verifies URL validation, CSRF protection, rate limiting, retry logic, and error handling.
+ * Verifies URL validation, rate limiting, retry logic, and error handling.
  */
 
 import { HttpClient } from '../http';
-import { csrfService } from '../csrf';
 
 // Mock external dependencies to isolate HttpClient behavior
 jest.mock('../../config/api', () => {
@@ -22,11 +21,6 @@ jest.mock('../../config/api', () => {
   };
 });
 
-jest.mock('../csrf', () => ({
-  csrfService: {
-    getHeaders: jest.fn().mockResolvedValue({ 'X-CSRF-Token': 'test-token' }),
-  },
-}));
 
 jest.mock('../rateLimiter', () => ({
   getRateLimiter: jest.fn().mockReturnValue({
@@ -101,33 +95,6 @@ describe('HttpClient', () => {
     });
   });
 
-  // Tests CSRF protection for state-changing requests
-  describe('CSRF Protection', () => {
-    it('should include CSRF headers for POST requests', async () => {
-      await httpClient.request('/test', { method: 'POST' });
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'X-CSRF-Token': 'test-token',
-          }),
-        })
-      );
-    });
-
-    it('should not include CSRF headers for GET requests', async () => {
-      await httpClient.request('/test', { method: 'GET' });
-      expect(csrfService.getHeaders).not.toHaveBeenCalled();
-    });
-
-    it('should continue request if CSRF service fails', async () => {
-      (csrfService.getHeaders as jest.Mock).mockRejectedValueOnce(
-        new Error('CSRF Error')
-      );
-      const response = await httpClient.request('/test', { method: 'POST' });
-      expect(response).toBeDefined();
-    });
-  });
 
   // Tests rate limiting to prevent API abuse
   describe('Rate Limiting', () => {

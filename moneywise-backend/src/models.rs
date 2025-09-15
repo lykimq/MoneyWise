@@ -129,26 +129,3 @@ pub struct CategoryBudgetApi {
     pub percentage: Decimal,
     pub currency: String,
 }
-
-//////////////////////////////////////////////////////////////////////
-// CSRF Protection Models
-//////////////////////////////////////////////////////////////////////
-
-/// CSRF token response for the frontend.
-///
-/// This matches the expected format from the frontend CSRF service.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CsrfTokenResponse {
-    pub token: String,
-    pub expires_in: u64, // Expiry time in milliseconds
-}
-
-/// CSRF token data stored in session.
-///
-/// Internal representation used for validation and session management.
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CsrfTokenData {
-    pub token: String,
-    pub created_at: DateTime<Utc>,
-    pub expires_at: DateTime<Utc>,
-}

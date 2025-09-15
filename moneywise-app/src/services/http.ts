@@ -11,7 +11,6 @@
  * - Retry logic with exponential backoff.
  */
 import { apiConfig, validateApiConfig } from '../config/api';
-import { csrfService } from './csrf';
 import { getRateLimiter } from './rateLimiter';
 import { sanitizeForUrl } from '../utils/sanitization';
 import { Platform, AppState } from 'react-native';
@@ -101,30 +100,6 @@ export class HttpClient {
     return false;
   }
 
-  /**
-   * Retrieves CSRF headers for state-changing requests (POST, PUT, DELETE, PATCH).
-   * @param method - The HTTP method of the request.
-   * @returns A promise that resolves to a record of CSRF headers.
-   */
-  private async getCSRFHeaders(
-    method?: string
-  ): Promise<Record<string, string>> {
-    // Only adds CSRF protection for state-changing methods.
-    if (
-      method &&
-      ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())
-    ) {
-      try {
-        return await csrfService.getHeaders();
-      } catch (error) {
-        // If CSRF token retrieval fails, proceeds without it.
-        // This ensures the application continues to function even if CSRF service is unavailable.
-        console.warn('CSRF token retrieval failed:', error);
-        return {};
-      }
-    }
-    return {};
-  }
 
   /**
    * Performs an HTTP request with retry logic and timeout protection.
@@ -143,14 +118,10 @@ export class HttpClient {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      // Retrieves CSRF headers for applicable request methods.
-      const csrfHeaders = await this.getCSRFHeaders(options.method);
-
       const response = await fetch(url, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
-          ...csrfHeaders,
           ...(options.headers || {}),
         },
         signal: controller.signal,

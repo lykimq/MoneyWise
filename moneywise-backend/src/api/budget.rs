@@ -16,13 +16,12 @@ use uuid::Uuid;
 
 use crate::{
     cache::domains::budget::BudgetCache,
-    csrf::CsrfService,
     error::{AppError, Result},
     models::*,
 };
 
-/// Application state containing database pool, budget cache service, and CSRF service
-pub type AppState = (PgPool, BudgetCache, CsrfService);
+/// Application state containing database pool and budget cache service
+pub type AppState = (PgPool, BudgetCache);
 
 /// Query parameters for budget filtering
 #[derive(Debug, Deserialize)]
@@ -68,7 +67,7 @@ pub fn budget_routes() -> Router<AppState> {
 /// }
 /// ```
 async fn get_budget_overview(
-    State((pool, cache, _csrf)): State<AppState>,
+    State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetOverviewApi>> {
     let month = query
@@ -148,7 +147,7 @@ async fn get_budget_overview(
 /// }
 /// ```
 async fn get_budgets(
-    State((pool, cache, _csrf)): State<AppState>,
+    State((pool, cache)): State<AppState>,
     Query(query): Query<BudgetQuery>,
 ) -> Result<Json<BudgetResponse>> {
     // Default to current month/year if not provided
@@ -256,7 +255,7 @@ async fn get_budgets(
 /// }
 /// ```
 async fn create_budget(
-    State((pool, cache, _csrf)): State<AppState>,
+    State((pool, cache)): State<AppState>,
     Json(payload): Json<CreateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
     // Validate input data
@@ -409,7 +408,7 @@ async fn create_budget(
 /// }
 /// ```
 async fn update_budget(
-    State((pool, cache, _csrf)): State<AppState>,
+    State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
     Json(payload): Json<UpdateBudgetRequest>,
 ) -> Result<Json<BudgetApi>> {
@@ -523,7 +522,7 @@ async fn update_budget(
 /// }
 /// ```
 async fn get_budget_by_id(
-    State((pool, cache, _csrf)): State<AppState>,
+    State((pool, cache)): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<BudgetApi>> {
     // Try to get data from cache first

@@ -16,7 +16,7 @@ A React Native personal finance app that helps you track budgets, manage spendin
 - **Navigation**: React Navigation with bottom tabs
 - **Data Management**: TanStack Query for caching and state management
 - **Backend Integration**: RESTful API with Rust backend
-- **Security**: CSRF protection, rate limiting, input validation, and secure HTTP client
+- **Security**: Rate limiting, input validation, and secure HTTP client
 - **Testing**: Jest with comprehensive integration tests
 
 ## 📱 App Structure
@@ -90,7 +90,6 @@ The app connects to a Rust backend via REST API:
 
 The app implements multiple layers of security to protect user data and prevent common attacks:
 
-- **CSRF Protection**: Prevents cross-site request forgery attacks with server-generated tokens
 - **Rate Limiting**: Client-side throttling to prevent API abuse and improve performance
 - **Input Validation**: URL sanitization and endpoint validation to prevent injection attacks
 - **Secure HTTP Client**: Timeout protection, retry logic with exponential backoff, and proper error handling
@@ -104,7 +103,7 @@ The app implements multiple layers of security to protect user data and prevent 
 - ✅ AI insights display
 - ✅ Comprehensive test suite
 - ✅ Error handling and loading states
-- ✅ Security features (CSRF, rate limiting, input validation)
+- ✅ Security features (rate limiting, input validation)
 
 **Placeholder Screens:**
 - 🚧 Transactions, Goals, Settings (basic UI only)
