@@ -6,6 +6,8 @@ use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 // Import session management
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
+// Import base64 for session secret encoding
+use base64::{engine::general_purpose, Engine as _};
 
 // Import local modules
 mod api;
@@ -60,7 +62,16 @@ async fn main() {
 
     // Initialize session store and layer
     let store = MemoryStore::new();
-    let session_layer = SessionLayer::new(store, b"your-secret-key-must-be-at-least-32-bytes-long");
+    // Generate a secure 64-byte session secret
+    let session_secret = std::env::var("SESSION_SECRET")
+        .unwrap_or_else(|_| {
+            // Generate a random 64-byte secret if not provided in environment
+            use rand::Rng;
+            let mut secret = [0u8; 64];
+            rand::thread_rng().fill(&mut secret);
+            general_purpose::STANDARD.encode(secret)
+        });
+    let session_layer = SessionLayer::new(store, session_secret.as_bytes());
 
     // Configure CORS (Cross-Origin Resource Sharing) settings
     // This allows the API to be accessed from different origins (domains)
