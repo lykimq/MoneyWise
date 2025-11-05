@@ -9,7 +9,7 @@
 
 ## Test with bot
 
-Run MoneyWise with bot.
+Run MoneyWise with bot to check the webhook legacy account installation.
 
 ## ✨ What is MoneyWise?
 
