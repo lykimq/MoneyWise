@@ -9,7 +9,7 @@
 
 ## Test with bot
 
-Run MoneyWise with bot to check the webhook legacy account installation. Add this change to trigger the bot.
+Run MoneyWise with bot to check. Add this change to trigger the bot, again with the new push
 
 ## ✨ What is MoneyWise?
 
