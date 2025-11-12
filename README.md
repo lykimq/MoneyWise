@@ -9,7 +9,7 @@
 
 ## Test with bot
 
-Run MoneyWise with bot to check. Add this change to trigger the bot, again with the new push
+Run MoneyWise with bot generic to check.
 
 ## ✨ What is MoneyWise?
 
